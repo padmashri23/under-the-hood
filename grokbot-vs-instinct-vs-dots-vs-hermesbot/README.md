@@ -1,4 +1,5 @@
 # Grok Bot vs Instinct vs Dots vs Hermes Bot: The AI Agent Showdown of 2026
+**📖 Read it here: https://padmashri23.github.io/under-the-hood/grokbot-vs-instinct-vs-dots-vs-hermesbot/**
 
 A fact-checked comparison of four AI agent platforms: xAI's Grok Bot, Instinct, OpenAI's Dots and Nous Research's open-source Hermes Agent. It looks at what each one can actually do, how it works, what it costs, and which one fits which kind of user.
 

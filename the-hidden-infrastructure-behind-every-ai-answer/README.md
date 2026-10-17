@@ -1,4 +1,5 @@
 # The Hidden Infrastructure Behind Every AI Answer: GPUs, Inference, and Compute Costs
+**📖 Read it here: https://padmashri23.github.io/under-the-hood/the-hidden-infrastructure-behind-every-ai-answer/**
 
 What actually happens between the moment you hit "Send" and the moment an AI's answer appears on your screen? This article follows a single prompt from your keyboard to a GPU cluster and back, and looks at the hardware, energy and money it takes to answer it.
 

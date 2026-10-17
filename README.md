@@ -1,19 +1,23 @@
 # Under the Hood
 
+**📖 Read them here: https://padmashri23.github.io/under-the-hood/**
+
 Long-form, fact-checked articles on AI: how the technology works, what it costs, and how the products compare. Each article lives in its own folder with everything it needs to render.
 
 ## Articles
 
-| Article | Folder | What it covers |
-|---|---|---|
-| The Hidden Infrastructure Behind Every AI Answer: GPUs, Inference, and Compute Costs | [`the-hidden-infrastructure-behind-every-ai-answer/`](the-hidden-infrastructure-behind-every-ai-answer/) | What happens between hitting "Send" and seeing an answer: tokenization, GPUs, data centers, energy, cooling and the money behind it |
-| Grok Bot vs Instinct vs Dots vs Hermes Bot: The AI Agent Showdown of 2026 | [`grokbot-vs-instinct-vs-dots-vs-hermesbot/`](grokbot-vs-instinct-vs-dots-vs-hermesbot/) | A side-by-side comparison of four AI agent platforms: what each can do, how it works, pricing, security and who it suits |
+| Article | Read it | Folder | What it covers |
+|---|---|---|---|
+| The Hidden Infrastructure Behind Every AI Answer: GPUs, Inference, and Compute Costs | [Live](https://padmashri23.github.io/under-the-hood/the-hidden-infrastructure-behind-every-ai-answer/) | [`the-hidden-infrastructure-behind-every-ai-answer/`](the-hidden-infrastructure-behind-every-ai-answer/) | What happens between hitting "Send" and seeing an answer: tokenization, GPUs, data centers, energy, cooling and the money behind it |
+| Grok Bot vs Instinct vs Dots vs Hermes Bot: The AI Agent Showdown of 2026 | [Live](https://padmashri23.github.io/under-the-hood/grokbot-vs-instinct-vs-dots-vs-hermesbot/) | [`grokbot-vs-instinct-vs-dots-vs-hermesbot/`](grokbot-vs-instinct-vs-dots-vs-hermesbot/) | A side-by-side comparison of four AI agent platforms: what each can do, how it works, pricing, security and who it suits |
 
 ## Folder structure
 
 ```
 under-the-hood/
 ├── README.md                     <- this file, the index of all articles
+├── index.html                    <- the site's home page, links to every article
+├── .nojekyll                     <- tells GitHub Pages to serve files as-is
 └── <article-slug>/
     ├── README.md                 <- summary, contents and how to view
     ├── index.html                <- the styled web version (entry point)
@@ -27,14 +31,17 @@ under-the-hood/
 2. Put the web version in it as `index.html`. Keep images in an `images/` subfolder and reference them with relative paths (`images/foo.jpg`), so the folder works on its own.
 3. Add the Markdown source next to it if you have one.
 4. Add a `README.md` inside the folder (copy one of the existing ones as a template).
-5. Add a row to the **Articles** table above.
-6. Commit and push:
+5. Add a row to the **Articles** table above, with its live link: `https://padmashri23.github.io/under-the-hood/<article-slug>/`.
+6. Add a card for it to the root `index.html` (copy an existing `<a class="card">` block).
+7. Commit and push:
 
    ```bash
-   git add <article-slug>/ README.md
+   git add <article-slug>/ README.md index.html
    git commit -m "Add <article title>"
    git push
    ```
+
+   GitHub Pages redeploys automatically, usually within a minute or two.
 
 ## Viewing an article locally
 

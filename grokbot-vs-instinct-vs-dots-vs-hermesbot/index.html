@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A deeply researched, fact-checked comparison of four AI agent platforms (Grok Bot, Instinct, OpenAI Dots, and Hermes Agent) exploring what each can actually do, how they work, and which one fits your needs.">
+<meta property="og:title" content="Grok Bot vs Instinct vs Dots vs Hermes Bot: The AI Agent Showdown of 2026">
+<meta property="og:description" content="Four AI agents, four very different philosophies. A fact-checked deep dive into the tools that want to do your work for you.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<title>Grok Bot vs Instinct vs Dots vs Hermes Bot: The AI Agent Showdown of 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --bg-card: #111113;
+    --bg-elevated: #18181b;
+    --text-primary: #e4e4e7;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    --accent: #4A9EFF;
+    --accent-warm: #f59e0b;
+    --accent-green: #22c55e;
+    --accent-purple: #a855f7;
+    --accent-red: #ef4444;
+    --border: #27272a;
+    --serif: 'Instrument Serif', 'Georgia', serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--sans);
+    font-size: 18px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .article-container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Header */
+  .article-header {
+    padding: 80px 0 40px;
+    text-align: center;
+  }
+  .article-header .tag {
+    display: inline-block;
+    background: var(--accent);
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 4px;
+    margin-bottom: 32px;
+  }
+  .article-header h1 {
+    font-family: var(--serif);
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1.15;
+    font-weight: 400;
+    margin-bottom: 24px;
+    color: #fff;
+  }
+  .article-header .subtitle {
+    font-size: 19px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 680px;
+    margin: 0 auto 32px;
+    font-weight: 300;
+  }
+  .article-header .meta {
+    font-size: 14px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  /* Typography */
+  h2 {
+    font-family: var(--serif);
+    font-size: 36px;
+    font-weight: 400;
+    color: #fff;
+    margin: 72px 0 24px;
+    line-height: 1.2;
+  }
+  h3 {
+    font-family: var(--sans);
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    margin: 40px 0 16px;
+  }
+  p {
+    margin-bottom: 20px;
+    color: var(--text-primary);
+  }
+  strong { color: #fff; font-weight: 600; }
+  em { color: var(--text-secondary); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  ul, ol {
+    margin: 16px 0 24px 28px;
+    color: var(--text-primary);
+  }
+  li { margin-bottom: 8px; }
+
+  blockquote {
+    border-left: 3px solid var(--accent);
+    padding: 24px 32px;
+    margin: 40px 0;
+    background: var(--bg-card);
+    border-radius: 0 8px 8px 0;
+  }
+  blockquote p {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-style: italic;
+    color: #fff;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* Tables */
+  .table-wrapper {
+    overflow-x: auto;
+    margin: 32px -20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background: var(--bg-card);
+  }
+  thead {
+    background: var(--bg-elevated);
+  }
+  th {
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { color: #fff; font-weight: 500; }
+
+  /* Source cards */
+  .source-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 24px 0;
+    font-size: 14px;
+  }
+  .source-card .label {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+  .source-card p { margin: 4px 0; color: var(--text-secondary); font-size: 14px; }
+
+  /* Video embed */
+  .video-embed {
+    margin: 40px 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+  .video-embed .video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+  }
+  .video-embed .video-wrapper iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  .video-embed .video-caption {
+    padding: 14px 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    line-height: 1.5;
+  }
+
+  /* Product cards */
+  .product-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin: 32px 0;
+  }
+  .product-card .product-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+  .product-card .product-badge.blue { background: #1d4ed8; color: #fff; }
+  .product-card .product-badge.amber { background: #b45309; color: #fff; }
+  .product-card .product-badge.green { background: #059669; color: #fff; }
+  .product-card .product-badge.purple { background: #7c3aed; color: #fff; }
+
+  /* Know grid */
+  .know-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin: 32px 0;
+  }
+  .know-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid var(--border);
+  }
+  .know-card h4 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .know-card.positive h4 { color: #22c55e; }
+  .know-card.negative h4 { color: #f59e0b; }
+  .know-card ul { margin: 0; padding-left: 18px; }
+  .know-card li { font-size: 14px; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.5; }
+
+  /* Callout */
+  .callout {
+    background: var(--bg-card);
+    border-left: 3px solid var(--accent-warm);
+    border-radius: 0 8px 8px 0;
+    padding: 20px 24px;
+    margin: 32px 0;
+    font-size: 15px;
+  }
+  .callout .callout-label {
+    color: var(--accent-warm);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+  .callout p { margin: 4px 0; color: var(--text-secondary); font-size: 15px; }
+
+  /* Dividers */
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  /* Footer */
+  .article-footer {
+    padding: 48px 0 80px;
+    border-top: 1px solid var(--border);
+    margin-top: 64px;
+  }
+  .article-footer p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .tags { margin-top: 24px; }
+  .tags span {
+    display: inline-block;
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin: 4px 4px 4px 0;
+    border: 1px solid var(--border);
+  }
+
+  @media (max-width: 680px) {
+    .know-grid { grid-template-columns: 1fr; }
+    blockquote { padding: 20px 24px; }
+    h2 { font-size: 28px; }
+    .table-wrapper { margin: 32px -24px; border-radius: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="article-container">
+
+<!-- HEADER -->
+<header class="article-header">
+  <span class="tag">Comparison</span>
+  <h1>Grok Bot vs Instinct vs Dots vs Hermes Bot</h1>
+  <p class="subtitle">Four AI agents, four radically different philosophies. Grok Bot wants to be your cloud employee, Instinct your personal concierge, Dots your corporate teammate, and Hermes Agent runs on your own computer. Here's what the evidence actually shows.</p>
+  <p class="meta">Researched & written October 6, 2026 · ~25 min read · Sources cited throughout</p>
+</header>
+</div>
+
+<div class="article-container">
+
+<!-- ============================================================ -->
+<!-- INTRODUCTION -->
+<!-- ============================================================ -->
+
+<h2>The Year AI Stopped Just Talking</h2>
+
+<p>In 2025, AI got really good at answering questions. In 2026, it started <em>doing things</em> for you.</p>
+
+<p>That's a bigger change than it sounds. Until now, you asked an AI something, copied its answer, and did the work yourself. Now imagine texting an AI: "book me a flight to Tokyo for under $900 next Thursday." Then you put your phone down. The AI opens a browser, searches for flights, compares prices, fills in the booking form, enters your payment details, and texts you the confirmation. You never touched a screen.</p>
+
+<p>That's the idea behind <strong>AI agents</strong>: AI that does tasks for you instead of just chatting. Several companies launched one in 2026. Four stand out: <strong>Grok Bot</strong> from xAI, <strong>Instinct</strong> from Spear Street Technology, <strong>Dots</strong> from OpenAI, and <strong>Hermes Agent</strong> from Nous Research (sometimes called HermesBot).</p>
+
+<p>All four promise to work for you around the clock. But they're built very differently, they're made for different people, and each one comes with its own trade-offs. Some cost up to hundreds of dollars a month. Two charge no subscription at all. Some need access to your email. One can run entirely on your own machine.</p>
+
+<p>I spent the past week reading official documentation, code pages on GitHub, product announcements and independent reviews, and watching hands-on videos. I wanted to know what each agent can really do, and just as important, what it <em>can't</em>. Here's what I found.</p>
+
+<div class="callout">
+  <div class="callout-label">⚠️ Transparency Note</div>
+  <p>All four products are changing quickly. Everything here is accurate as of October 6, 2026. When a claim comes only from the company that makes the product, I say so. When something about price, features or performance isn't confirmed, I say that too, instead of guessing.</p>
+</div>
+
+<hr>
+
+<!-- ============================================================ -->
+<!-- SECTION: DOTS -->
+<!-- ============================================================ -->
+
+<h2>Dots: OpenAI's "Always-On" Corporate Teammate</h2>
+
+<h3>What It Is</h3>
+
+<p>On September 29, 2026, OpenAI CEO Sam Altman announced <strong>Dots</strong> at <strong>OpenAI DevDay</strong>, the company's yearly event in San Francisco. A Dot is an AI helper that lives inside ChatGPT. A normal ChatGPT chat stops when you close the tab. A Dot keeps working. It has its own computer in the cloud (a computer that runs in OpenAI's data centers, not on your desk) with its own web browser. It works 24 hours a day and can connect to more than <strong>4,000 apps</strong> through plugins (add-ons that link it to other services).</p>
+
+<p>Think of it less like a chatbot and more like a remote worker who happens to be software. You give your Dot a name and a job title, such as "Marketing Analyst" or "Executive Assistant." You set rules for what it can and can't do. Then you hand it work. It researches, writes drafts, gets the task done, and reports back. You can talk to it in ChatGPT, <strong>Slack</strong> or <strong>Microsoft Teams</strong>.</p>
+
+<div class="source-card">
+  <div class="label">Primary Source</div>
+  <p><strong>OpenAI official announcement</strong>: "Introducing Dots," <a href="https://openai.com/index/introducing-dots/" target="_blank">openai.com</a>, September 29, 2026. Also covered by <a href="https://techcrunch.com/2026/09/29/openai-launches-dots-its-bubbly-agentic-avatar/" target="_blank">TechCrunch</a>, <a href="https://venturebeat.com/technology/openai-launches-dots-always-on-ai-agent-coworkers-and-chatgpt-space-where-they-can-collaborate-with-human-teams" target="_blank">VentureBeat</a>, <a href="https://www.forbes.com/sites/fionariley/2026/09/29/openai-unveils-new-ai-assistant-dots-heres-what-it-does/" target="_blank">Forbes</a>, and <a href="https://www.therundown.ai/news/openai-dots-chatgpt-astra-agents" target="_blank">The Rundown AI</a>.</p>
+</div>
+
+<h3>The Tech Under the Hood</h3>
+
+<p>The AI model behind Dots is <strong>GPT-6 Astra</strong>, OpenAI's most advanced model. It came out on September 3, 2026, almost four weeks before DevDay. Each Dot gets its own virtual computer: a Linux computer in the cloud with the Chrome browser, space to store files, and a terminal (a text window for typing commands). That means it can use websites and apps the way you do, by clicking and typing. It isn't limited to the services that offer a direct connection for software (called an API).</p>
+
+<p>This is called <strong>"computer use"</strong>. The AI looks at the screen, or a description of it, and decides where to click, what to type, and what to do next. Anthropic showed the same idea earlier with its Claude Computer Use demos. OpenAI has turned it into a full product.</p>
+
+<h3>See It in Action</h3>
+
+<p>In this hands-on walkthrough, <em>Baskaran Builds</em> sets up a Dot from scratch: naming it, connecting Gmail and Partiful (an event invitation app), and adding safety rules like "never send an email without asking me first." Then you get to watch the Dot work across several apps, plus a short comparison with Grok Bot:</p>
+
+<div class="video-embed">
+  <div class="video-wrapper">
+    <iframe src="https://www.youtube.com/embed/mburC2139Cg?si=Dit7W6RoWu-c3quY" title="OpenAI Dots hands-on demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+  </div>
+  <div class="video-caption">📹 <strong>"OpenAI Dots overview: can it beat Grok Bot? | English"</strong> by Baskaran Builds (Oct 1, 2026). Shows how to set up a Dot, connect apps, set safety rules, and talk to the agent on a voice call. Note: the video shows the creator's own experience, so check it against OpenAI's official documentation too.</div>
+</div>
+
+<h3>What It Costs</h3>
+
+<p>Dots are <em>not</em> free. You only get them with these paid ChatGPT plans:</p>
+
+<div class="table-wrapper">
+<table>
+  <thead>
+    <tr>
+      <th>Plan</th>
+      <th>Price</th>
+      <th>Dots</th>
+      <th>Good to know</th>
+      <th>Source</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Pro 100</td>
+      <td><strong>$100/month</strong></td>
+      <td>First Dot included</td>
+      <td>Cheapest monthly way to get a Dot</td>
+      <td><a href="https://mixed-news.com/en/chatgpt-pro-500-tier-pro-200-lower-allowance/" target="_blank">Mixed News</a>, <a href="https://www.layer3labs.io/guides/chatgpt-pricing" target="_blank">Layer3 Labs</a></td>
+    </tr>
+    <tr>
+      <td>Pro 200</td>
+      <td>$200/month</td>
+      <td>First Dot included</td>
+      <td>The middle Pro plan</td>
+      <td><a href="https://mixed-news.com/en/chatgpt-pro-500-tier-pro-200-lower-allowance/" target="_blank">Mixed News</a>, <a href="https://www.layer3labs.io/guides/chatgpt-pricing" target="_blank">Layer3 Labs</a></td>
+    </tr>
+    <tr>
+      <td>Pro 500</td>
+      <td><strong>$500/month</strong></td>
+      <td>First Dot included</td>
+      <td>The highest usage of the three Pro plans, plus GPT-6 Astra Ultrafast (a faster speed setting for the model). OpenAI hasn't said whether Dots use Ultrafast.</td>
+      <td><a href="https://mixed-news.com/en/chatgpt-pro-500-tier-pro-200-lower-allowance/" target="_blank">Mixed News</a>, <a href="https://www.layer3labs.io/guides/chatgpt-pricing" target="_blank">Layer3 Labs</a></td>
+    </tr>
+    <tr>
+      <td>Business Premium</td>
+      <td>$125 per user/month ($100 if billed yearly)</td>
+      <td>First Dot included</td>
+      <td>Works in every region OpenAI supports</td>
+      <td><a href="https://www.datacamp.com/blog/openai-dots" target="_blank">DataCamp</a>, <a href="https://www.layer3labs.io/guides/chatgpt-pricing" target="_blank">Layer3 Labs</a></td>
+    </tr>
+    <tr>
+      <td>Enterprise (also Edu and Healthcare)</td>
+      <td>Custom price (ask OpenAI's sales team)</td>
+      <td>Early beta</td>
+      <td>Off until a company admin switches it on</td>
+      <td><a href="https://www.datacamp.com/blog/openai-dots" target="_blank">DataCamp</a>, <a href="https://www.layer3labs.io/guides/chatgpt-pricing" target="_blank">Layer3 Labs</a></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Want more than one Dot? OpenAI hasn't announced what extra Dots will cost yet.</p>
+
+<p>There's a location limit too. At launch, Dots on Pro plans aren't available in the EEA (the EU plus Iceland, Liechtenstein and Norway), Switzerland or the UK, because of local regulations. Business Premium works in every region OpenAI supports.</p>
+
+<div class="know-grid">
+  <div class="know-card positive">
+    <h4>✅ Strengths</h4>
+    <ul>
+      <li>Works 24/7 on its own cloud computer, even when your laptop is closed</li>
+      <li>Connects to 4,000+ apps</li>
+      <li>Available in ChatGPT, Slack and Teams</li>
+      <li>You set the rules, and background research is read-only (it can look but can't change anything)</li>
+      <li>You can watch the Dot's screen at any time</li>
+    </ul>
+  </div>
+  <div class="know-card negative">
+    <h4>⚠️ Limitations</h4>
+    <ul>
+      <li>Expensive ($100 to $500/month)</li>
+      <li>Closed-source: you can't see how it's built, so you have to trust OpenAI</li>
+      <li>Early reviewers say it stops to ask for your approval a lot</li>
+      <li>Pro plans not available in the EEA, Switzerland or UK at launch</li>
+      <li>Brand new, so nobody knows yet how reliable it is over time</li>
+    </ul>
+  </div>
+</div>
+
+<hr>
+
+<!-- ============================================================ -->
+<!-- SECTION: GROK BOT -->
+<!-- ============================================================ -->
+
+<h2>Grok Bot: xAI's Digital Employee With a Screen</h2>
+
+<h3>What It Is</h3>
+
+<p><strong>Grok Bot</strong> is the AI agent from xAI, Elon Musk's AI company. It launched as a <strong>beta (an early test version) on August 11, 2026</strong>. Like Dots, Grok Bot works on a computer in the cloud with a browser, a terminal and file storage. One difference: all the bots on your account share that one computer. xAI describes your bots as <em>digital colleagues</em>. You message them. They reply. They go off and do the work. They're still there tomorrow.</p>
+
+<p>Its standout feature is <strong>group chats</strong>. You can create several bots, each with its own job (one does research, one writes code, one handles your calendar), and put them in one chat. They work together, pass tasks to each other and check in with each other. It's like having a small team of AI interns.</p>
+
+<div class="callout">
+  <div class="callout-label">Important Distinction</div>
+  <p>Grok Bot is <em>not</em> the regular Grok chatbot you can use on grok.com or X (Twitter). It's also not the Grok assistant that Telegram Premium users have had since March 2025. (In May 2025, Telegram announced a bigger $300M deal to bring Grok to all its users, but xAI never confirmed it.) Grok Bot is a separate, paid product built to carry out long, multi-step tasks on its own. Be careful with unofficial "Grok" bots on Telegram and Discord. Other people make them, and they come with their own privacy risks.</p>
+</div>
+
+<h3>The Tech Under the Hood</h3>
+
+<p>xAI hasn't said exactly which AI model runs Grok Bot. xAI built the product with Cursor (a company that makes AI coding tools), and Cursor picks the model automatically, so you can't choose one yourself. Reports say it runs on <strong>Grok 4.7</strong>, xAI's top model, released on September 21, 2026. xAI says Grok 4.7 was trained specifically to work inside Grok Bot. It's built for long, multi-step tasks and has a <strong>500K-token context window</strong>. In plain terms, it can keep about 375,000 words of information in mind at once (a token is roughly three-quarters of a word), so it doesn't lose track halfway through a long job.</p>
+
+<p>One clever feature is <strong>teaching by screen recording</strong>. You record yourself doing a task once. The bot learns the steps and saves them as a "routine" it can repeat. You show it what to do instead of writing code.</p>
+
+<h3>See It in Action</h3>
+
+<p>In this detailed masterclass, <em>Baskaran Builds</em> walks through the whole Grok Bot experience: building bots from scratch, teaching them tasks with screen recordings, setting up group chats, and using webhooks (automatic triggers that let other apps start a bot's work):</p>
+
+<div class="video-embed">
+  <div class="video-wrapper">
+    <iframe src="https://www.youtube.com/embed/Pzmv0-lABmU?si=lcnGVWUDzq8q6q9Ej" title="Grok Bot Masterclass" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+  </div>
+  <div class="video-caption">📹 <strong>"Grok Bot masterclass: bots, group chats, webhooks and limits"</strong> by Baskaran Builds (Sept 10, 2026). Shows how to create and manage Grok Bots, including bots working together and real uses like managing your inbox and scheduling. The video is also honest about what the beta can't do yet.</div>
+</div>
+
+<h3>What It Costs</h3>
+
+<p>You can't buy Grok Bot on its own. It comes with certain subscription plans, from xAI (SuperGrok), X (Premium+) or <strong>Cursor</strong>. At launch on August 11, it was only on SuperGrok Heavy, Cursor Ultra and Cursor Teams Premium. On <strong>August 26, 2026</strong>, xAI opened it up to cheaper plans too. Here's every plan that includes it, cheapest first:</p>
+
+<div class="table-wrapper">
+<table>
+  <thead>
+    <tr>
+      <th>Plan</th>
+      <th>Price</th>
+      <th>Grok Bot usage tier</th>
+      <th>Source</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Cursor Pro</td>
+      <td><strong>$20/month</strong></td>
+      <td>"Weekly usage, below Pro+"</td>
+      <td><a href="https://cursor.com/pricing" target="_blank">Cursor pricing</a>, <a href="https://cursor.com/help/grok-bot/plans" target="_blank">Cursor help</a></td>
+    </tr>
+    <tr>
+      <td>SuperGrok</td>
+      <td><strong>$30/month</strong></td>
+      <td>"Linked usage, below Plus"</td>
+      <td><a href="https://x.ai/pricing" target="_blank">x.ai/pricing</a>, <a href="https://cursor.com/help/grok-bot/plans" target="_blank">Cursor help</a></td>
+    </tr>
+    <tr>
+      <td>Cursor Teams Standard</td>
+      <td>$40 per user/month</td>
+      <td>Follows the Teams seat allowance</td>
+      <td><a href="https://cursor.com/pricing" target="_blank">Cursor pricing</a>, <a href="https://docs.x.ai/grok-bot/teams-and-enterprises" target="_blank">xAI docs</a></td>
+    </tr>
+    <tr>
+      <td>X Premium+</td>
+      <td>$40/month (US web price; $50 through the iPhone app)</td>
+      <td>"Linked usage, below SuperGrok Plus"</td>
+      <td><a href="https://cursor.com/help/grok-bot/plans" target="_blank">Cursor help</a>, <a href="https://www.macrumors.com/2026/03/26/x-pro-premium-plus-restriction/" target="_blank">MacRumors</a></td>
+    </tr>
+    <tr>
+      <td>Cursor Pro+</td>
+      <td>$60/month</td>
+      <td>"Generous weekly usage, below Ultra"</td>
+      <td><a href="https://cursor.com/pricing" target="_blank">Cursor pricing</a>, <a href="https://cursor.com/help/grok-bot/plans" target="_blank">Cursor help</a></td>
+    </tr>
+    <tr>
+      <td>SuperGrok Plus</td>
+      <td>$100/month</td>
+      <td>"Generous linked usage, below Heavy"</td>
+      <td><a href="https://x.ai/pricing" target="_blank">x.ai/pricing</a>, <a href="https://cursor.com/help/grok-bot/plans" target="_blank">Cursor help</a></td>
+    </tr>
+    <tr>
+      <td>Cursor Teams Premium</td>
+      <td>$120 per user/month</td>
+      <td>Higher Grok Bot limits than Standard (a Premium seat gets 5x a Standard seat's usage)</td>
+      <td><a href="https://cursor.com/docs/account/teams/pricing" target="_blank">Cursor docs</a>, <a href="https://docs.x.ai/grok-bot/teams-and-enterprises" target="_blank">xAI docs</a></td>
+    </tr>
+    <tr>
+      <td>Cursor Ultra</td>
+      <td>$200/month</td>
+      <td>"Highest weekly usage"</td>
+      <td><a href="https://cursor.com/pricing" target="_blank">Cursor pricing</a>, <a href="https://cursor.com/help/grok-bot/plans" target="_blank">Cursor help</a></td>
+    </tr>
+    <tr>
+      <td>SuperGrok Heavy</td>
+      <td>About $300/month in app stores (not printed on x.ai's public pricing page)</td>
+      <td>"Highest linked usage"</td>
+      <td><a href="https://cursor.com/help/grok-bot/plans" target="_blank">Cursor help</a>, <a href="https://blog.buildfastwithai.com/supergrok-explained-pricing-limits-is-it-worth-it-2026" target="_blank">BuildFastWithAI (app store prices)</a></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Usage limits reset every week. SuperGrok Lite (about $10/month) is the only SuperGrok plan that doesn't include Grok Bot.</p>
+
+<div class="know-grid">
+  <div class="know-card positive">
+    <h4>✅ Strengths</h4>
+    <ul>
+      <li>Bots can work together in group chats</li>
+      <li>Teach bots by recording your screen, no coding needed</li>
+      <li>Reportedly runs on Grok 4.7, which can hold a huge amount of information at once</li>
+      <li>Works 24/7 on a cloud computer</li>
+      <li>Asks for your approval before sensitive actions</li>
+    </ul>
+  </div>
+  <div class="know-card negative">
+    <h4>⚠️ Limitations</h4>
+    <ul>
+      <li>Still in beta, so expect rough edges</li>
+      <li>Cheaper plans have lower usage limits; the most usage needs Cursor Ultra ($200/month) or SuperGrok Heavy (about $300/month)</li>
+      <li>Closed-source: you can't see how it's built</li>
+      <li>Watch out for unofficial "Grok" bots on Telegram and Discord</li>
+      <li>xAI hasn't said how many apps it connects to (Dots lists 4,000+)</li>
+    </ul>
+  </div>
+</div>
+
+<hr>
+
+<!-- ============================================================ -->
+<!-- SECTION: INSTINCT -->
+<!-- ============================================================ -->
+
+<h2>Instinct: The AI That Texts You</h2>
+
+<h3>What It Is</h3>
+
+<p>Dots and Grok Bot feel like hiring a digital employee. <strong>Instinct</strong> feels more like having a <em>personal concierge</em> (someone who handles your errands and bookings) in your pocket. There's no app to download and nothing new to learn, just a simple web page for your settings. You text it on <strong>iMessage</strong>, <strong>WhatsApp</strong>, <strong>SMS</strong> or <strong>email</strong>, or you call it. Tell it what you need, and it takes care of it.</p>
+
+<p>Instinct was built by <strong>Noah Shinn</strong>, 23, who used to be a research scientist at the AI company Sierra. He was also the lead author of <em>Reflexion</em>, a well-known research paper. Its big idea: an AI agent gets better if it writes notes about its own mistakes and remembers them next time. Instinct handles "life admin," the boring chores nobody enjoys: booking flights, making restaurant reservations, canceling subscriptions, filing paperwork and managing your calendar.</p>
+
+<p>The biggest difference from the other three: <strong>Instinct contacts you first.</strong> It doesn't just wait for you to ask. When it notices something that needs your attention, like a flight price dropping, a deadline coming up, or a form that needs filing, it messages you. Some people will love that. Others will find an AI that acts on its own a little unsettling.</p>
+
+<div class="source-card">
+  <div class="label">Company Background</div>
+  <p>Instinct is run by <strong>Spear Street Technology, Inc.</strong>, which registered as a company in California in April 2026. (The private beta, an invite-only early version, started in February 2026.) Its funding has grown at one of the fastest rates in AI history. A "valuation" is what investors agreed the company was worth at each funding round: Seed ($50M valuation) → Series A ($75M raised at a $500M valuation, August 2026) → Series B ($250M raised at a $2.5B valuation, late August 2026) → Series C (<strong>$1B raised at a $10B valuation</strong>, September 28, 2026). These numbers have been <a href="https://techcrunch.com/2026/09/28/viral-ai-agent-instinct-raises-1b-series-c-at-a-10b-valuation/" target="_blank">widely reported</a>, but the company hasn't published the full details of its deals.</p>
+</div>
+
+<h3>The Tech Under the Hood</h3>
+
+<p>Instinct hasn't said which AI models it uses. (Vellum, an AI developer platform that published a breakdown of Instinct, describes its main model as proprietary, meaning Instinct's own and not public.) What makes Instinct work isn't the model. It's how the whole system is built. Each user gets a <strong>personal computer in the cloud</strong> with a browser and saved logins, like Dots and Grok Bot. The agent is trained to use a phone and a computer the way a person does, so it can work on websites that don't offer a direct connection for software.</p>
+
+<p>Noah Shinn's Reflexion research was about AI agents learning from their own mistakes, but Instinct hasn't said the product is built on it. In September 2026, the agent showed a user what looked like a stranger's data. Afterward, Shinn explained how Instinct stays safe. Each task runs in its own sealed-off space (a "sandbox"). Logins are only kept for a short time. Every action the agent takes is signed with an ID so it can be traced. And a separate system, with different goals from the agent, double-checks what the agent does.</p>
+
+<h3>See It in Action</h3>
+
+<p>In this week-long hands-on review, <em>Baskaran Builds</em> covers getting access, connecting Google Workspace, the password Vault, scheduling daily jobs, the Trusted People feature, and the places where Instinct broke:</p>
+
+<div class="video-embed">
+  <div class="video-wrapper">
+    <iframe src="https://www.youtube.com/embed/xNPC_t3ZEgQ?si=AqkTh7_-WKPwhmcz" title="Instinct AI demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+  </div>
+  <div class="video-caption">📹 <strong>"Instinct AI review: the $2.5B assistant that lives in WhatsApp"</strong> by Baskaran Builds (Sept 20, 2026). Recorded before Instinct's $10B Series C. Instinct is still invite-only, so some features may have changed since.</div>
+</div>
+
+<h3>What It Costs</h3>
+
+<p>Here's the surprise: <strong>Instinct is free to use.</strong> There's no subscription. Instead, the company makes money from businesses. When the agent books something for you, like a flight or a restaurant table, the business pays Instinct a small cut (called a <strong>"take rate"</strong>). You still pay for whatever you buy, of course, but the assistant itself costs nothing.</p>
+
+<p>The catch? As of October 2026, Instinct is <strong>invite-only</strong>. Demand is so high that there are long waitlists, and some people are even selling their invites.</p>
+
+<div class="callout">
+  <div class="callout-label">🔒 Privacy Warning: Read This</div>
+  <p>Instinct needs deep access to your personal accounts: email, messages, calendar, location and payment methods. Reports found that its terms let it <strong>keep data it had already collected from an account, even after you disconnect that account</strong>. Security researchers suggest using separate, low-risk accounts, a separate email address, and <strong>virtual credit cards with strict spending limits</strong> (card numbers that hide your real card and cap what can be spent) with any service that gets this deep into your life.</p>
+</div>
+
+<div class="know-grid">
+  <div class="know-card positive">
+    <h4>✅ Strengths</h4>
+    <ul>
+      <li>Nothing to learn: just text or call</li>
+      <li>Messages you first when something needs attention</li>
+      <li>Free to use (businesses pay instead)</li>
+      <li>Handles real-world tasks (flights, reservations, forms)</li>
+      <li>Remembers your preferences between conversations</li>
+    </ul>
+  </div>
+  <div class="know-card negative">
+    <h4>⚠️ Limitations</h4>
+    <ul>
+      <li>Serious privacy concerns about keeping your data</li>
+      <li>Invite-only: not open to everyone yet</li>
+      <li>Reports of it suggesting purchases nobody asked for</li>
+      <li>Reports of it taking actions without approval in some cases</li>
+      <li>Needs a lot of trust: it can see your email, calendar and payments</li>
+    </ul>
+  </div>
+</div>
+
+<hr>
+
+<!-- ============================================================ -->
+<!-- SECTION: HERMES -->
+<!-- ============================================================ -->
+
+<h2>Hermes Agent: The Open-Source Rebel</h2>
+
+<h3>What It Is</h3>
+
+<p>The other three agents are about <em>paying a company</em> to run AI for you. <strong>Hermes Agent</strong> takes the opposite approach: <em>own it yourself</em>.</p>
+
+<p>Hermes Agent is made by <strong>Nous Research</strong>, an AI research group known for releasing free, open AI models. It came out on <strong>February 25, 2026</strong> as open-source software, which means anyone can read, use and change the code. It uses the <strong>MIT License</strong>, one of the most relaxed licenses there is: you can use it for free, even in a business. It doesn't live on a company's servers. It lives on <em>your</em> machine: your laptop, your own server, or a VPS (a server you rent online). Your memory, skills and logs stay on your hardware.</p>
+
+<p>There's one big exception: the AI model. If you plug in a cloud model such as GPT, Claude or Grok, your messages, bits of its memory, and the results of its work get sent to that company. If you run a model on your own computer instead, nothing has to leave your machine.</p>
+
+<p>Here's the part developers get most excited about: Hermes Agent <strong>teaches itself</strong>. After it finishes a complicated task, it writes a "skill file," a saved set of instructions it can follow to do the same job faster next time. It keeps improving those files as it uses them. So the longer you use it, the better it gets at <em>your</em> tasks. It doesn't need expensive retraining or powerful graphics chips. It improves by rewriting text (its instructions and notes), not by changing the AI model itself.</p>
+
+<div class="source-card">
+  <div class="label">Open Source Stats</div>
+  <p><strong>GitHub</strong> (the main website where developers share code): <a href="https://github.com/NousResearch/hermes-agent" target="_blank">github.com/NousResearch/hermes-agent</a>. More than <strong>248,000 GitHub stars</strong> (a star works like a bookmark or a "like") as of September 2026, which makes it one of the fastest-growing open-source projects of the year. Latest stable version: v0.21.5 (tag v2026.9.24, released September 24, 2026). License: MIT (free for business and personal use).</p>
+</div>
+
+<h3>The Tech Under the Hood</h3>
+
+<p>Hermes Agent works with <strong>any AI model</strong>. You can use Nous Research's own Hermes models, OpenAI's GPT models, Anthropic's Claude or xAI's Grok. Think of Hermes as the steering wheel and brakes, and the AI model as the engine. You can swap engines whenever you like.</p>
+
+<p>Here's how it works inside:</p>
+
+<ul>
+  <li><strong>Memory:</strong> Hermes keeps two small notes files. One (MEMORY.md) stores facts it has learned. The other (USER.md) stores your preferences. It reads both at the start of every conversation. It can also search through past conversations, and its skill files hold the step-by-step methods it has learned. Optional add-ons such as Honcho and Mem0 give it extra memory.</li>
+  <li><strong>GEPA self-evolution (optional):</strong> GEPA (short for Genetic-Pareto) is a way to improve an AI's written instructions automatically. Researchers at UC Berkeley, Stanford and Databricks created it, and it was picked for an <strong>oral presentation at ICLR 2026</strong>, one of the biggest AI research conferences. The usual way to make an AI better is to retrain the model itself, which needs expensive hardware. GEPA is cheaper. It tries many slightly different versions of the AI's instructions, studies where things went wrong, and keeps the versions that work best, a bit like natural selection. Nous Research offers this for Hermes as a separate, optional add-on (called hermes-agent-self-evolution). Each run costs roughly $2 to $10 in AI usage fees, and a person has to approve every change it suggests.</li>
+  <li><strong>Bot Mode:</strong> Updated in 2026, this lets you set up a team of specialized "Bots," each with its own job, skills, memory and profile picture. The bots can message each other, join group chats and pass tasks along.</li>
+  <li><strong>Hermes Bot Screen:</strong> Released in September 2026, this gives bots their own virtual desktop, with a mouse, keyboard and browser, so you can watch them work. It runs on a Linux server with no monitor attached, either your own server or Hermes Cloud. One warning from the official docs: these screens are workspaces, not security walls. If you want the bots truly sealed off, run them inside a sandbox tool such as Docker.</li>
+</ul>
+
+<h3>See It in Action</h3>
+
+<p>This 93-minute masterclass from <em>Baskaran Builds</em> covers almost everything about Hermes Agent: installing and setting it up, managing its memory, scheduled background jobs, connecting it to Telegram, and real business uses:</p>
+
+<div class="video-embed">
+  <div class="video-wrapper">
+    <iframe src="https://www.youtube.com/embed/8EKtksd50Ys?si=G4yvVAHyyuZKO1zD" title="Learn 99% of Hermes Agent in 93 Minutes" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+  </div>
+  <div class="video-caption">📹 <strong>"Learn 99% of Hermes Agent in 93 Minutes"</strong> by Baskaran Builds (Sept 6, 2026). Explains the difference between the AI model and the "harness" (the software wrapped around the model), then shows how to install Hermes on your own computer, connect it to chat apps like Telegram and Discord, schedule background jobs and manage its memory. It ends with a real business example: using Hermes to write scripts. Worth watching in full if you're thinking about running your own AI agent.</div>
+</div>
+
+<h3>What It Costs</h3>
+
+<p><strong>Hermes itself is completely free.</strong> The AI model you plug into it is what you pay for:</p>
+
+<div class="table-wrapper">
+<table>
+  <thead>
+    <tr>
+      <th>What</th>
+      <th>Cost</th>
+      <th>Details</th>
+      <th>Source</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Hermes Agent software</td>
+      <td><strong>Free</strong></td>
+      <td>MIT license: use it for personal or business work without paying Nous Research anything</td>
+      <td><a href="https://github.com/NousResearch/hermes-agent/blob/main/LICENSE" target="_blank">GitHub license</a></td>
+    </tr>
+    <tr>
+      <td>The AI model you plug in</td>
+      <td>You pay the model's company, usually per use</td>
+      <td>The bill depends on which model you choose and how much you use it</td>
+      <td><a href="https://hermes-agent.nousresearch.com/docs/integrations/providers" target="_blank">Hermes docs</a></td>
+    </tr>
+    <tr>
+      <td>One community example</td>
+      <td>About <strong>$4.63</strong></td>
+      <td>A batch of 1.42 million tokens (roughly a million words of AI work) using Grok 4.5, in just over 5 minutes. We couldn't trace it to its original source, and even the roundups call it a single example, so treat it as a rough anecdote.</td>
+      <td>Unverified (no original source found)</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Still, if you don't use it heavily, paying per use can cost far less than a flat $100 to $500 monthly plan.</p>
+
+<p>The trade-off? You have to set it up yourself. Here's where it runs:</p>
+
+<div class="table-wrapper">
+<table>
+  <thead>
+    <tr>
+      <th>Device</th>
+      <th>How it runs</th>
+      <th>Source</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Linux</td>
+      <td>Directly</td>
+      <td><a href="https://hermes-agent.nousresearch.com/docs/getting-started/installation" target="_blank">Install guide</a></td>
+    </tr>
+    <tr>
+      <td>macOS</td>
+      <td>Directly</td>
+      <td><a href="https://hermes-agent.nousresearch.com/docs/getting-started/installation" target="_blank">Install guide</a></td>
+    </tr>
+    <tr>
+      <td>Windows</td>
+      <td>Directly, or through WSL2 (a Linux add-on for Windows)</td>
+      <td><a href="https://hermes-agent.nousresearch.com/docs/getting-started/installation" target="_blank">Install guide</a></td>
+    </tr>
+    <tr>
+      <td>Android phones</td>
+      <td>Through an app called Termux</td>
+      <td><a href="https://hermes-agent.nousresearch.com/docs/getting-started/termux" target="_blank">Termux guide</a></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>If you're comfortable typing commands into a terminal, setup is easy. If not, expect to spend some time learning.</p>
+
+<div class="product-card">
+  <span class="product-badge green">Performance Highlights</span>
+  <p style="margin-top: 8px;">According to Nous Research and community reports:</p>
+  <ul style="margin-top: 12px;">
+    <li><strong>Speed:</strong> Version 0.19, nicknamed "Quicksilver" (July 2026), made Hermes start up about 80% faster. The "Initializing agent..." step, which happens before your request even reaches the AI model, dropped from about 4.3 seconds to 0.9 seconds.</li>
+    <li><strong>GEPA Efficiency:</strong> In the GEPA research paper, the method beat a standard AI training technique (called GRPO) by about 6 points on average, while needing up to 35 times fewer practice runs. In Hermes, GEPA is an optional add-on.</li>
+    <li><strong>Cost:</strong> About $4.63 for 1.42 million tokens of work done on its own (an unconfirmed community figure, using Grok 4.5).</li>
+  </ul>
+  <p style="margin-top: 12px; font-size: 13px; color: var(--text-muted); font-style: italic;">Note: These numbers come from Nous Research's release notes, the GEPA paper and community reports, not from independent testing. How fast and cheap Hermes is depends a lot on which AI model you connect.</p>
+</div>
+
+<div class="know-grid">
+  <div class="know-card positive">
+    <h4>✅ Strengths</h4>
+    <ul>
+      <li>Completely free and open-source (MIT License)</li>
+      <li>Runs on your own hardware; nothing leaves your machine if you use a local model</li>
+      <li>Works with any AI model</li>
+      <li>Teaches itself through skill files, with optional GEPA upgrades</li>
+      <li>248K+ GitHub stars and a huge community</li>
+      <li>Can cost far less than paid alternatives</li>
+    </ul>
+  </div>
+  <div class="know-card negative">
+    <h4>⚠️ Limitations</h4>
+    <ul>
+      <li>You have to set it up yourself (typing commands, managing a server)</li>
+      <li>AI usage fees can quietly pile up if a background task gets stuck in a loop</li>
+      <li>Nobody manages it for you: if it goes down, you fix it</li>
+      <li>Harder for everyday users than texting Instinct or clicking around in Dots</li>
+    </ul>
+  </div>
+</div>
+
+<hr>
+
+<!-- ============================================================ -->
+<!-- HEAD-TO-HEAD COMPARISON -->
+<!-- ============================================================ -->
+
+<h2>The Side-by-Side Comparison</h2>
+
+<p>Now let's put all four side by side. I've only included categories where reliable information exists for at least two of the products. Where something is unknown or can't be confirmed, I've said so instead of making it up.</p>
+
+<div class="table-wrapper">
+<table>
+  <thead>
+    <tr>
+      <th>Category</th>
+      <th>Grok Bot</th>
+      <th>Instinct</th>
+      <th>Dots</th>
+      <th>Hermes Agent</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Company</td>
+      <td>xAI</td>
+      <td>Spear Street Technology</td>
+      <td>OpenAI</td>
+      <td>Nous Research (open-source)</td>
+    </tr>
+    <tr>
+      <td>Launch</td>
+      <td>Aug 11, 2026 (Beta)</td>
+      <td>Feb 2026 (Private beta)</td>
+      <td>Sept 29, 2026</td>
+      <td>Feb 25, 2026</td>
+    </tr>
+    <tr>
+      <td>AI Model</td>
+      <td>Reportedly Grok 4.7 (500K context)</td>
+      <td>Not disclosed</td>
+      <td>GPT-6 Astra</td>
+      <td>Any model you choose</td>
+    </tr>
+    <tr>
+      <td>How You Use It</td>
+      <td>xAI chat app, integrations</td>
+      <td>iMessage, WhatsApp, SMS, email, phone call</td>
+      <td>ChatGPT, Slack, Teams</td>
+      <td>Command line, desktop app, web dashboard, Telegram, Discord, Slack, WhatsApp, Signal, email</td>
+    </tr>
+    <tr>
+      <td>Uses a Computer for You</td>
+      <td>Yes: one shared cloud computer per account (browser, terminal, files)</td>
+      <td>Yes: a personal cloud computer with a browser</td>
+      <td>Yes: its own cloud computer and browser for each Dot</td>
+      <td>Yes: "Bot Screen" virtual desktop on your server or Hermes Cloud (Sept 2026)</td>
+    </tr>
+    <tr>
+      <td>Runs 24/7</td>
+      <td>Yes, in the cloud, even with your laptop closed</td>
+      <td>Yes, in the cloud</td>
+      <td>Yes, in the cloud</td>
+      <td>Yes, on your own server (you keep it running)</td>
+    </tr>
+    <tr>
+      <td>Memory</td>
+      <td>Remembers past work, learns your preferences</td>
+      <td>Remembers past conversations, learns your preferences</td>
+      <td>Remembers you across ChatGPT, Slack and Teams</td>
+      <td>Two notes files (MEMORY.md, USER.md), past-chat search, skill files</td>
+    </tr>
+    <tr>
+      <td>Teams of Bots</td>
+      <td>Yes: group chats between specialized bots</td>
+      <td>Not publicly documented</td>
+      <td>One Dot per seat for now (more promised later)</td>
+      <td>Yes: Bot Mode, where bots can message each other</td>
+    </tr>
+    <tr>
+      <td>Gets Better Over Time</td>
+      <td>Learns routines from your screen recordings</td>
+      <td>Learns your preferences (details not shared)</td>
+      <td>Learns from your feedback (few details shared)</td>
+      <td>Writes its own skill files; optional GEPA upgrades (backed by research)</td>
+    </tr>
+    <tr>
+      <td>Pricing</td>
+      <td>From $20/month (Cursor Pro) or $30/month (SuperGrok)</td>
+      <td>Free (businesses pay a commission)</td>
+      <td>$100 to $500/month (Pro plans); Business Premium $125 per user/month; Enterprise custom price</td>
+      <td>Free; you pay per use for the AI model</td>
+    </tr>
+    <tr>
+      <td>Open Source</td>
+      <td>No</td>
+      <td>No</td>
+      <td>No</td>
+      <td>Yes: MIT License</td>
+    </tr>
+    <tr>
+      <td>Data Privacy</td>
+      <td>Data on xAI's servers; asks before sensitive actions</td>
+      <td>Serious concerns; reported to keep data after you disconnect</td>
+      <td>Data on OpenAI's servers; background research is read-only; Activity view shows what it did</td>
+      <td>Self-hosted; data only goes to the AI model company you choose (nothing leaves with a local model)</td>
+    </tr>
+    <tr>
+      <td>Availability</td>
+      <td>Beta (open to SuperGrok, X Premium+ and paid Cursor subscribers)</td>
+      <td>Invite-only</td>
+      <td>Rolling out to paid plans (Pro not in EEA, Switzerland, UK)</td>
+      <td>Public: download free from GitHub anytime</td>
+    </tr>
+    <tr>
+      <td>Best For</td>
+      <td>People who want a team of AI bots working together</td>
+      <td>Non-technical people who want help with everyday chores</td>
+      <td>Businesses already using ChatGPT, Slack or Teams</td>
+      <td>Developers and privacy-minded people who want full control</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<hr>
+
+<!-- ============================================================ -->
+<!-- ARCHITECTURE -->
+<!-- ============================================================ -->
+
+<h2>Four Different Approaches to the Same Problem</h2>
+
+<p>What stands out most to me isn't the features. It's the thinking behind each product. Each one gives a different answer to the same question: "How should people and AI agents work together?"</p>
+
+<h3>The Cloud Employee Model (Dots & Grok Bot)</h3>
+
+<p>Dots and Grok Bot both give their agents a computer in the cloud, with a browser, a terminal and file storage. (Each Dot gets its own; all the Grok Bots on one account share one.) The agent lives in the company's data center, works around the clock, and you deal with it like a coworker who works remotely. It's polished and easy to use. The trade-offs are cost (roughly $20 to $500 a month, depending on plan and usage) and trust, since your data sits on their servers.</p>
+
+<p>Grok Bot stands out for its group chats and teaching by screen recording. Dots stands out for working inside Slack and Teams, and for its list of 4,000+ apps.</p>
+
+<h3>The Invisible Concierge Model (Instinct)</h3>
+
+<p>Instinct removes almost every screen except the one you already use all day: your text messages. There's no app, just a basic settings page, and nothing new to learn. Of the four, it feels the most like magic, because it's like texting a very capable human assistant. It's also the most personal. To work, it needs access to your email, calendar, location and payment methods.</p>
+
+<p>Being free sounds great, but it creates a conflict of interest. Instinct makes money when you <em>buy things through it</em>. That raises a fair question: is it always recommending what's best for you, or what earns it a commission?</p>
+
+<h3>The Run-It-Yourself Model (Hermes Agent)</h3>
+
+<p>Hermes Agent is the only one you truly <em>own</em>. Your memory files, skill files and conversation logs all stay on your hardware. It doesn't send usage data back by default, and no outside company collects your data. It has the best privacy of the four, with one catch: if you use a cloud AI model, that company sees whatever you send it.</p>
+
+<p>The way it improves is different too. The others mostly get better when their companies release updates. Hermes writes and improves its own skill files as you use it. The optional GEPA add-on can also rewrite its instructions by studying its own mistakes, with you approving each change. Of the four, it comes closest to an AI that really grows with you over time.</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<!-- WHY COMPARISON IS HARD -->
+<!-- ============================================================ -->
+
+<h2>Why a "Winner" Doesn't Exist</h2>
+
+<p>I'd love to tell you which one is "best." But that wouldn't be honest. Here's why:</p>
+
+<ul>
+  <li><strong>They do different jobs.</strong> Instinct books your flights. Dots manages your Jira board (a project-tracking tool). Hermes writes your scripts and puts them to work. Grok Bot runs a team of bots to manage your sales pipeline (your list of potential customers). Comparing them directly is like comparing a personal chef with a factory manager.</li>
+  <li><strong>They're all brand new.</strong> The oldest launched only about seven months ago (Hermes Agent went public on February 25; Instinct's private beta began the same month). Dots launched just <em>one week</em> ago. None of them has been tested by lots of people over a long period.</li>
+  <li><strong>They don't share comparable test results.</strong> Hermes publishes speed and cost figures in its release notes. Instinct hasn't published any test results. Dots relies on the test scores of its model, GPT-6 Astra. Grok Bot reportedly relies on Grok 4.7. It's like comparing apples, oranges, bananas and mangoes.</li>
+  <li><strong>People are comfortable sharing different amounts.</strong> Some people will happily let Instinct into their inbox for the convenience. Others won't trust anything they can't run themselves. Neither group is wrong.</li>
+</ul>
+
+<blockquote>
+  <p>The right agent depends on who you are, what you need done, how much you'll pay, and how much control you're willing to give up.</p>
+</blockquote>
+
+<hr>
+
+<!-- ============================================================ -->
+<!-- SECURITY & PRIVACY -->
+<!-- ============================================================ -->
+
+<h2>Security and Privacy: The Elephant in the Room</h2>
+
+<p>Let's be honest: letting an AI use a computer for you takes a <em>lot</em> of trust. Every one of these products, to some degree, asks you to share passwords, open up private accounts, or trust that the AI won't do something you didn't expect.</p>
+
+<div class="table-wrapper">
+<table>
+  <thead>
+    <tr>
+      <th>Security Feature</th>
+      <th>Grok Bot</th>
+      <th>Instinct</th>
+      <th>Dots</th>
+      <th>Hermes Agent</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Where Your Data Lives</td>
+      <td>xAI's cloud</td>
+      <td>Spear Street's cloud</td>
+      <td>OpenAI's cloud</td>
+      <td>Your own hardware (plus the AI model company you choose)</td>
+    </tr>
+    <tr>
+      <td>Asks Before Acting</td>
+      <td>Yes: pauses before sensitive actions</td>
+      <td>Reported to be inconsistent</td>
+      <td>Yes: follows rules you set</td>
+      <td>You decide</td>
+    </tr>
+    <tr>
+      <td>Look-But-Don't-Touch Mode</td>
+      <td>Not documented</td>
+      <td>Not documented</td>
+      <td>Yes, for background research</td>
+      <td>You decide</td>
+    </tr>
+    <tr>
+      <td>See What It Did</td>
+      <td>Yes: watch the bot's screen</td>
+      <td>Limited</td>
+      <td>Activity view; watch or take over its computer anytime</td>
+      <td>Full logs on your own machine</td>
+    </tr>
+    <tr>
+      <td>Usage Data Sent Back</td>
+      <td>Standard for a big tech company</td>
+      <td>Terms allow it to keep your data</td>
+      <td>Standard OpenAI policies</td>
+      <td>Off by default (optional usage stats since v0.21)</td>
+    </tr>
+    <tr>
+      <td>Can Anyone Check the Code?</td>
+      <td>No</td>
+      <td>No</td>
+      <td>No</td>
+      <td>Yes: all the code is public on GitHub</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>The privacy picture is clear. <strong>Hermes Agent</strong> gives you the most privacy by far: everything stays on your hardware except what you send to the AI model company you pick, and with a local model, nothing leaves. <strong>Dots</strong> gives you strong controls: read-only background research, rules you set, an Activity view, and the option to watch or take over its computer. <strong>Grok Bot</strong> asks before sensitive actions, but says less about detailed privacy controls. <strong>Instinct</strong> has drawn the most criticism. Deep access to your accounts, a business model paid for by merchants, and reports about keeping your data should make anyone who cares about privacy stop and think.</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<!-- WHO SHOULD USE WHAT -->
+<!-- ============================================================ -->
+
+<h2>So Which One Is Right for You?</h2>
+
+<p>Here's my honest take, based only on what I could confirm:</p>
+
+<h3>Choose Dots if…</h3>
+<p>You already use ChatGPT, your workplace runs on Slack or Teams, you want strong business-level controls and safety limits, and you can justify $100+ a month for a helper that never switches off. Dots is the most "office-ready" of the four.</p>
+
+<h3>Choose Grok Bot if…</h3>
+<p>You like the idea of a <em>team</em> of AI bots working together, you'd rather teach by showing (recording your screen) than by writing instructions, or you already use xAI's products. Of the four, its group chats are the most polished version of AI teamwork that someone else runs for you. (Hermes's Bot Mode does something similar, but you run it yourself.)</p>
+
+<h3>Choose Instinct if…</h3>
+<p>You're not technical, you want the simplest experience possible (just text or call), and you mostly need help with personal chores like travel, reservations and errands. Free is tempting, but go in knowing the privacy risks. Use a separate email address and a virtual credit card, and keep it away from your most important accounts.</p>
+
+<h3>Choose Hermes Agent if…</h3>
+<p>You're a developer or comfortable with technology, you care about privacy more than anything, you want full control, and you enjoy tinkering. It can save you a lot of money (the software is free; you only pay for AI model usage), and the way it teaches itself is ahead of the others. But setup, upkeep and keeping it running are all on you.</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<!-- THE BIGGER PICTURE -->
+<!-- ============================================================ -->
+
+<h2>The Bigger Picture</h2>
+
+<p>Look at how much changed in just eight months. In February 2026, AI agents that could use a computer, remember past work and improve on their own were mostly experiments and early open-source projects. By October 2026, at least four serious products do exactly that. They're backed by billions of dollars in funding, used by hundreds of thousands of people (Grok Bot alone reported about 418,000 weekly users in September), and built on real technical progress.</p>
+
+<p>It's all happening fast. And these tools raise big questions. An AI agent that can read your email, see your calendar, reach your bank account and use your browser, and that can <em>act</em> for you while you're not watching, is a very different thing from a chatbot that only writes text.</p>
+
+<p>There have already been problems. Hermes Agent has had 11 security advisories (public warnings about security flaws) filed on GitHub in 2026, including some rated high-severity. Criminals have also used it to automate real cyberattacks, including one on Thailand's Finance Ministry. (Hermes itself wasn't hacked; the attackers used it as a tool.) Instinct has sent emails without users' approval, and in September it showed one user what looked like a stranger's financial details. Its founder called that a hallucination (the AI making something up), not a data breach.</p>
+
+<p>None of the four has been used by millions of people for years yet, and none has had its big "what happens when it goes wrong" moment. That moment will come. Not because these products are bad, but because that's how new technology goes. What matters is whether each company has built enough safety features to keep the damage small when it happens.</p>
+
+<p>In the meantime, the age of AI agents is here. It's messy, it can be expensive (or free, if you're brave), it's not fully polished, and it's moving faster than anyone can keep up with. But the direction is clear: AI isn't just answering questions anymore. It's doing the work.</p>
+
+<p>Whether that excites you or worries you probably says more about you than about the technology.</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<!-- SOURCES / FOOTER -->
+<!-- ============================================================ -->
+
+<footer class="article-footer">
+  <h3 style="margin-top: 0; margin-bottom: 20px;">Sources & Methodology</h3>
+
+  <p>This article was researched and written on October 6, 2026, using these main sources:</p>
+  <ul style="font-size: 14px; color: var(--text-muted);">
+    <li><strong>OpenAI Dots:</strong> Official announcement at <a href="https://openai.com/index/introducing-dots/" target="_blank">openai.com</a> (Sept 29, 2026); coverage by TechCrunch, VentureBeat, Forbes, The Rundown AI, DataCamp, and Vellum; hands-on video by Baskaran Builds (Oct 1, 2026).</li>
+    <li><strong>Grok Bot:</strong> xAI's official announcement and docs at <a href="https://x.ai/news/introducing-grok-bot" target="_blank">x.ai</a> and <a href="https://docs.x.ai/grok-bot/overview" target="_blank">docs.x.ai</a>; coverage by VentureBeat, Layer3 Labs, and Fonearena; hands-on masterclass by Baskaran Builds (Sept 10, 2026).</li>
+    <li><strong>Instinct:</strong> Company website at <a href="https://instinct.co" target="_blank">instinct.co</a>; funding reporting by TechCrunch, Fortune, and Forbes; <a href="https://arxiv.org/abs/2303.11366" target="_blank">Reflexion research paper</a> by Noah Shinn et al. (2023); security and privacy reporting by TechCrunch and independent researchers; hands-on review by Baskaran Builds (Sept 20, 2026).</li>
+    <li><strong>Hermes Agent:</strong> GitHub repository at <a href="https://github.com/NousResearch/hermes-agent" target="_blank">github.com/NousResearch/hermes-agent</a>; official docs at <a href="https://hermes-agent.nousresearch.com" target="_blank">hermes-agent.nousresearch.com</a>; the <a href="https://github.com/NousResearch/hermes-agent-self-evolution" target="_blank">hermes-agent-self-evolution</a> (DSPy + GEPA) repository; community resource at awesome-hermes-agent; <a href="https://arxiv.org/abs/2507.19457" target="_blank">GEPA paper</a> (Agrawal et al., ICLR 2026); <a href="https://github.com/advisories?query=hermes-agent" target="_blank">GitHub Advisory Database</a>; 93-minute masterclass by Baskaran Builds (Sept 6, 2026).</li>
+  </ul>
+
+  <p style="margin-top: 20px;"><strong>Disclosure:</strong> All four YouTube videos in this article come from Baskaran Builds' own channel, the publisher of this article. Baskaran Builds has no financial relationship with any of the four companies compared. The videos were used as extra reference material, and claims made in them were checked against official documentation and independent press coverage.</p>
+
+  <p style="margin-top: 20px;"><strong>Note on "Dot" by New Computer:</strong> A different product called "Dot" by New Computer (a personal AI companion app founded by Jason Yuan) launched in June 2024 and shut down on October 5, 2025. It has nothing to do with OpenAI's "Dots." The YouTube video in this article is about the OpenAI product.</p>
+
+  <div class="tags">
+    <span>AI Agents</span>
+    <span>Grok Bot</span>
+    <span>Instinct AI</span>
+    <span>OpenAI Dots</span>
+    <span>Hermes Agent</span>
+    <span>Comparison</span>
+    <span>Computer Use</span>
+    <span>GPT-6 Astra</span>
+    <span>Nous Research</span>
+    <span>xAI</span>
+    <span>2026</span>
+  </div>
+</footer>
+
+</div>
+
+</body>
+</html>

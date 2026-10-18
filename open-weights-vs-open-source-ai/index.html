@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="What open weights and open source AI actually mean, what the OSI's Open Source AI Definition requires, and how model licenses from Llama, Gemma, Phi, Mistral, Qwen, Granite and gpt-oss really differ.">
+<meta property="og:title" content="Open Weights vs Open Source AI: The Technical and Licensing Differences That Matter">
+<meta property="og:description" content="You can download the weights. That doesn't tell you what you're allowed to do with them, or what you still can't see.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<title>Open Weights vs Open Source AI: The Technical and Licensing Differences That Matter</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --bg-card: #111113;
+    --bg-elevated: #18181b;
+    --text-primary: #e4e4e7;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    --accent: #4A9EFF;
+    --accent-warm: #f59e0b;
+    --accent-green: #22c55e;
+    --accent-purple: #a855f7;
+    --accent-red: #ef4444;
+    --accent-teal: #14b8a6;
+    --border: #27272a;
+    --serif: 'Instrument Serif', 'Georgia', serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--sans);
+    font-size: 18px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .article-container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Header */
+  .article-header {
+    padding: 80px 0 40px;
+    text-align: center;
+  }
+  .article-header .tag {
+    display: inline-block;
+    background: var(--accent);
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 4px;
+    margin-bottom: 32px;
+  }
+  .article-header h1 {
+    font-family: var(--serif);
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1.15;
+    font-weight: 400;
+    margin-bottom: 24px;
+    color: #fff;
+  }
+  .article-header .subtitle {
+    font-size: 19px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 680px;
+    margin: 0 auto 32px;
+    font-weight: 300;
+  }
+  .article-header .meta {
+    font-size: 14px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  /* Typography */
+  p { margin-bottom: 20px; color: var(--text-primary); }
+  strong { color: #fff; font-weight: 600; }
+  q { quotes: '"' '"' "'" "'"; }
+  em { color: var(--text-secondary); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.85em;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+  }
+
+  ul, ol { margin: 16px 0 24px 28px; color: var(--text-primary); }
+  li { margin-bottom: 8px; }
+
+  .drop-cap::first-letter {
+    font-family: var(--serif);
+    font-size: 72px;
+    float: left;
+    line-height: 0.8;
+    margin: 4px 12px 0 0;
+    color: #fff;
+    font-weight: 400;
+  }
+
+  .pull-quote {
+    text-align: center;
+    margin: 56px 0;
+    padding: 0 32px;
+  }
+  .pull-quote p {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-style: italic;
+    color: #fff;
+    line-height: 1.4;
+    margin: 0;
+  }
+
+  /* Callout */
+  .callout {
+    background: var(--bg-card);
+    border-left: 3px solid var(--accent-warm);
+    border-radius: 0 8px 8px 0;
+    padding: 20px 24px;
+    margin: 32px 0;
+    font-size: 15px;
+  }
+  .callout.teal { border-left-color: var(--accent-teal); }
+  .callout.blue { border-left-color: var(--accent); }
+  .callout .callout-label {
+    color: var(--accent-warm);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+  .callout.teal .callout-label { color: var(--accent-teal); }
+  .callout.blue .callout-label { color: var(--accent); }
+  .callout p { margin: 4px 0; color: var(--text-secondary); font-size: 15px; }
+  .callout ul, .callout ol { margin: 8px 0 4px 20px; }
+  .callout li { color: var(--text-secondary); font-size: 15px; margin-bottom: 6px; }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+  /* Footer */
+  .article-footer {
+    padding: 48px 0 80px;
+    border-top: 1px solid var(--border);
+    margin-top: 64px;
+  }
+  .article-footer h3 {
+    font-family: var(--sans);
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 20px;
+  }
+  .article-footer p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+  .article-footer ol {
+    margin: 0 0 24px 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .article-footer li { margin-bottom: 10px; }
+  .tags { margin-top: 24px; }
+  .tags span {
+    display: inline-block;
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin: 4px 4px 4px 0;
+    border: 1px solid var(--border);
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 400;
+    line-height: 1.2;
+    color: #fff;
+    margin: 64px 0 20px;
+  }
+  h3 {
+    font-family: var(--sans);
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    margin: 40px 0 16px;
+  }
+
+  /* Summary box */
+  .summary {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin: 40px 0;
+  }
+  .summary .summary-label {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+  }
+  .summary ul { margin: 0 0 0 20px; }
+  .summary li { font-size: 16px; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.55; }
+  .summary li:last-child { margin-bottom: 0; }
+
+  /* Table figures */
+  .tbl {
+    margin: 48px 0;
+  }
+  .tbl-title {
+    font-family: var(--serif);
+    font-size: 24px;
+    line-height: 1.25;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  .table-wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    line-height: 1.5;
+    background: var(--bg-card);
+  }
+  thead { background: var(--bg-elevated); }
+  th {
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border);
+    vertical-align: bottom;
+  }
+  td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { color: #fff; font-weight: 500; }
+  td small { display: block; color: var(--text-muted); font-size: 12px; font-weight: 400; }
+  .tbl figcaption {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  /* Responsive */
+  @media (max-width: 760px) {
+    .table-wrapper { margin: 0 -24px; border-radius: 0; border-left: none; border-right: none; }
+    .tbl figcaption { padding: 0; }
+    .drop-cap::first-letter { font-size: 56px; }
+    h2 { font-size: 26px; margin-top: 48px; }
+    .summary { padding: 20px; }
+    .pull-quote p { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="article-container">
+
+<header class="article-header">
+  <span class="tag">Deep Dive</span>
+  <h1>Open Weights vs Open Source AI: The Technical and Licensing Differences That Matter</h1>
+  <p class="subtitle">Downloading an AI model is easy. Knowing what you're allowed to do with it, and what you still can't see, is the hard part.</p>
+  <p class="meta">Researched &amp; written October 2026 · ~12 min read · Sources cited throughout</p>
+</header>
+
+<!-- ============================================================ -->
+<!-- ARTICLE BODY -->
+<!-- ============================================================ -->
+
+<p class="drop-cap">Picture a small team building a customer support chatbot. They find a free AI model online, Alibaba's Qwen2.5-3B, download it, and train it further on a few thousand of their old support tickets so it learns their product. It works surprisingly well. The demo goes great, and a launch date is set.</p>
+
+<p>A week before launch, someone finally reads the license. This version of Qwen is licensed for <q>non-commercial purposes only</q> (<a href="https://huggingface.co/Qwen/Qwen2.5-3B-Instruct/blob/main/LICENSE" target="_blank">license</a>). Its slightly bigger sibling, Qwen2.5-7B, uses Apache 2.0, a standard license that allows business use (<a href="https://huggingface.co/Qwen/Qwen2.5-7B-Instruct" target="_blank">model card</a>). The biggest, Qwen2.5-72B, uses a third license, which, among other rules, makes products with more than 100 million monthly users ask permission first (<a href="https://huggingface.co/Qwen/Qwen2.5-72B-Instruct/blob/main/LICENSE" target="_blank">license</a>). Same family, same release day, three different rule books.</p>
+
+<p>Nothing stopped the download. That's the whole problem in one story. Being able to download an AI model and being allowed to build a business on it are two separate questions, and "open" gets used for both.</p>
+
+<div class="summary">
+  <div class="summary-label">In 60 seconds</div>
+  <ul>
+    <li><strong>Open weights</strong> means you can download the finished model. It says nothing about what you're allowed to do with it, or how it was made.</li>
+    <li><strong>Open source AI</strong>, by the Open Source Initiative's definition, also shares the code used to build the model and a detailed description of its training data.</li>
+    <li>The rules change from model to model, even within one company.</li>
+    <li>Running a model yourself keeps your data in-house, but makes security your job.</li>
+  </ul>
+</div>
+
+<h2>What you actually get when a model is "released"</h2>
+
+<p>Think of an AI model as a cake. The <strong>weights</strong> are the finished cake: billions of numbers the model learned during training, packed into files you can download. With the cake you can serve it, slice it, or add your own frosting, which in AI terms means running the model and fine-tuning it on your own data.</p>
+
+<p>What the cake doesn't come with is the recipe. That would be the <strong>training code</strong> (the instructions used to build the model), the <strong>training data</strong> (the ingredients), and the tests used to check it. Then there's the <strong>license</strong>: the rules about whether you're allowed to sell slices.</p>
+
+<p>Different companies put different things in the box. OpenAI's gpt-oss-120b, released in August 2025, comes with its weights and the code to run it, but its training data gets only a short description (<a href="https://arxiv.org/abs/2508.10925" target="_blank">model card</a>). Ai2's Olmo 3, from November 2025, also publishes its training data, training code, test tools and snapshots saved partway through training (<a href="https://allenai.org/blog/olmo3" target="_blank">Ai2</a>). Both are useful. Only one lets you check how it was made.</p>
+
+<figure class="tbl">
+  <div class="tbl-title">What comes with an AI model?</div>
+  <div class="table-wrapper">
+  <table>
+    <thead><tr><th>Piece</th><th>Paid AI service (typical)</th><th>Open weights: gpt-oss-120b</th><th>Fully open: Olmo 3</th></tr></thead>
+    <tbody>
+      <tr><td>The trained model (weights)<small>The finished "cake"</small></td><td>Not shared</td><td>Shared (Apache 2.0)</td><td>Shared (Apache 2.0)</td></tr>
+      <tr><td>Model blueprint<small>How it is put together</small></td><td>Described at most</td><td>Shared</td><td>Shared</td></tr>
+      <tr><td>Code to run it</td><td>Not shared</td><td>Shared</td><td>Shared</td></tr>
+      <tr><td>Code used to train it<small>Part of the recipe</small></td><td>Not shared</td><td>Not shared</td><td>Shared</td></tr>
+      <tr><td>Training data<small>The ingredients</small></td><td>Not shared</td><td>Not shared</td><td>Shared (Dolma 3)</td></tr>
+      <tr><td>Description of the data</td><td>Brief at most</td><td>A short paragraph</td><td>Shared in detail</td></tr>
+      <tr><td>Test tools and results</td><td>Results only</td><td>Results only</td><td>Shared</td></tr>
+      <tr><td>Snapshots from training</td><td>Not shared</td><td>Not shared</td><td>Shared</td></tr>
+      <tr><td>License (rules of use)</td><td>Terms of service</td><td>Apache 2.0 + usage policy</td><td>Apache 2.0</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption>The gpt-oss-120b and Olmo 3 columns show what OpenAI and Ai2 published with those specific releases (<a href="https://arxiv.org/abs/2508.10925" target="_blank">gpt-oss model card</a>; <a href="https://allenai.org/blog/olmo3" target="_blank">Ai2 Olmo 3</a>). The paid-service column is a general picture of a typical service, not any single company. <em>(Original table created for this article.)</em></figcaption>
+</figure>
+
+<h2>What "open source" means, according to the OSI</h2>
+
+<p>There is a widely recognized answer. The Open Source Initiative (OSI), the nonprofit that maintains the definition of open source software, published the <a href="https://opensource.org/ai/open-source-ai-definition" target="_blank">Open Source AI Definition 1.0</a> in October 2024. It says a truly open source AI must give everyone four freedoms: to <strong>use</strong> it for any purpose without asking permission, to <strong>study</strong> how it works, to <strong>change</strong> it, and to <strong>share</strong> it, changed or not.</p>
+
+<p>To make those freedoms real, you need three things: the weights, the complete code used to train and run the model, and a description of the training data detailed enough that <q>a skilled person can build a substantially equivalent system</q>. That doesn't mean every document has to be published. Private data, like personal information, can be described instead of shared. But weights on their own don't qualify.</p>
+
+<figure class="tbl">
+  <div class="tbl-title">The four freedoms</div>
+  <div class="table-wrapper">
+  <table>
+    <thead><tr><th>Freedom</th><th>What it means</th></tr></thead>
+    <tbody>
+      <tr><td>Use</td><td>For any purpose, without asking permission</td></tr>
+      <tr><td>Study</td><td>See how it works and inspect its parts</td></tr>
+      <tr><td>Change</td><td>For any purpose, including changing its answers</td></tr>
+      <tr><td>Share</td><td>With anyone, changed or unchanged</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption>A plain-language summary of the <a href="https://opensource.org/ai/open-source-ai-definition" target="_blank">OSI Open Source AI Definition 1.0</a>. <em>(Original table created for this article.)</em></figcaption>
+</figure>
+
+<figure class="tbl">
+  <div class="tbl-title">The three ingredients you need for those freedoms</div>
+  <div class="table-wrapper">
+  <table>
+    <thead><tr><th>Ingredient</th><th>What the definition asks for</th></tr></thead>
+    <tbody>
+      <tr><td>Data information</td><td>Enough detail about the training data that "a skilled person can build a substantially equivalent system." Open data must be shared, public data must say where to find it, data sold by others must be listed, and private data (like personal information) must be described but not handed over.</td></tr>
+      <tr><td>Code</td><td>The complete code used to prepare the data, train the model, test it and run it, under an approved open source license.</td></tr>
+      <tr><td>Weights</td><td>The trained model itself, on open terms. Weights alone are not enough: they must come with the data information and code used to make them.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption>From the <a href="https://opensource.org/ai/open-source-ai-definition" target="_blank">OSI definition</a>. The four kinds of data come from the <a href="https://opensource.org/ai/faq" target="_blank">OSI's FAQ</a>. <em>(Original table created for this article.)</em></figcaption>
+</figure>
+
+<p>When the OSI tested real models against its draft, EleutherAI's Pythia and Ai2's OLMo passed, while Meta's Llama 2 and Microsoft's Phi-2 did not (<a href="https://opensource.org/ai/faq" target="_blank">OSI FAQ</a>). Outside the OSI, companies use these words loosely. So when someone calls a model open, ask which parts.</p>
+
+<h2>What you can do with just the weights</h2>
+
+<p>Quite a lot. Free tools like <a href="https://github.com/ollama/ollama" target="_blank">Ollama</a> and <a href="https://github.com/ggml-org/llama.cpp" target="_blank">llama.cpp</a> let you run a model on your own computer, with no internet connection needed once it's downloaded. A technique called quantization shrinks models by storing each number less precisely, a bit like compressing a photo: smaller file, slightly lower quality. That's how OpenAI's gpt-oss-20b runs on a machine with 16 GB of memory (<a href="https://arxiv.org/abs/2508.10925" target="_blank">model card</a>). Customizing a model is within reach, too: a method called <a href="https://arxiv.org/abs/2305.14314" target="_blank">QLoRA</a> fine-tuned a 65-billion-parameter model on a single 48 GB graphics card.</p>
+
+<figure class="tbl">
+  <div class="tbl-title">What can run it?</div>
+  <div class="table-wrapper">
+  <table>
+    <thead><tr><th>Example model</th><th>Full size</th><th>Shrunk to a quarter</th><th>What can run the shrunk version</th></tr></thead>
+    <tbody>
+      <tr><td>Small: Qwen2.5-3B<small>3 billion parameters</small></td><td>6 GB</td><td>1.5 GB</td><td>A typical laptop</td></tr>
+      <tr><td>Medium: Phi-4<small>14 billion parameters</small></td><td>28 GB</td><td>7 GB</td><td>A laptop with 16 GB of memory</td></tr>
+      <tr><td>Large: Llama 3.3 70B<small>70 billion parameters</small></td><td>140 GB</td><td>35 GB</td><td>A high-end workstation or a data-center graphics card</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption>Rough memory needed just to load each model, worked out from its size. Running it takes some extra memory on top, and shrinking costs a little quality. Sizes come from each model's official page. <em>(Original table created for this article.)</em></figcaption>
+</figure>
+
+<p>What you can't do is look inside the kitchen. Meta's Llama 3.1 model card says it learned from <q>~15 trillion tokens of data from publicly available sources</q> (<a href="https://github.com/meta-llama/llama-models/blob/main/models/llama3_1/MODEL_CARD.md" target="_blank">model card</a>). (Tokens are small chunks of text.) Meta's technical report adds a rough breakdown by topic, but the data itself isn't released (<a href="https://arxiv.org/abs/2407.21783" target="_blank">Llama 3 paper</a>). You can't check whether a test the model aces was in its training data, like a student who saw the exam in advance. And when it gets something wrong, you can't trace the mistake back to where it came from.</p>
+
+<h2>The license decides what you're allowed to do</h2>
+
+<p>Some models use standard software licenses. <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache 2.0</a> and <a href="https://opensource.org/license/mit" target="_blank">MIT</a> both let you use, change, share and sell the model, as long as you keep the original copyright notices. Apache 2.0 also includes a patent license from the people who contributed to it. Gemma 4, gpt-oss, Phi-4, Qwen3 and IBM's Granite 4.0 all use one of these two.</p>
+
+<p>Others use a company's own license, and these come with strings attached. Meta's Llama 3.1 license allows business use, but companies whose products had more than 700 million monthly users on its release date must ask Meta first. If you ship it in a product, you also have to display "Built with Llama," and every user must follow Meta's acceptable use policy (<a href="https://github.com/meta-llama/llama-models/blob/main/models/llama3_1/LICENSE" target="_blank">license</a>). Llama 4's models all understand images, and for those, Meta's policy doesn't grant rights to people or companies based in the EU, though anyone can still use products built with them (<a href="https://github.com/meta-llama/llama-models/blob/main/models/llama4/USE_POLICY.md" target="_blank">policy</a>). Google's Gemma 3 terms carry their banned uses into any modified version, and Google <q>reserves the right to restrict (remotely or otherwise) usage</q> it believes breaks the rules (<a href="https://ai.google.dev/gemma/terms" target="_blank">terms</a>). Mistral's Devstral 2 coding model isn't licensed to companies earning more than $20 million a month (<a href="https://huggingface.co/mistralai/Devstral-2-123B-Instruct-2512/blob/main/LICENSE" target="_blank">license</a>).</p>
+
+<p>The rules also change from one release to the next. Gemma 4 moved to Apache 2.0 in April 2026 (<a href="https://opensource.googleblog.com/2026/03/gemma-4-expanding-the-gemmaverse-with-apache-20.html" target="_blank">Google</a>). Mistral Large 3 did the same after Large 2 was research-only (<a href="https://mistral.ai/news/mistral-3" target="_blank">Mistral</a>; <a href="https://mistral.ai/static/licenses/MRL-0.1.md" target="_blank">license</a>). Meta's Muse Glimmer 30B, released in August 2026, is Apache 2.0 too, unlike every Llama model before it (<a href="https://huggingface.co/meta-models/Muse-Glimmer-30B" target="_blank">model card</a>). So never guess a license from the company name.</p>
+
+<figure class="tbl">
+  <div class="tbl-title">What each model's license allows</div>
+  <div class="table-wrapper">
+  <table>
+    <thead><tr><th>Model</th><th>License</th><th>Business use</th><th>Key rules</th></tr></thead>
+    <tbody>
+      <tr><td>Olmo 3<small>Ai2 · Nov 2025</small></td><td>Apache 2.0</td><td>Allowed</td><td>Keep the license and notices. Training data and code are public too. <a href="https://huggingface.co/allenai/Olmo-3-1025-7B" target="_blank">Source</a></td></tr>
+      <tr><td>gpt-oss-120b / 20b<small>OpenAI · Aug 2025</small></td><td>Apache 2.0 + usage policy</td><td>Allowed</td><td>A short usage policy asks you to "comply with all applicable law." <a href="https://huggingface.co/openai/gpt-oss-120b/blob/main/USAGE_POLICY" target="_blank">Source</a></td></tr>
+      <tr><td>Llama 3.1<small>Meta · Jul 2024</small></td><td>Llama 3.1 Community License</td><td>Allowed, with conditions</td><td>Over 700 million monthly users on the release date: ask Meta first. If you ship it, show "Built with Llama." Shared models trained with it must start their names with "Llama." <a href="https://github.com/meta-llama/llama-models/blob/main/models/llama3_1/LICENSE" target="_blank">Source</a></td></tr>
+      <tr><td>Gemma 3<small>Google · Mar 2025</small></td><td>Gemma Terms of Use</td><td>Allowed, with rules</td><td>Banned uses carry over to modified copies. Google can restrict use it believes breaks the rules. <a href="https://ai.google.dev/gemma/terms" target="_blank">Source</a></td></tr>
+      <tr><td>Gemma 4<small>Google · Apr 2026</small></td><td>Apache 2.0</td><td>Allowed</td><td>The first Gemma under a standard license. Same company, new rules. <a href="https://opensource.googleblog.com/2026/03/gemma-4-expanding-the-gemmaverse-with-apache-20.html" target="_blank">Source</a></td></tr>
+      <tr><td>Qwen2.5-3B<small>Alibaba · Sep 2024</small></td><td>Qwen Research License</td><td>Non-commercial</td><td>Research or testing only. <a href="https://huggingface.co/Qwen/Qwen2.5-3B-Instruct/blob/main/LICENSE" target="_blank">Source</a></td></tr>
+      <tr><td>Qwen2.5-7B<small>Alibaba · Sep 2024</small></td><td>Apache 2.0</td><td>Allowed</td><td>Same family and release day as the 3B, different rules. <a href="https://huggingface.co/Qwen/Qwen2.5-7B-Instruct" target="_blank">Source</a></td></tr>
+      <tr><td>Devstral 2<small>Mistral AI · Dec 2025</small></td><td>Modified MIT</td><td>Revenue limit</td><td>No rights for companies earning more than $20 million a month. <a href="https://huggingface.co/mistralai/Devstral-2-123B-Instruct-2512/blob/main/LICENSE" target="_blank">Source</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption>Plain-language summaries for each exact version named, checked against the license files linked in each row, October 2026. For any other model, check its license yourself using the steps below. Not legal advice. <em>(Original table created for this article.)</em></figcaption>
+</figure>
+
+<div class="callout teal">
+  <div class="callout-label">How to check a license in two minutes</div>
+  <ol>
+    <li>Open the model's page on Hugging Face and find the license tag near the top.</li>
+    <li>Open the LICENSE file and search it for "commercial," "monthly active users" and "revenue."</li>
+    <li>Look for a separate usage policy, and read that too.</li>
+    <li>Save a copy, and note the exact model version you checked.</li>
+  </ol>
+</div>
+
+<div class="callout">
+  <div class="callout-label">Not legal advice</div>
+  <p>The quotes come straight from the original documents, but how a rule applies to your business depends on your situation and where you operate. For anything important, ask a lawyer.</p>
+</div>
+
+<h2>Running it yourself: more control, more responsibility</h2>
+
+<p>A big reason companies like downloadable models is privacy. When the model runs on your own computers or cloud account, your customers' messages never go to an outside AI company. For hospitals or banks, that can settle the decision.</p>
+
+<figure class="tbl">
+  <div class="tbl-title">Where your data goes, and who looks after it</div>
+  <div class="table-wrapper">
+  <table>
+    <thead><tr><th></th><th>Your own computers</th><th>Your cloud account</th><th>An AI company's service</th></tr></thead>
+    <tbody>
+      <tr><td>Where messages go</td><td>Stay in your building</td><td>Stay in your cloud account</td><td>Go to the AI company</td></tr>
+      <tr><td>Who runs the model</td><td>You</td><td>You</td><td>The AI company</td></tr>
+      <tr><td>Your job</td><td>Hardware, updates, security fixes, access, protecting logs, fixing problems</td><td>Cloud servers, updates, security fixes, access, choosing the data region, fixing problems</td><td>Your app, what data you send, reading their data terms, coping with outages or changes</td></tr>
+      <tr><td>Someone else's job</td><td>Model makers: the model and its license</td><td>Cloud company: the data centers. Model makers: the model and its license</td><td>AI company: computers, running the model, updates and storing your data per your contract</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption>A simplified picture. Real systems have more parts. With an AI company's service, who handles what depends on your contract and settings. <em>(Original table created for this article.)</em></figcaption>
+</figure>
+
+<p>But control isn't the same as safety. Your chat logs still hold sensitive data, and your servers still need locking down. Even model files can be risky: Hugging Face warns that a widely used file format can run hidden code when it's opened, which is why the safer "safetensors" format exists (<a href="https://huggingface.co/docs/hub/security-pickle" target="_blank">Hugging Face</a>). Once you run a model yourself, updates, security fixes and monitoring are all your job.</p>
+
+<p>And seeing a model's weights doesn't make it trustworthy. Open models can make things up (AI people call this "hallucinating"), just like closed ones. Openness makes it possible to check a model. It doesn't do the checking for you.</p>
+
+<h2>So which kind should you choose?</h2>
+
+<p>Openness isn't automatically better. A paid AI service from a company like OpenAI or Google is the easiest place to start and often among the most capable, but you depend on their prices and rules, and your data goes to them. Open-weight models give you control and privacy in exchange for running your own hardware. Fully open models add the ability to inspect and rebuild, from a much smaller selection.</p>
+
+<figure class="tbl">
+  <div class="tbl-title">Paid service, open weights or fully open?</div>
+  <div class="table-wrapper">
+  <table>
+    <thead><tr><th></th><th>Paid AI service</th><th>Open-weight model</th><th>Fully open model</th></tr></thead>
+    <tbody>
+      <tr><td>In short</td><td>Rent it</td><td>Own the cake</td><td>Own the recipe</td></tr>
+      <tr><td>You get</td><td>Access over the internet, plus support</td><td>The trained model and code to run it</td><td>The model, its code and its data details</td></tr>
+      <tr><td>Runs on</td><td>The AI company's computers</td><td>Your own hardware or cloud</td><td>Your own hardware or cloud</td></tr>
+      <tr><td>Customize it?</td><td>Only in the ways the company offers</td><td>Yes, if the license allows</td><td>Yes, even rebuild it from scratch</td></tr>
+      <tr><td>See how it was made?</td><td>Only what the company publishes</td><td>No, only how it behaves</td><td>Yes</td></tr>
+      <tr><td>Costs</td><td>Pay as you go</td><td>Hardware plus the people to run it</td><td>Same as open weights, more to rebuild</td></tr>
+      <tr><td>You depend on</td><td>The company's prices, rules and plans</td><td>The license and your own team</td><td>A smaller choice of models</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption>A general comparison. Individual companies and models vary. <em>(Original table created for this article.)</em></figcaption>
+</figure>
+
+<p>Not sure where your project stands? Start with these six questions.</p>
+
+<figure class="tbl">
+  <div class="tbl-title">Six questions before you pick a model</div>
+  <div class="table-wrapper">
+  <table>
+    <thead><tr><th>Question</th><th>What to do</th></tr></thead>
+    <tbody>
+      <tr><td>1. Have you read the license and model card for the exact version you plan to use?</td><td>Read them first. Rules can differ between sizes of the same model (Qwen2.5-3B vs 7B) or between versions (Gemma 3 vs 4).</td></tr>
+      <tr><td>2. Does the license allow the way your business wants to use it?</td><td>Not sure: ask a lawyer to look at the specific rules. No: ask the maker for a business license, or pick another model.</td></tr>
+      <tr><td>3. Will you share the model, or offer it inside a product or service?</td><td>If yes, follow the sharing rules: include the license, keep the notices, and add any required credit, like "Built with Llama." Some licenses, including Llama's, count offering it in a product as sharing.</td></tr>
+      <tr><td>4. Do you need to show what data the model learned from?</td><td>If yes, downloadable weights won't be enough. Look at fully open models that publish their data and code, like Olmo 3 or Pythia.</td></tr>
+      <tr><td>5. Does your team have the skills to run and secure its own AI servers?</td><td>Consider a paid service, or a company that hosts the open model for you. Either way, read how they handle your data.</td></tr>
+      <tr><td>6. Have you tested the model on your own real examples?</td><td>Test accuracy, safety, speed and cost before you commit. Public leaderboards aren't enough.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption>A starting point, not a replacement for legal or security advice. Whatever you choose, note the exact model version and save a copy of its license. <em>(Original table created for this article.)</em></figcaption>
+</figure>
+
+<h2>Back to the chatbot</h2>
+
+<p>For the team in our story, the fix was simple because they caught it early. Qwen2.5-7B and the newer Qwen3-4B both use Apache 2.0 (<a href="https://qwenlm.github.io/blog/qwen3/" target="_blank">Qwen</a>). They had to redo the training on the new model, which cost them an afternoon. Finding out after launch would have cost far more.</p>
+
+<p>So "Is this model open?" turns out to be too vague a question. Ask what parts you actually get, what the license allows for this exact version, what you still can't see, and whether you can run it safely. If a model passes all four for your project, it's the right one, whether you download it or rent it.</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<!-- SOURCES / FOOTER -->
+<!-- ============================================================ -->
+
+<footer class="article-footer">
+  <h3>Sources & References</h3>
+  <ol>
+    <li>Open Source Initiative. "The Open Source AI Definition 1.0." October 2024. <a href="https://opensource.org/ai/open-source-ai-definition" target="_blank">opensource.org/ai/open-source-ai-definition</a></li>
+    <li>Open Source Initiative. "Answers to frequently asked questions" (data categories and the model testing exercise). <a href="https://opensource.org/ai/faq" target="_blank">opensource.org/ai/faq</a></li>
+    <li>Apache Software Foundation. Apache License, Version 2.0. <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank">apache.org/licenses/LICENSE-2.0</a></li>
+    <li>Open Source Initiative. The MIT License. <a href="https://opensource.org/license/mit" target="_blank">opensource.org/license/mit</a></li>
+    <li>Ai2. "Olmo 3." November 2025. <a href="https://allenai.org/blog/olmo3" target="_blank">allenai.org/blog/olmo3</a>; model card <a href="https://huggingface.co/allenai/Olmo-3-1025-7B" target="_blank">huggingface.co/allenai/Olmo-3-1025-7B</a></li>
+    <li>OpenAI. "gpt-oss-120b &amp; gpt-oss-20b Model Card." arXiv:2508.10925, August 2025. <a href="https://arxiv.org/abs/2508.10925" target="_blank">arxiv.org/abs/2508.10925</a>; repository and usage policy <a href="https://huggingface.co/openai/gpt-oss-120b" target="_blank">huggingface.co/openai/gpt-oss-120b</a></li>
+    <li>Meta. Llama 3.1 Community License and model card. <a href="https://github.com/meta-llama/llama-models/blob/main/models/llama3_1/LICENSE" target="_blank">LICENSE</a>; <a href="https://github.com/meta-llama/llama-models/blob/main/models/llama3_1/MODEL_CARD.md" target="_blank">MODEL_CARD</a></li>
+    <li>Llama Team, Meta. "The Llama 3 Herd of Models." arXiv:2407.21783, 2024 (covers the Llama 3.1 models, including the pretraining data mix). <a href="https://arxiv.org/abs/2407.21783" target="_blank">arxiv.org/abs/2407.21783</a></li>
+    <li>Meta. Llama 4 Community License and Acceptable Use Policy. <a href="https://github.com/meta-llama/llama-models/blob/main/models/llama4/LICENSE" target="_blank">LICENSE</a>; <a href="https://github.com/meta-llama/llama-models/blob/main/models/llama4/USE_POLICY.md" target="_blank">USE_POLICY</a></li>
+    <li>Meta. Muse Glimmer 30B model card. August 2026. <a href="https://huggingface.co/meta-models/Muse-Glimmer-30B" target="_blank">huggingface.co/meta-models/Muse-Glimmer-30B</a></li>
+    <li>Google. Gemma Terms of Use. <a href="https://ai.google.dev/gemma/terms" target="_blank">ai.google.dev/gemma/terms</a>; "Gemma 4: Expanding the Gemmaverse with Apache 2.0." April 2026. <a href="https://opensource.googleblog.com/2026/03/gemma-4-expanding-the-gemmaverse-with-apache-20.html" target="_blank">opensource.googleblog.com</a></li>
+    <li>Microsoft. Phi-4 model card and MIT license. <a href="https://huggingface.co/microsoft/phi-4" target="_blank">huggingface.co/microsoft/phi-4</a></li>
+    <li>Mistral AI. Mistral Research License <a href="https://mistral.ai/static/licenses/MRL-0.1.md" target="_blank">mistral.ai</a>; "Introducing Mistral 3" <a href="https://mistral.ai/news/mistral-3" target="_blank">mistral.ai</a>; Devstral 2 license <a href="https://huggingface.co/mistralai/Devstral-2-123B-Instruct-2512/blob/main/LICENSE" target="_blank">huggingface.co</a></li>
+    <li>Alibaba Qwen. Qwen2.5 license files: 3B <a href="https://huggingface.co/Qwen/Qwen2.5-3B-Instruct/blob/main/LICENSE" target="_blank">huggingface.co</a>, 7B <a href="https://huggingface.co/Qwen/Qwen2.5-7B-Instruct" target="_blank">huggingface.co</a>, 72B <a href="https://huggingface.co/Qwen/Qwen2.5-72B-Instruct/blob/main/LICENSE" target="_blank">huggingface.co</a>; "Qwen3: Think Deeper, Act Faster." April 2025. <a href="https://qwenlm.github.io/blog/qwen3/" target="_blank">qwenlm.github.io</a></li>
+    <li>IBM. "IBM Granite 4.0: hyper-efficient, high performance hybrid models." October 2025. <a href="https://www.ibm.com/new/announcements/ibm-granite-4-0-hyper-efficient-high-performance-hybrid-models" target="_blank">ibm.com</a></li>
+    <li>Tools: Ollama <a href="https://github.com/ollama/ollama" target="_blank">github.com/ollama/ollama</a>; llama.cpp <a href="https://github.com/ggml-org/llama.cpp" target="_blank">github.com/ggml-org/llama.cpp</a></li>
+    <li>Dettmers, T., Pagnoni, A., Holtzman, A., Zettlemoyer, L. "QLoRA: Efficient Finetuning of Quantized LLMs." arXiv:2305.14314, 2023. <a href="https://arxiv.org/abs/2305.14314" target="_blank">arxiv.org/abs/2305.14314</a></li>
+    <li>Hugging Face. "Pickle Scanning" (security of model file formats). <a href="https://huggingface.co/docs/hub/security-pickle" target="_blank">huggingface.co/docs/hub/security-pickle</a></li>
+  </ol>
+
+  <p style="margin-top: 20px;"><strong>Note:</strong> Model versions and license terms were checked against primary sources in October 2026. Licenses change, and some details (for example, whether Google's Prohibited Use Policy has any role for Apache-licensed Gemma 4) weren't stated in the sources reviewed. Always read the current license for the exact version you plan to use. Nothing here is legal advice.</p>
+
+  <div class="tags">
+    <span>Open Source AI</span>
+    <span>Open Weights</span>
+    <span>Licensing</span>
+    <span>OSI</span>
+    <span>Self-Hosting</span>
+    <span>AI for Everyone</span>
+    <span>Deep Dive</span>
+  </div>
+
+  <p style="margin-top: 32px;"><a href="../">← More from Under the Hood</a></p>
+</footer>
+
+</div>
+
+
+
+</body>
+</html>

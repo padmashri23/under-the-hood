@@ -1,0 +1,22 @@
+%% "Before you pick a model": editable source for the interactive checklist in index.html
+%% Render with any Mermaid viewer (for example https://mermaid.live)
+flowchart TD
+    A([A model you're considering]) --> Q1{Read the license and model card<br/>for the exact version?}
+    Q1 -- No --> F1[Read them first.<br/>Rules differ between sizes and versions]
+    F1 --> Q1
+    Q1 -- Yes --> Q2{Does the license allow<br/>your kind of business use?<br/>User, revenue, research-only,<br/>country limits}
+    Q2 -- Not sure --> F2[Ask a lawyer about the specific rules]
+    Q2 -- No --> F3[Ask the maker for a business license<br/>or pick another model]
+    Q2 -- Yes --> Q3{Will you share the model,<br/>or offer it in a product?}
+    F2 --> Q3
+    Q3 -- Yes --> F4[Follow the sharing rules:<br/>include the license, keep notices,<br/>add required credit]
+    Q3 -- No --> Q4
+    F4 --> Q4{Need to show what data<br/>the model learned from?}
+    Q4 -- Yes --> F5[Look at fully open models<br/>that publish data and code]
+    Q4 -- No --> Q5
+    F5 --> Q5{Can your team run and secure<br/>its own AI servers?}
+    Q5 -- No --> F6[Consider a paid service or a hosting company;<br/>read how they handle your data]
+    Q5 -- Yes --> Q6
+    F6 --> Q6{Tested on your own real examples?<br/>Accuracy, safety, speed, cost}
+    Q6 -- Not yet --> F7[Test before you commit]
+    Q6 -- Yes --> Z([Go ahead: note the exact version,<br/>save the license,<br/>keep testing after launch])

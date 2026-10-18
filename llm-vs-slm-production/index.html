@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A practical engineering guide comparing large and small language models for production: latency, hardware, accuracy, cost, hybrid routing, and evaluation.">
+<meta property="og:title" content="Large Language Models vs Small Language Models: Which Is Better for Production Applications?">
+<meta property="og:description" content="Bigger isn't automatically better. How to choose between LLMs, SLMs, or a hybrid of both for real production workloads.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<title>Large Language Models vs Small Language Models: Which Is Better for Production Applications?</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --bg-card: #111113;
+    --bg-elevated: #18181b;
+    --text-primary: #e4e4e7;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    --accent: #4A9EFF;
+    --accent-warm: #f59e0b;
+    --accent-green: #22c55e;
+    --accent-purple: #a855f7;
+    --accent-red: #ef4444;
+    --accent-teal: #14b8a6;
+    --border: #27272a;
+    --serif: 'Instrument Serif', 'Georgia', serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--sans);
+    font-size: 18px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .article-container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Header */
+  .article-header {
+    padding: 80px 0 40px;
+    text-align: center;
+  }
+  .article-header .tag {
+    display: inline-block;
+    background: var(--accent);
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 4px;
+    margin-bottom: 32px;
+  }
+  .article-header h1 {
+    font-family: var(--serif);
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1.15;
+    font-weight: 400;
+    margin-bottom: 24px;
+    color: #fff;
+  }
+  .article-header .subtitle {
+    font-size: 19px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 680px;
+    margin: 0 auto 32px;
+    font-weight: 300;
+  }
+  .article-header .meta {
+    font-size: 14px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  /* Typography */
+  p {
+    margin-bottom: 20px;
+    color: var(--text-primary);
+  }
+  strong { color: #fff; font-weight: 600; }
+  em { color: var(--text-secondary); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.85em;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+  }
+
+  ul, ol {
+    margin: 16px 0 24px 28px;
+    color: var(--text-primary);
+  }
+  li { margin-bottom: 8px; }
+
+  /* Drop cap */
+  .drop-cap::first-letter {
+    font-family: var(--serif);
+    font-size: 72px;
+    float: left;
+    line-height: 0.8;
+    margin: 4px 12px 0 0;
+    color: #fff;
+    font-weight: 400;
+  }
+
+  /* Blockquotes */
+  blockquote {
+    border-left: 3px solid var(--accent);
+    padding: 24px 32px;
+    margin: 40px 0;
+    background: var(--bg-card);
+    border-radius: 0 8px 8px 0;
+  }
+  blockquote p {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-style: italic;
+    color: #fff;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* Pull quotes: larger, centered */
+  .pull-quote {
+    text-align: center;
+    margin: 56px 0;
+    padding: 0 32px;
+  }
+  .pull-quote p {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-style: italic;
+    color: #fff;
+    line-height: 1.4;
+    margin: 0 0 12px;
+  }
+  .pull-quote .attribution {
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--text-muted);
+    font-style: normal;
+    letter-spacing: 0.5px;
+  }
+
+  /* Image figures */
+  .article-image {
+    margin: 48px -40px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+  .article-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .article-image figcaption {
+    padding: 14px 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    line-height: 1.5;
+  }
+
+  /* Stat cards: inline data highlights */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 40px 0;
+  }
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+  }
+  .stat-card .stat-value {
+    font-family: var(--serif);
+    font-size: 36px;
+    color: #fff;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .stat-card .stat-value.accent-blue { color: var(--accent); }
+  .stat-card .stat-value.accent-warm { color: var(--accent-warm); }
+  .stat-card .stat-value.accent-green { color: var(--accent-green); }
+  .stat-card .stat-value.accent-teal { color: var(--accent-teal); }
+  .stat-card .stat-value.accent-purple { color: var(--accent-purple); }
+  .stat-card .stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+
+  /* Source cards */
+  .source-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 24px 0;
+    font-size: 14px;
+  }
+  .source-card .label {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+  .source-card p { margin: 4px 0; color: var(--text-secondary); font-size: 14px; }
+
+  /* Callout */
+  .callout {
+    background: var(--bg-card);
+    border-left: 3px solid var(--accent-warm);
+    border-radius: 0 8px 8px 0;
+    padding: 20px 24px;
+    margin: 32px 0;
+    font-size: 15px;
+  }
+  .callout.teal { border-left-color: var(--accent-teal); }
+  .callout.purple { border-left-color: var(--accent-purple); }
+  .callout.blue { border-left-color: var(--accent); }
+  .callout.green { border-left-color: var(--accent-green); }
+  .callout .callout-label {
+    color: var(--accent-warm);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+  .callout.teal .callout-label { color: var(--accent-teal); }
+  .callout.purple .callout-label { color: var(--accent-purple); }
+  .callout.blue .callout-label { color: var(--accent); }
+  .callout.green .callout-label { color: var(--accent-green); }
+  .callout p { margin: 4px 0; color: var(--text-secondary); font-size: 15px; }
+
+  /* Tables */
+  .table-wrapper {
+    overflow-x: auto;
+    margin: 32px -20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background: var(--bg-card);
+  }
+  thead {
+    background: var(--bg-elevated);
+  }
+  th {
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { color: #fff; font-weight: 500; }
+
+  /* Dividers */
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  /* Decorative divider with dots */
+  .divider-dots {
+    text-align: center;
+    margin: 48px 0;
+    color: var(--text-muted);
+    font-size: 24px;
+    letter-spacing: 12px;
+  }
+
+  /* Footer */
+  .article-footer {
+    padding: 48px 0 80px;
+    border-top: 1px solid var(--border);
+    margin-top: 64px;
+  }
+  .article-footer h3 {
+    font-family: var(--sans);
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 20px;
+  }
+  .article-footer p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .article-footer ol {
+    margin: 0 0 24px 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .article-footer li {
+    margin-bottom: 10px;
+  }
+  .article-footer a {
+    color: var(--accent);
+  }
+  .tags { margin-top: 24px; }
+  .tags span {
+    display: inline-block;
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin: 4px 4px 4px 0;
+    border: 1px solid var(--border);
+  }
+
+  /* Section headings */
+  h2 {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 400;
+    line-height: 1.2;
+    color: #fff;
+    margin: 64px 0 20px;
+  }
+  h3 {
+    font-family: var(--sans);
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    margin: 40px 0 16px;
+  }
+
+  /* Summary box */
+  .summary {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin: 40px 0;
+  }
+  .summary .summary-label {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+  }
+  .summary ul { margin: 0 0 0 20px; }
+  .summary li {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    line-height: 1.55;
+  }
+  .summary li:last-child { margin-bottom: 0; }
+
+  /* Comparison panel accents: validated for CVD separation and 3:1 contrast on --bg-card */
+  :root {
+    --s-frontier: #3987e5;
+    --s-small: #199e70;
+  }
+
+  /* Comparison panel */
+  .compare {
+    margin: 48px -40px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg-card);
+  }
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+  }
+  .compare-col {
+    background: var(--bg-card);
+    padding: 24px 24px 8px;
+    border-top: 3px solid var(--s-frontier);
+  }
+  .compare-col.small { border-top-color: var(--s-small); }
+  .compare-kicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+  }
+  .compare-size {
+    font-family: var(--serif);
+    font-size: 24px;
+    line-height: 1.25;
+    color: #fff;
+    margin-bottom: 20px;
+  }
+  .compare dl { margin: 0; }
+  .compare dt {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+  }
+  .compare dd {
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text-primary);
+    margin: 0 0 16px;
+  }
+  .compare figcaption {
+    padding: 14px 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    line-height: 1.5;
+  }
+
+  /* Expandable data table under a chart */
+  .data-table { padding: 12px 20px 16px; border-top: 1px solid var(--border); font-size: 14px; }
+  .data-table summary { cursor: pointer; color: var(--accent); font-size: 14px; }
+  .data-table .table-wrapper { margin: 12px 0 0; }
+  .data-table td { font-variant-numeric: tabular-nums; }
+
+  /* Responsive */
+  @media (max-width: 680px) {
+    .compare { margin: 40px -24px; border-radius: 0; }
+    .compare-grid { grid-template-columns: 1fr; }
+    .stat-row { grid-template-columns: 1fr; }
+    .article-image { margin: 40px -24px; border-radius: 0; }
+    blockquote { padding: 20px 24px; }
+    .pull-quote p { font-size: 22px; }
+    .table-wrapper { margin: 32px -24px; border-radius: 0; }
+    .drop-cap::first-letter { font-size: 56px; }
+    h2 { font-size: 26px; margin-top: 48px; }
+    .summary { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="article-container">
+
+<!-- HEADER -->
+<header class="article-header">
+  <span class="tag">Deep Dive</span>
+  <h1>Large Language Models vs Small Language Models</h1>
+  <p class="subtitle">Which is better for production applications? A practical engineering guide to choosing, deploying, and operating the right model for your workload.</p>
+  <p class="meta">Researched & written October 2026 · ~15 min read · Sources cited throughout</p>
+</header>
+</div>
+
+<div class="article-container">
+
+<!-- ============================================================ -->
+<!-- ARTICLE BODY -->
+<!-- ============================================================ -->
+
+<p class="drop-cap">Here's a situation that plays out in engineering teams more often than anyone admits. You've built a prototype on a top-tier frontier model. It handles edge cases gracefully, stakeholders love it, and the launch roadmap is already being drawn up. Then someone asks the uncomfortable question: <em>"What's this going to cost us at 50,000 users?"</em></p>
+
+<p>You do the math. And the math doesn't work.</p>
+
+<p>This is where the real engineering starts: choosing the <em>right</em> model, or more often the right combination of models, for what you're actually doing in production. The choice between large and small language models isn't a philosophical debate. It's a systems engineering problem, and the answer depends on your task, your traffic, and your constraints.</p>
+
+<div class="summary">
+  <div class="summary-label">In 60 seconds</div>
+  <ul>
+    <li>There's no agreed parameter count that separates a small model from a large one. Performance on your task is what counts.</li>
+    <li>Small models are faster and far cheaper, and a fine-tuned one often matches a frontier model on narrow, high-volume tasks.</li>
+    <li>Large models earn their keep on multi-step reasoning, coding, long documents, and agentic planning.</li>
+    <li>Most production systems end up hybrid, routing routine requests to a small model and escalating the hard ones.</li>
+    <li>APIs usually beat self-hosting unless traffic is both very high and very predictable.</li>
+    <li>Evaluate on your own data, and keep evaluating after you ship.</li>
+  </ul>
+</div>
+
+<h2>What we actually mean by "large" and "small"</h2>
+
+<p>"Large language models" usually means models with tens or hundreds of billions of parameters: OpenAI's GPT-6 models, Anthropic's Claude Sonnet and Opus, Google's Gemini, or Meta's Llama 3.1 405B. They top the leaderboards and run up the cloud bills.</p>
+
+<p>"Small language models" usually means roughly 1 to 15 billion parameters. Current open-weight examples include Microsoft's Phi-4-mini (3.8B), Google's Gemma 4 E4B (4.5B effective parameters), IBM's Granite 4.2 8B, Alibaba's Qwen3.5-9B, and Mistral's Ministral 3 14B, all released in 2025 or 2026 (<a href="https://huggingface.co/microsoft/Phi-4-mini-instruct" target="_blank">Phi-4-mini</a>; <a href="https://huggingface.co/google/gemma-4-E4B-it" target="_blank">Gemma 4 E4B</a>; <a href="https://huggingface.co/ibm-granite/granite-4.2-8b" target="_blank">Granite 4.2</a>; <a href="https://huggingface.co/Qwen/Qwen3.5-9B" target="_blank">Qwen3.5-9B</a>; <a href="https://mistral.ai/news/mistral-3/" target="_blank">Ministral 3</a>). The category took off in 2024 with Microsoft's Phi-3 family, Meta's Llama 3 8B, and Mistral 7B.</p>
+
+<p>But <strong>there's no agreed-upon parameter count that separates the two.</strong> A 14B model is "small" next to GPT-4o (OpenAI has never disclosed its size, but one unverified estimate puts it around 200B parameters, per <a href="https://arxiv.org/abs/2412.19260" target="_blank">Ben Abacha et al., 2024</a>) and enormous next to Google's Gemma 3 270M, a 270-million-parameter model built for task-specific fine-tuning and small enough to run on-device. Size alone also says little about quality. A well-trained 7B model can beat a poorly trained 70B model on specific tasks. Microsoft's 3.8B Phi-3-mini, for example, rivals GPT-3.5 overall, beating it on some benchmarks (GSM-8K math, 82.5 vs 78.1) while trailing on others (MMLU, 68.8 vs 71.4) (<a href="https://arxiv.org/abs/2404.14219" target="_blank">Microsoft Phi-3 Technical Report</a>). What matters in production is how a model performs on your task, with your data, under your latency and cost constraints.</p>
+
+<figure class="compare">
+  <div class="compare-grid">
+    <div class="compare-col">
+      <div class="compare-kicker">Large language models</div>
+      <div class="compare-size">Tens to hundreds of billions of parameters</div>
+      <dl>
+        <dt>Hardware</dt>
+        <dd>Multiple GPUs for a 70B model in FP16 (~140 GB of weights alone)</dd>
+        <dt>Speed</dt>
+        <dd>Slower per request, with longer queues under load</dd>
+        <dt>API price</dt>
+        <dd>$2–10 per 1M input tokens (GPT-6.1 Sol up to GPT-6 Astra)</dd>
+        <dt>Best for</dt>
+        <dd>Multi-step reasoning, coding, long documents, agentic planning</dd>
+      </dl>
+    </div>
+    <div class="compare-col small">
+      <div class="compare-kicker">Small language models</div>
+      <div class="compare-size">Roughly 1 to 15 billion parameters</div>
+      <dl>
+        <dt>Hardware</dt>
+        <dd>One GPU (~14 GB of weights for a 7B model in FP16), or slowly on a CPU</dd>
+        <dt>Speed</dt>
+        <dd>Faster per request, suited to sub-second tasks</dd>
+        <dt>API price</dt>
+        <dd>$0.10 per 1M input tokens (GPT-6 Luna, Claude Haiku 5.5)</dd>
+        <dt>Best for</dt>
+        <dd>Classification, extraction, structured output, FAQ retrieval, on-device use</dd>
+      </dl>
+    </div>
+  </div>
+  <figcaption>The two ends of the spectrum at a glance. Performance varies by model and task. Prices as of October 2026. <em>(Original graphic created for this article.)</em></figcaption>
+</figure>
+
+<h2>The engineering trade-offs that actually matter</h2>
+
+<h3>Latency and throughput</h3>
+
+<p>Smaller models are simply faster. In NVIDIA's benchmark on H100 GPUs, Llama 3.1 8B on one GPU generated about 220 tokens per second for a single user, with its first token in 19 milliseconds. Llama 3.3 70B on two GPUs managed about 53 tokens per second, with an 82-millisecond first token (<a href="https://docs.nvidia.com/nim/benchmarking/llm/1.0.0/performance.html" target="_blank">NVIDIA NIM benchmarks</a>). Hosted APIs show the same gap. In Artificial Analysis's measurements (October 2026), GPT-6 Luna ran at about 124 tokens per second to GPT-6.1 Sol's 64, and Claude Haiku 5.5 at about 185 to Claude Sonnet 5.5's 109 (<a href="https://artificialanalysis.ai/models/comparisons/gpt-6-1-sol-vs-gpt-6-luna" target="_blank">OpenAI pair</a>; <a href="https://artificialanalysis.ai/models/comparisons/claude-haiku-5-5-medium-vs-claude-sonnet-5-5-medium" target="_blank">Anthropic pair</a>).</p>
+
+<p>For autocomplete, real-time classification, or voice assistants, that gap is a hard requirement, not a nice-to-have. It also compounds under load. On a hosted API at peak hours, your request waits in a queue behind everyone else's, and larger models' longer processing times make that wait worse. When self-hosting, a smaller model serves more concurrent requests on the same hardware, which improves the P95 and P99 latencies your SLA actually measures.</p>
+
+<h3>Hardware and memory</h3>
+
+<p>Memory is the hard constraint. A 70B model in FP16 needs roughly 140 GB of GPU memory for its weights alone, which means at least two 80 GB H100s before counting the KV cache that grows with context length. A 7B model needs about 14 GB and fits on a single mid-range GPU, or even runs, slowly, on a decent CPU with enough RAM.</p>
+
+<p><strong>Quantization</strong> shrinks this by storing weights at lower precision. In INT4, that 70B model drops to about 35 GB and can fit on one high-end GPU, though aggressive quantization risks quality, so test it on your own tasks. Methods like AWQ and GPTQ handle 4-bit compression well, and GGUF, the file format used by llama.cpp, is the go-to way to run quantized models on laptops, CPUs, and Apple Silicon. FP8 on NVIDIA's H100 has become the practical sweet spot: NVIDIA reports roughly 1.4–1.5× the throughput of FP16, with MMLU accuracy dropping by less than 1% (<a href="https://nvidia.github.io/TensorRT-LLM/0.21.0/blogs/quantization-in-TRT-LLM.html" target="_blank">NVIDIA TensorRT-LLM</a>).</p>
+
+<h3>Accuracy, reasoning, and hallucinations</h3>
+
+<p>This is where larger models earn their keep. On multi-step reasoning, ambiguous instructions, cross-domain synthesis, or unfamiliar inputs, they perform meaningfully better. But "better" doesn't mean "necessary." A fine-tuned 7B model that sorts support tickets into 15 categories will likely match a frontier model on that narrow task. The frontier model's broader intelligence is wasted on something that narrow.</p>
+
+<p>Hallucinations are harder to generalize about. Larger models know more, which reduces some factual errors, but a 2024 <em>Nature</em> study found that larger, more instruction-tuned models are more likely to attempt an answer and be confidently wrong where smaller models would have declined (<a href="https://www.nature.com/articles/s41586-024-07930-y" target="_blank">Zhou et al., 2024</a>). Smaller models hallucinate too, but their outputs are easier to constrain with structured formats.</p>
+
+<h3>Context windows</h3>
+
+<p>Current hosted models from OpenAI, Anthropic, and Google accept around 1 million tokens, even at their cheapest tiers, while open-weight small models often top out lower; Llama 3.1 and the long-context versions of Phi-3, for example, stop at 128K. Supporting a long context isn't the same as using it well, though. For 100-page contracts or whole codebases, larger models stay more coherent. For a customer message or a data extraction task, context length is rarely the bottleneck.</p>
+
+<h2>Use cases: where each approach shines</h2>
+
+<p><strong>Classification, extraction, and structured output</strong> are small-model territory: well-defined, repetitive, high-volume tasks where a fine-tuned small model matches frontier accuracy at a fraction of the cost. Sentiment analysis, entity extraction, intent classification, and JSON generation all fit this pattern. This is usually the first place teams move off frontier models.</p>
+
+<p><strong>Customer support</strong> depends on how open-ended it is. A bot answering from a known FAQ with retrieval-augmented generation (RAG) works well on a small model, while one that negotiates complaints across long conversations benefits from a large one. <strong>Summarization</strong> splits the same way: consistent formats like invoices suit small models, while ambiguous, multi-topic documents need a large model's judgment.</p>
+
+<p><strong>Coding assistants</strong> are one of the clearest wins for larger models. Small models can handle code completion and simple generation, but larger ones handle complex logic and architecture far better. <strong>Agentic workflows</strong> need large-model planning, but not at every step. Sending routine tool calls and data extraction to a small model, and only the planning to a large one, can cut costs sharply. And in <strong>specialized domains</strong> like healthcare, law, and finance, a small model fine-tuned on domain data often beats a general-purpose large one, because it has learned the field's vocabulary, reasoning patterns, and output formats.</p>
+
+<h2>Making models smaller, faster, and cheaper</h2>
+
+<p>The gap between large and small models isn't fixed. Beyond quantization, these are the techniques that matter most in production.</p>
+
+<p><strong>Knowledge distillation</strong> trains a small "student" model to imitate a large "teacher," learning from the teacher's full output probabilities rather than just the right answers (<a href="https://arxiv.org/abs/1503.02531" target="_blank">Hinton et al., 2015</a>). This is how many of the best small models are produced. The payoff can be large: DistilBERT is 40% smaller and 60% faster than Google's BERT while keeping 97% of its language-understanding performance (<a href="https://arxiv.org/abs/1910.01108" target="_blank">Sanh et al., 2019</a>).</p>
+
+<p><strong>Speculative decoding</strong> lets a small "draft" model propose several tokens that the large model then verifies in one pass. That can make generation 2–3× faster with exactly the same output, giving you big-model quality at closer to small-model speed (<a href="https://arxiv.org/abs/2211.17192" target="_blank">Leviathan et al., 2023</a>).</p>
+
+<p><strong>Fine-tuning and prompt engineering</strong> are the most accessible tools. Prompting is cheaper and faster to iterate on, while fine-tuning is more reliable but needs representative training data and ongoing upkeep. Either way, a small model trained or prompted with representative task data frequently closes the accuracy gap with a larger model on a specific use case.</p>
+
+<p><strong>Effort settings</strong> are the newest lever, and they sit between "use a small model" and "use a big one." OpenAI (<code>reasoning.effort</code>), Anthropic (<code>effort</code>), and Google (<code>thinking_level</code>) let you set how much a model reasons on each request. All three bill that reasoning as output tokens, so lower effort means fewer billed tokens and faster answers, at some cost to quality on hard problems (<a href="https://developers.openai.com/api/docs/guides/reasoning" target="_blank">OpenAI</a>; <a href="https://platform.claude.com/docs/en/build-with-claude/effort" target="_blank">Anthropic</a>; <a href="https://ai.google.dev/gemini-api/docs/thinking" target="_blank">Google</a>). None publishes a fixed savings figure, so measure it on your own workload. When a frontier model is the right choice but too slow or expensive, try a lower effort setting before you switch models.</p>
+
+<p><strong>Caching and batching</strong> help at any model size. Prompt caching reuses the computation for repeated prompt prefixes, and OpenAI and Anthropic discount cached input tokens: 50% on older OpenAI models such as GPT-4o, and 90% or more on current models from both. Continuous batching, in serving frameworks like vLLM and SGLang, keeps GPUs busy by grouping requests dynamically.</p>
+
+<h2>The hybrid approach: why it's becoming the default</h2>
+
+<p>Most production systems end up with <strong>a routing layer that sends different requests to different models.</strong> A fast, cheap classifier, often a small model or simple rules, checks each request. Simple ones, like FAQ lookups or data extraction, go to a small model. Complex or ambiguous ones are escalated to a frontier model.</p>
+
+<p>It works because most production traffic is routine. In a typical support application, maybe 70–80% of queries are simple enough for a small model. Research backs up the savings: LMSYS's RouteLLM router cut costs by 35% to more than 85% compared with sending everything to GPT-4, depending on the benchmark, while keeping about 95% of GPT-4's quality (<a href="https://lmsys.org/blog/2024-07-01-routellm/" target="_blank">Ong et al., 2024</a>). Stanford's FrugalGPT matched GPT-4 on specific tasks at up to 98% lower cost (<a href="https://arxiv.org/abs/2305.05176" target="_blank">Chen et al., 2023</a>). How much you save in production depends on your traffic mix.</p>
+
+<p>In dollars: at 10 million tokens a day, sending everything to GPT-6.1 Sol costs about $1,800 a month. Route 75% of it to GPT-6 Luna and the bill falls to about $520, which is 71% lower before the router's own small cost. (Prices from the table below, with a 50/50 split between input and output tokens.)</p>
+
+<figure class="article-image">
+  <img src="images/hybrid-routing-savings.png" width="2172" height="724" loading="lazy" alt="Three stat cards: $1,800 a month with all traffic on GPT-6.1 Sol; about $520 a month with 75% of traffic routed to GPT-6 Luna; a 71% lower monthly bill.">
+</figure>
+
+<figure class="article-image">
+  <a href="images/model-selection-framework.png" target="_blank"><img src="images/model-selection-framework.png" width="1672" height="941" loading="lazy" alt="Flowchart titled 'Choosing a model: a starting framework'. It starts with the question: is the task narrowly defined and repetitive? If yes, start with a small model, fine-tuned if needed, then check whether it meets your accuracy bar on your own evaluation set: if yes, deploy the small model; if no, try hybrid routing with a large model for the hard cases. If no and the task needs complex reasoning or broad knowledge, start with a large model, then check whether cost and latency are acceptable: if yes, deploy the large model; if no, try a lower effort setting or hybrid routing. If no and it doesn't need complex reasoning, evaluate small and large models on your own data and deploy the cheapest model that meets your quality bar. Whatever you deploy, monitor it, keep evaluating, and reassess as models and prices change."></a>
+  <figcaption>A starting framework, not a rulebook. Tap or click the image to open it full size. <em>(Original graphic created for this article.)</em></figcaption>
+</figure>
+
+<h2>The cost question: it's more than token pricing</h2>
+
+<h3>API pricing snapshot</h3>
+
+<p>Here's what major providers charge per million tokens (standard, non-cached prices, October 2026):</p>
+
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Input (per 1M tokens)</th>
+        <th>Output (per 1M tokens)</th>
+        <th>Context Window</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>GPT-6.1 Sol</td><td>$2.00</td><td>$10.00</td><td>1.05M</td></tr>
+      <tr><td>GPT-6 Luna</td><td>$0.10</td><td>$0.50</td><td>1.05M</td></tr>
+      <tr><td>Claude Sonnet 5.5</td><td>$2.00</td><td>$10.00</td><td>1M</td></tr>
+      <tr><td>Claude Haiku 5.5</td><td>$0.10</td><td>$0.50</td><td>1M</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="source-card">
+  <div class="label">Source note</div>
+  <p>Sources: <a href="https://developers.openai.com/api/docs/pricing" target="_blank">OpenAI Pricing</a>, <a href="https://www.anthropic.com/pricing" target="_blank">Anthropic Pricing</a>. GPT-6.1 Sol is OpenAI's mid-tier model and GPT-6 Luna its small one. Longer prompts (over 272K tokens at OpenAI, over 100K for Claude Haiku 5.5) cost more.</p>
+</div>
+
+<p>At both providers, the small model costs 20× less per input token than its larger sibling, and at high volume that gap compounds fast.</p>
+
+<h3>Self-hosting economics</h3>
+
+<p>Self-hosting an open-weight model like Llama 3.1 70B means renting GPUs. An NVIDIA H100 costs roughly $7–12 per hour on-demand from the major clouds (about $6.90 on AWS, $11 on Google Cloud, and $12.30 on Azure), or about $2–4 on spot instances or GPU clouds like RunPod and Lambda (<a href="https://aws.amazon.com/ec2/pricing/on-demand/" target="_blank">AWS</a>; <a href="https://cloud.google.com/products/compute/pricing/accelerator-optimized" target="_blank">Google Cloud</a>; <a href="https://www.runpod.io/pricing" target="_blank">RunPod</a>; <a href="https://lambda.ai/pricing" target="_blank">Lambda</a>).</p>
+
+<p>Suppose you run Llama 3.1 70B in FP8 on two H100s at $4 per GPU-hour (a multi-year committed rate or a specialist GPU cloud). That's about $5,760 a month for the GPUs alone. Add $2,000–5,000 a month of engineering time for setup, monitoring, and on-call, and your floor is roughly $8,000–11,000 a month <em>regardless of traffic volume.</em></p>
+
+<p>The same 10 million tokens a day costs about $90 a month on GPT-6 Luna, or $1,800 on GPT-6.1 Sol. Self-hosting only pays off at roughly 45–60 million tokens a day against a frontier API, and around a billion a day against a small-model API, before you count the operational complexity.</p>
+
+<figure class="article-image">
+  <img src="images/self-hosting-break-even.png" width="2172" height="724" loading="lazy" alt="Three stat cards: a monthly self-hosting floor of $8,000 to $11,000; 45 to 60 million tokens a day to beat a frontier API; about 1 billion tokens a day to beat a small-model API.">
+</figure>
+
+<figure class="article-image">
+  <a href="images/cost-chart-8k.png" target="_blank"><img src="images/cost-chart-2560.png" srcset="images/cost-chart-2560.png 2560w, images/cost-chart-8k.png 7680w" sizes="(max-width: 900px) 100vw, 900px" width="2560" height="1440" loading="lazy" alt="Log-log line chart of monthly cost against daily token volume. The frontier API (GPT-6.1 Sol) costs $180 a month at 1 million tokens a day, rising to $360,000 at 2 billion. The small-model API (GPT-6 Luna) costs $9, rising to $18,000. Self-hosting on two H100s is a flat $8,000 to $11,000 a month. The frontier API passes the self-hosting cost at about 45 to 60 million tokens a day, and the small-model API at about 0.9 to 1.2 billion."></a>
+  <details class="data-table">
+    <summary>Show the numbers</summary>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Tokens per day</th><th>Frontier API</th><th>Self-hosted</th><th>Small-model API</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1M</td><td>$180</td><td>$8,000–11,000</td><td>$9</td></tr>
+          <tr><td>10M</td><td>$1,800</td><td>$8,000–11,000</td><td>$90</td></tr>
+          <tr><td>50M</td><td>$9,000</td><td>$8,000–11,000</td><td>$450</td></tr>
+          <tr><td>100M</td><td>$18,000</td><td>$8,000–11,000</td><td>$900</td></tr>
+          <tr><td>500M</td><td>$90,000</td><td>$8,000–11,000</td><td>$4,500</td></tr>
+          <tr><td>1B</td><td>$180,000</td><td>$8,000–11,000</td><td>$9,000</td></tr>
+          <tr><td>2B</td><td>$360,000</td><td>$8,000–11,000</td><td>$18,000</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+  <figcaption>Frontier API = GPT-6.1 Sol; small-model API = GPT-6 Luna; self-hosted = Llama 3.1 70B on two H100s at $4/GPU-hour plus $2,000–5,000/month of engineering time. Assumes a 50/50 input/output split, no caching, a 30-day month, and enough GPU capacity for the traffic. At the highest volumes you'd need more GPUs, which raises the self-hosting cost. Click the chart to open the full 8K version. <em>(Original chart created for this article.)</em></figcaption>
+</figure>
+
+<h3>Back to that 50,000-user question</h3>
+
+<p>So what does the prototype from the opening actually cost? Assume 50,000 daily active users, each sending four messages a day at about 1,000 tokens per message, counting the prompt, the conversation history, and the reply. That's 200 million tokens a day:</p>
+
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr><th>Strategy</th><th>Monthly cost</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Everything on GPT-6.1 Sol</td><td>~$36,000</td></tr>
+      <tr><td>Hybrid: 75% GPT-6 Luna, 25% GPT-6.1 Sol</td><td>~$10,350</td></tr>
+      <tr><td>Self-hosted Llama 3.1 70B (two H100s)</td><td>$8,000–11,000, if two GPUs can handle your peak traffic</td></tr>
+      <tr><td>Everything on GPT-6 Luna</td><td>~$1,800</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<p>That's the "math doesn't work" moment in numbers: frontier-only costs 20 times as much as small-model-only. Self-hosting beats the frontier API at this volume but lands in the same range as the hybrid, with more operational burden, and peak traffic may need more GPUs than the two in this scenario. Real chat traffic is input-heavy, since the conversation history gets resent with every message, and input tokens are cheaper, so treat the API figures as upper bounds. The bigger lesson is that the gap between strategies is far larger than the gap between providers.</p>
+
+<h3>Total cost of ownership</h3>
+
+<p>Token price vs. GPU rental is only part of the comparison. Total cost of ownership also includes:</p>
+
+<ul>
+  <li><strong>Infrastructure</strong>: GPUs, memory, networking, storage</li>
+  <li><strong>Engineering time</strong>: setup, optimization, monitoring, debugging, on-call</li>
+  <li><strong>Reliability engineering</strong>: failover, redundancy, load balancing</li>
+  <li><strong>Cost of errors</strong>: hallucinations that need human review, misclassifications, and mistakes that damage customer trust</li>
+  <li><strong>Opportunity cost</strong>: time spent running inference infrastructure instead of building product</li>
+</ul>
+
+<p>For most teams, especially startups and small-to-mid-sized companies, APIs are the more economical choice unless traffic is both very high and very predictable. Self-hosting makes sense with sustained, predictable high volume, strict data residency or compliance requirements, or a need for deep control through continuous fine-tuning.</p>
+
+<h2>Open weights ≠ open source</h2>
+
+<p>Models like Llama, Gemma, and Phi publish their trained weights, so you can download, run, fine-tune, and build on them. But "open weight" isn't "open source." The Open Source Initiative's definition also requires the full training and inference code, plus detailed information about the training data (<a href="https://opensource.org/ai/open-source-ai-definition" target="_blank">OSI Open Source AI Definition 1.0</a>). Most "open" models don't meet that bar.</p>
+
+<p>More practically, licenses differ. Meta's Llama license allows commercial use, but companies with more than 700 million monthly active users must request a separate license, and it incorporates an acceptable-use policy. Its terms also change between versions: Llama 3 banned using its outputs to improve other large language models, while Llama 3.1 and later only require models trained on Llama outputs to put "Llama" at the start of their name (<a href="https://github.com/meta-llama/llama3/blob/main/LICENSE" target="_blank">Llama 3 License</a>; <a href="https://github.com/meta-llama/llama-models/blob/main/models/llama3_1/LICENSE" target="_blank">Llama 3.1 License</a>). Gemma 4 uses the standard <a href="https://opensource.googleblog.com/2026/03/gemma-4-expanding-the-gemmaverse-with-apache-20.html" target="_blank">Apache 2.0 license</a>, while earlier Gemma versions carry Google's own terms. Read the license before you build.</p>
+
+<h2>Privacy, compliance, and data residency</h2>
+
+<p>Sometimes the choice is made before performance enters the picture. With healthcare records (HIPAA), financial data, or strict data residency rules (GDPR), sending data to a third-party API may not be an option. Where it is, it requires agreements and configuration, such as a business associate agreement (BAA), zero-data-retention settings, or regional endpoints, and some models and features may be excluded.</p>
+
+<p>Self-hosted small models have a real advantage here. Running inside your own VPC removes the model provider from the data path and gives you full auditability: you can log every input and output, trace every decision, and demonstrate compliance in ways hosted APIs make harder. Your logs, vector databases, and backups must still stay in the right region, though. Since large models are much harder to self-host, the privacy argument usually favors small ones.</p>
+
+<h2>Evaluate, then keep evaluating</h2>
+
+<p>The most important step is also the one most comparisons leave out: <strong>evaluate candidate models on your actual data.</strong> Not public benchmarks, and not vibes from a chat window, but representative samples of your real inputs, measured against the outputs you need.</p>
+
+<p>Build an evaluation set that includes edge cases and the strange inputs real users send. Define your metrics (accuracy, latency, cost per request, format compliance) and look at tail behavior, not just averages. The results often surprise: the 7B model you dismissed may nail 95% of your cases after fine-tuning, while the frontier model may hallucinate on a category that matters to your business.</p>
+
+<div class="callout teal">
+  <div class="callout-label">Practical tip</div>
+  <p>Don't trust benchmark leaderboards as production predictors. Benchmarks measure specific capabilities under controlled conditions, and your production workload is neither. Use them for initial screening, not final decisions.</p>
+</div>
+
+<p>Then keep evaluating after launch. Track quality on live traffic with human sampling, automated checks, or both. Watch for drift as real inputs diverge from your test set, set up alerts for quality drops, and feed outputs that users or downstream systems corrected back into your evaluation data. Models and prices change fast, and the best option six months ago may now be beaten by a new release at half the cost. Put your model behind a clean interface you can swap without rewriting your application.</p>
+
+<h2>So... which one should you use?</h2>
+
+<p>The honest answer is "it depends," but you now know what it depends <em>on</em>. Start with the smallest model that could plausibly work and evaluate it rigorously. If it meets your accuracy bar, you've saved significant money and complexity. If it falls short, try fine-tuning, a larger model, or a hybrid router. Don't start with the most expensive frontier model and plan to optimize down later, because that path bakes in assumptions that are hard to unwind.</p>
+
+<p>For narrow, high-volume tasks like classification, extraction, and FAQ retrieval, start small. For complex reasoning, coding, and agentic work, expect to need a large model for at least part of the pipeline. Most real applications end up using both. The best model is the one that meets your quality bar at the lowest total cost and complexity, with enough headroom for the unexpected.</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<!-- SOURCES / FOOTER -->
+<!-- ============================================================ -->
+
+<footer class="article-footer">
+  <h3>Sources & References</h3>
+
+  <ol>
+    <li>Abdin, M., et al. "Phi-3 Technical Report." Microsoft, 2024. Phi-3-mini (3.8B), Phi-3-small (7B), and Phi-3-medium (14B) architecture and benchmarks, including comparisons with GPT-3.5. <a href="https://arxiv.org/abs/2404.14219" target="_blank">arxiv.org/abs/2404.14219</a></li>
+    <li>Meta. Llama models repository. Official model cards for Llama 3, 3.1, and later. <a href="https://github.com/meta-llama/llama-models" target="_blank">github.com/meta-llama/llama-models</a></li>
+    <li>Meta. "Meta Llama 3 Community License Agreement." 2024. <a href="https://github.com/meta-llama/llama3/blob/main/LICENSE" target="_blank">github.com/meta-llama/llama3</a></li>
+    <li>Meta. "Llama 3.1 Community License Agreement." 2024. <a href="https://github.com/meta-llama/llama-models/blob/main/models/llama3_1/LICENSE" target="_blank">github.com/meta-llama/llama-models</a></li>
+    <li>Current small open-weight model cards: Microsoft Phi-4-mini (<a href="https://huggingface.co/microsoft/Phi-4-mini-instruct" target="_blank">huggingface.co</a>), Google Gemma 4 E4B (<a href="https://huggingface.co/google/gemma-4-E4B-it" target="_blank">huggingface.co</a>), IBM Granite 4.2 (<a href="https://huggingface.co/ibm-granite/granite-4.2-8b" target="_blank">huggingface.co</a>), Alibaba Qwen3.5-9B (<a href="https://huggingface.co/Qwen/Qwen3.5-9B" target="_blank">huggingface.co</a>), and Mistral's Ministral 3 announcement (<a href="https://mistral.ai/news/mistral-3/" target="_blank">mistral.ai</a>).</li>
+    <li>NVIDIA. NIM for LLMs benchmarking: performance results for Llama 3.1 8B and Llama 3.3 70B on H100 (NIM 1.8.0, FP8). <a href="https://docs.nvidia.com/nim/benchmarking/llm/1.0.0/performance.html" target="_blank">docs.nvidia.com</a></li>
+    <li>Artificial Analysis. Model comparisons: GPT-6.1 Sol vs GPT-6 Luna, and Claude Haiku 5.5 vs Claude Sonnet 5.5 (output speed, October 2026). <a href="https://artificialanalysis.ai/models/comparisons/gpt-6-1-sol-vs-gpt-6-luna" target="_blank">artificialanalysis.ai</a>; <a href="https://artificialanalysis.ai/models/comparisons/claude-haiku-5-5-medium-vs-claude-sonnet-5-5-medium" target="_blank">artificialanalysis.ai</a></li>
+    <li>Reasoning effort documentation: OpenAI "Reasoning models" (<a href="https://developers.openai.com/api/docs/guides/reasoning" target="_blank">developers.openai.com</a>), Anthropic "Effort" (<a href="https://platform.claude.com/docs/en/build-with-claude/effort" target="_blank">platform.claude.com</a>), and Google "Gemini thinking" (<a href="https://ai.google.dev/gemini-api/docs/thinking" target="_blank">ai.google.dev</a>).</li>
+    <li>Google. "Introducing Gemma 3 270M." August 2025. <a href="https://developers.googleblog.com/en/introducing-gemma-3-270m/" target="_blank">developers.googleblog.com</a></li>
+    <li>Google. "Gemma 4: Expanding the Gemmaverse with Apache 2.0." April 2026. <a href="https://opensource.googleblog.com/2026/03/gemma-4-expanding-the-gemmaverse-with-apache-20.html" target="_blank">opensource.googleblog.com</a></li>
+    <li>Ben Abacha, A., et al. "MEDEC: A Benchmark for Medical Error Detection and Correction in Clinical Notes." Microsoft, 2024. Source of the unverified ~200B parameter estimate for GPT-4o. <a href="https://arxiv.org/abs/2412.19260" target="_blank">arxiv.org/abs/2412.19260</a></li>
+    <li>OpenAI. API Pricing and Models. Pricing and context windows for GPT-6.1 Sol, GPT-6 Luna, and other models. <a href="https://developers.openai.com/api/docs/pricing" target="_blank">developers.openai.com/api/docs/pricing</a></li>
+    <li>Anthropic. API Pricing. Pricing for Claude Sonnet, Haiku, and Opus models. <a href="https://www.anthropic.com/pricing" target="_blank">anthropic.com/pricing</a></li>
+    <li>NVIDIA. "Speed up inference with SOTA quantization techniques in TRT-LLM." TensorRT-LLM documentation. FP8 vs FP16 throughput and accuracy on H100. <a href="https://nvidia.github.io/TensorRT-LLM/0.21.0/blogs/quantization-in-TRT-LLM.html" target="_blank">nvidia.github.io/TensorRT-LLM</a></li>
+    <li>Zhou, L., et al. "Larger and more instructable language models become less reliable." <em>Nature</em> 634, 61–68, 2024. <a href="https://www.nature.com/articles/s41586-024-07930-y" target="_blank">nature.com</a></li>
+    <li>Hinton, G., Vinyals, O., Dean, J. "Distilling the Knowledge in a Neural Network." 2015. <a href="https://arxiv.org/abs/1503.02531" target="_blank">arxiv.org/abs/1503.02531</a></li>
+    <li>Sanh, V., Debut, L., Chaumond, J., Wolf, T. "DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter." 2019. <a href="https://arxiv.org/abs/1910.01108" target="_blank">arxiv.org/abs/1910.01108</a></li>
+    <li>Leviathan, Y., Kalman, M., Matias, Y. "Fast Inference from Transformers via Speculative Decoding." <em>ICML</em>, 2023. <a href="https://arxiv.org/abs/2211.17192" target="_blank">arxiv.org/abs/2211.17192</a></li>
+    <li>Kwon, W., Li, Z., Zhuang, S., et al. "Efficient Memory Management for Large Language Model Serving with PagedAttention." <em>SOSP</em>, 2023. <a href="https://arxiv.org/abs/2309.06180" target="_blank">arxiv.org/abs/2309.06180</a></li>
+    <li>Ong, I., et al. "RouteLLM: Learning to Route LLMs with Preference Data." LMSYS, 2024. <a href="https://arxiv.org/abs/2406.18665" target="_blank">arxiv.org/abs/2406.18665</a>; results summary at <a href="https://lmsys.org/blog/2024-07-01-routellm/" target="_blank">lmsys.org</a></li>
+    <li>Chen, L., Zaharia, M., Zou, J. "FrugalGPT: How to Use Large Language Models While Reducing Cost and Improving Performance." 2023. <a href="https://arxiv.org/abs/2305.05176" target="_blank">arxiv.org/abs/2305.05176</a></li>
+    <li>Open Source Initiative. "The Open Source AI Definition 1.0." October 2024. <a href="https://opensource.org/ai/open-source-ai-definition" target="_blank">opensource.org/ai/open-source-ai-definition</a></li>
+    <li>Amazon Web Services. EC2 On-Demand Pricing (p5.48xlarge, 8× H100). <a href="https://aws.amazon.com/ec2/pricing/on-demand/" target="_blank">aws.amazon.com</a></li>
+    <li>Google Cloud. Accelerator-optimized VM pricing (a3-highgpu-8g, 8× H100). <a href="https://cloud.google.com/products/compute/pricing/accelerator-optimized" target="_blank">cloud.google.com</a></li>
+    <li>Microsoft Azure. Linux Virtual Machines Pricing (ND H100 v5). <a href="https://azure.microsoft.com/en-us/pricing/details/virtual-machines/linux/" target="_blank">azure.microsoft.com</a></li>
+    <li>RunPod and Lambda GPU cloud pricing. <a href="https://www.runpod.io/pricing" target="_blank">runpod.io/pricing</a>; <a href="https://lambda.ai/pricing" target="_blank">lambda.ai/pricing</a></li>
+  </ol>
+
+  <p style="margin-top: 20px;"><strong>Note:</strong> Pricing data and model specifications were researched as of October 2026. API pricing, model availability, and hardware costs change frequently. Always verify current information from primary sources before making production decisions.</p>
+
+  <div class="tags">
+    <span>LLMs</span>
+    <span>Small Language Models</span>
+    <span>Production AI</span>
+    <span>Inference</span>
+    <span>Quantization</span>
+    <span>Hybrid Routing</span>
+    <span>Compute Costs</span>
+    <span>Open Weights</span>
+    <span>Evaluation</span>
+    <span>Deep Dive</span>
+  </div>
+
+  <p style="margin-top: 32px;"><a href="../">← More from Under the Hood</a></p>
+</footer>
+
+</div>
+
+
+</body>
+</html>

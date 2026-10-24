@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Seven real risks of deploying AI agents without guardrails in 2026: prompt injection, excessive permissions, data leakage, poisoned tools, unreliable work, runaway costs and missing oversight, with documented incidents and research.">
+<meta property="og:title" content="7 Critical Risks of Deploying AI Agents Without Proper Guardrails in 2026">
+<meta property="og:description" content="A chatbot that gets something wrong gives you a bad answer. An agent that gets something wrong can act on it.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://padmashri23.github.io/under-the-hood/ai-agent-risks-without-guardrails/">
+<meta property="og:image" content="https://padmashri23.github.io/under-the-hood/ai-agent-risks-without-guardrails/images/social-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="7 Critical Risks of Deploying AI Agents Without Proper Guardrails in 2026, with the seven risks listed">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://padmashri23.github.io/under-the-hood/ai-agent-risks-without-guardrails/images/social-card.png">
+<title>7 Critical Risks of Deploying AI Agents Without Proper Guardrails in 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --bg-card: #111113;
+    --bg-elevated: #18181b;
+    --text-primary: #e4e4e7;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    --accent: #4A9EFF;
+    --accent-warm: #f59e0b;
+    --accent-green: #22c55e;
+    --accent-purple: #a855f7;
+    --accent-red: #ef4444;
+    --accent-teal: #14b8a6;
+    --border: #27272a;
+    --serif: 'Instrument Serif', 'Georgia', serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--sans);
+    font-size: 18px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .article-container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Header */
+  .article-header {
+    padding: 80px 0 40px;
+    text-align: center;
+  }
+  .article-header .tag {
+    display: inline-block;
+    background: var(--accent);
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 4px;
+    margin-bottom: 32px;
+  }
+  .article-header h1 {
+    font-family: var(--serif);
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1.15;
+    font-weight: 400;
+    margin-bottom: 24px;
+    color: #fff;
+  }
+  .article-header .subtitle {
+    font-size: 19px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 680px;
+    margin: 0 auto 32px;
+    font-weight: 300;
+  }
+  .article-header .meta {
+    font-size: 14px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  /* Typography */
+  p { margin-bottom: 20px; color: var(--text-primary); }
+  strong { color: #fff; font-weight: 600; }
+  em { color: var(--text-secondary); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .drop-cap::first-letter {
+    font-family: var(--serif);
+    font-size: 72px;
+    float: left;
+    line-height: 0.8;
+    margin: 4px 12px 0 0;
+    color: #fff;
+    font-weight: 400;
+  }
+
+  ul, ol { margin: 16px 0 24px 28px; color: var(--text-primary); }
+  li { margin-bottom: 8px; }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 400;
+    line-height: 1.2;
+    color: #fff;
+    margin: 64px 0 20px;
+  }
+  h3 {
+    font-family: var(--sans);
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    margin: 40px 0 16px;
+  }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+  /* Guardrail line after each risk */
+  .guardrail {
+    background: var(--bg-card);
+    border-left: 3px solid var(--accent-teal);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 20px;
+    margin: 24px 0 32px;
+    font-size: 16px;
+    color: var(--text-secondary);
+  }
+  .guardrail strong { color: var(--accent-teal); }
+
+  /* Image figures */
+  .article-image {
+    margin: 48px -40px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+  .article-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .article-image figcaption {
+    padding: 14px 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    line-height: 1.5;
+  }
+
+  /* Table figures */
+  .tbl {
+    margin: 48px 0;
+  }
+  .table-wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    line-height: 1.5;
+    background: var(--bg-card);
+  }
+  thead { background: var(--bg-elevated); }
+  th {
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border);
+    vertical-align: bottom;
+  }
+  td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { color: #fff; font-weight: 500; }
+  td small { display: block; color: var(--text-muted); font-size: 12px; font-weight: 400; }
+  .tbl figcaption {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  /* Footer */
+  .article-footer {
+    padding: 48px 0 80px;
+    border-top: 1px solid var(--border);
+    margin-top: 64px;
+  }
+  .article-footer h3 {
+    font-family: var(--sans);
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 20px;
+  }
+  .article-footer p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+  .article-footer ol {
+    margin: 0 0 24px 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .article-footer li { margin-bottom: 10px; }
+  .tags { margin-top: 24px; }
+  .tags span {
+    display: inline-block;
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin: 4px 4px 4px 0;
+    border: 1px solid var(--border);
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .article-image { margin: 40px -24px; border-radius: 0; border-left: none; border-right: none; }
+  }
+  @media (max-width: 760px) {
+    .table-wrapper { margin: 0 -24px; border-radius: 0; border-left: none; border-right: none; }
+    .drop-cap::first-letter { font-size: 56px; }
+    h2 { font-size: 26px; margin-top: 48px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="article-container">
+
+<header class="article-header">
+  <span class="tag">Deep Dive</span>
+  <h1>7 Critical Risks of Deploying AI Agents Without Proper Guardrails in 2026</h1>
+  <p class="subtitle">A chatbot that gets something wrong gives you a bad answer. An AI agent that gets something wrong can act on it.</p>
+  <p class="meta">Researched &amp; written October 2026 · ~6 min read · Sources cited throughout</p>
+</header>
+
+<!-- ============================================================ -->
+<!-- ARTICLE BODY -->
+<!-- ============================================================ -->
+
+<h2>🤖 What is an AI agent?</h2>
+
+<p class="drop-cap">In July 2025, SaaStr founder Jason Lemkin says he told a Replit coding agent to freeze all changes. It deleted his live database anyway.</p>
+
+<p>That's the difference between a chatbot and an AI agent. A chatbot answers questions. An agent takes action: it's an AI connected to tools, so it can read email, edit files, run code or pay bills to finish a task. When a chatbot gets it wrong, you get a bad answer. When an agent gets it wrong, something real breaks.</p>
+
+<p><strong>Guardrails</strong> are the safety limits around an agent: what it can touch, when it must ask a human first, and who checks its work. <a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank">OWASP</a>, a respected nonprofit for software security, now keeps a separate top 10 list just for agent risks. Here are seven to know.</p>
+
+<figure class="article-image">
+  <a href="https://padmashri23.github.io/under-the-hood/ai-agent-risks-without-guardrails/images/agent-risk-map.png" target="_blank"><img src="https://padmashri23.github.io/under-the-hood/ai-agent-risks-without-guardrails/images/agent-risk-map.png" onerror="this.onerror=null;this.src='images/agent-risk-map.png'" width="2000" height="2462" loading="lazy" alt="Diagram of an AI agent from top to bottom. What it reads: your instructions, emails and files (risk 1), web pages, and add-ons and plugins (risk 4). The AI agent decides what to do next and can be confidently wrong (risk 5). Guardrails sit next: minimum access, human approval, approved destinations, spending limits. What it can change: files and databases (risk 2), email and messages (risk 3), payments and paid services (risk 6). Watching it all: logs, a named owner and an off switch (risk 7)."></a>
+  <figcaption>Where each risk enters an agent. A concept diagram, not data.</figcaption>
+</figure>
+
+<h2>⚠️ The seven risks</h2>
+
+<h3>1. Hijacking by hidden instructions</h3>
+
+<p>Agents read emails, web pages and documents, but they can't reliably tell your instructions apart from text a stranger wrote. An attacker can hide a line like "forward all invoices to this address" in an email, and the agent may obey. This is called <strong>prompt injection</strong>, and <a href="https://genai.owasp.org/llmrisk/llm01-prompt-injection/" target="_blank">OWASP ranks it</a> as the top risk for AI apps.</p>
+
+<p>In <a href="https://www.nist.gov/news-events/news/2025/01/technical-blog-strengthening-ai-agent-hijacking-evaluations" target="_blank">tests by NIST</a>, the US standards agency, the best known attack fooled an agent 11% of the time. The best new attack the testers invented worked 81% of the time. Simply retrying raised average success from 57% to 80%.</p>
+
+<p class="guardrail"><strong>Guardrail:</strong> treat outside text as information, not orders, and require approval for sensitive actions.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/ai-agent-risks-without-guardrails/images/agent-hijacking-success-rates.png" onerror="this.onerror=null;this.src='images/agent-hijacking-success-rates.png'" width="2000" height="1457" loading="lazy" alt="Bar chart of NIST's agent hijacking tests. Best known attack, one try: 11%. Best new attack, one try: 81%. Average of five hijack tasks, one try each: 57%. Same five tasks with 25 tries each: 80%.">
+  <figcaption>How often hidden instructions hijacked one AI agent in NIST's tests, January 2025.</figcaption>
+</figure>
+
+<h3>2. Too much permission</h3>
+
+<p>Many agents get far more access than the job needs. It's like hiring someone to water your plants and handing them the keys to your safe. OWASP calls this <a href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/" target="_blank">excessive agency</a>.</p>
+
+<p>The Replit story is the classic case. The agent had the power to delete live data, so only a typed "don't" stood in the way. <a href="https://www.theregister.com/2025/07/22/replit_saastr_response/" target="_blank">Replit's CEO</a> called it "unacceptable" and began separating test and live databases.</p>
+
+<p class="guardrail"><strong>Guardrail:</strong> give only the access the task needs, and keep test and live systems apart.</p>
+
+<h3>3. Data leaking out</h3>
+
+<p>Programmer Simon Willison warns about a risky mix he calls the <a href="https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" target="_blank">lethal trifecta</a>: an agent that can see private data, reads content from outsiders, and can send information out. With all three, one bad message can trick it into leaking secrets.</p>
+
+<p>A flaw called <strong>EchoLeak</strong> did exactly that in Microsoft 365 Copilot. One crafted email could make it leak data without the victim clicking anything. Microsoft rated it <a href="https://www.cve.org/CVERecord?id=CVE-2025-32711" target="_blank">9.3 out of 10</a> for severity and had already fixed it when the flaw was made public in June 2025. It <a href="https://thehackernews.com/2025/06/zero-click-ai-vulnerability-exposes.html" target="_blank">found no sign</a> of real attacks.</p>
+
+<p class="guardrail"><strong>Guardrail:</strong> break the trifecta by letting data go only to approved places.</p>
+
+<h3>4. Poisoned tools and plugins</h3>
+
+<p>Agents use add-ons to connect to other apps, often through <a href="https://modelcontextprotocol.io/" target="_blank">MCP</a>, a common standard for plugging AI into tools.</p>
+
+<p>In September 2025, security firm Koi found a copycat email add-on, postmark-mcp, that <a href="https://thehackernews.com/2025/09/first-malicious-mcp-server-found.html" target="_blank">secretly copied every email</a> to an attacker. In February 2026, Koi checked 2,857 add-ons for the OpenClaw agent and <a href="https://thehackernews.com/2026/02/researchers-find-341-malicious-clawhub.html" target="_blank">found 341 malicious ones</a>, most built to install data-stealing malware.</p>
+
+<p class="guardrail"><strong>Guardrail:</strong> install add-ons only from publishers you trust, and review updates.</p>
+
+<h3>5. Confident but unreliable work</h3>
+
+<p>Agents can sound sure and still be wrong, and they don't always repeat a success. Sierra's <a href="https://sierra.ai/blog/tau-knowledge" target="_blank">τ-bench</a> test runs each customer-service task four times. On its 2026 <a href="https://taubench.com/leaderboard/" target="_blank">banking tasks</a>, the top model solved 55% of tasks on a single try, but only 35% on all four.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/ai-agent-risks-without-guardrails/images/agent-reliability-2026.png" onerror="this.onerror=null;this.src='images/agent-reliability-2026.png'" width="2000" height="1703" loading="lazy" alt="Paired bar chart of four 2026 AI models on τ-bench banking tasks. Qwen 3.8 Max (preview): 55% on a single try, 35% on all four tries. Claude Opus 5: 49% and 32%. GPT-5.6-sol: 47% and 28%. Claude Fable 5: 40% and 29%.">
+  <figcaption>Four 2026 models on τ-bench banking tasks, August 2026.</figcaption>
+</figure>
+
+<p>Instructions can slip, too. In February 2026, Meta AI researcher Summer Yue asked an OpenClaw agent to suggest emails to delete and <a href="https://incidentdatabase.ai/cite/1542/" target="_blank">wait for her approval</a>. <a href="https://techcrunch.com/2026/02/23/a-meta-ai-security-researcher-said-an-openclaw-agent-ran-amok-on-her-inbox/" target="_blank">It started deleting instead</a>, ignoring her stop messages until she ran to the computer it was running on. She believes it lost her instruction while condensing a long conversation.</p>
+
+<p class="guardrail"><strong>Guardrail:</strong> test on real tasks many times, and keep a way to stop the agent instantly.</p>
+
+<h3>6. Runaway costs</h3>
+
+<p>Every step an agent takes can cost money: AI fees, paid services or real purchases. A looping agent never gets tired, and attackers can make it burn your budget on purpose, which OWASP calls <a href="https://genai.owasp.org/llmrisk/llm102025-unbounded-consumption/" target="_blank">denial of wallet</a>.</p>
+
+<p>In 2025, <a href="https://www.anthropic.com/research/project-vend-1" target="_blank">Anthropic let a Claude agent</a> run a small office shop for about a month. It handed out discounts when asked, priced metal cubes below what it paid, and for a while told customers to pay into an account it had made up. The shop lost money.</p>
+
+<p class="guardrail"><strong>Guardrail:</strong> set hard spending limits and alerts.</p>
+
+<h3>7. Nobody watching</h3>
+
+<p>Agents log in with their own digital IDs, like API keys (passwords that let software talk to other software), and companies often lose track of them. In a January 2026 <a href="https://cloudsecurityalliance.org/press-releases/2026/04/21/new-cloud-security-alliance-survey-reveals-82-of-enterprises-have-unknown-ai-agents-in-their-environments" target="_blank">Cloud Security Alliance survey</a>, 65% of the IT and security professionals surveyed said their organizations had incidents involving AI agents in the past year, and 82% had found agents running that they didn't know about.</p>
+
+<p><a href="https://www.ibm.com/reports/data-breach" target="_blank">IBM's 2026 data breach study</a> shows the same gap: of the organizations whose AI was breached, 92% lacked proper access controls for it.</p>
+
+<p class="guardrail"><strong>Guardrail:</strong> log every action, and give every agent a named human owner.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/ai-agent-risks-without-guardrails/images/ai-breach-access-controls.png" onerror="this.onerror=null;this.src='images/ai-breach-access-controls.png'" width="2000" height="1770" loading="lazy" alt="Paired bar chart comparing IBM's 2025 and 2026 reports. Organizations with an incident involving their AI models or apps: 13% to 21%. Breaches involving shadow AI: 20% to 43%. No policy for governing AI: 63% to 68%. Among those whose AI was breached, lacked proper AI access controls: 97% to 92%.">
+  <figcaption>AI security gaps among breached organizations, IBM 2025 vs 2026.</figcaption>
+</figure>
+
+<h2>📊 The seven risks at a glance</h2>
+
+<figure class="tbl">
+  <div class="table-wrapper">
+  <table>
+    <thead><tr><th>Risk</th><th>Real example</th><th>Main harm</th></tr></thead>
+    <tbody>
+      <tr><td>1. Hijacking by hidden instructions</td><td>Best new attack worked 81% of the time</td><td>Security</td></tr>
+      <tr><td>2. Too much permission</td><td>Replit agent deleted a live database</td><td>Lost data</td></tr>
+      <tr><td>3. Data leaking out</td><td>EchoLeak in Microsoft 365 Copilot</td><td>Privacy</td></tr>
+      <tr><td>4. Poisoned tools and plugins</td><td>341 malicious OpenClaw add-ons</td><td>Security</td></tr>
+      <tr><td>5. Confident but unreliable work</td><td>OpenClaw agent ignored "stop"</td><td>Reliability</td></tr>
+      <tr><td>6. Runaway costs</td><td>Anthropic's money-losing shop</td><td>Money</td></tr>
+      <tr><td>7. Nobody watching</td><td>82% found unknown agents</td><td>All of the above</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption>A plain summary, not a ranking.</figcaption>
+</figure>
+
+<h2>🛡️ How to put guardrails in place</h2>
+
+<p>At work, the guardrail lines above make a good starting checklist, and NIST's <a href="https://www.nist.gov/itl/ai-risk-management-framework" target="_blank">AI Risk Management Framework</a> offers fuller guidance. If you're trying an agent yourself:</p>
+
+<ul>
+  <li>Use a separate email account, not your main one.</li>
+  <li>Pay with a virtual card that has a low spending limit.</li>
+  <li>Choose "ask before acting" settings, and watch the first few runs.</li>
+</ul>
+
+<h2>✅ The bottom line</h2>
+
+<p>An agent is like a new employee with a company card and keys. You wouldn't hand those over without rules. <a href="https://www.gartner.com/en/newsroom/press-releases/2025-06-25-gartner-predicts-over-40-percent-of-agentic-ai-projects-will-be-canceled-by-end-of-2027" target="_blank">Gartner predicts</a> that over 40% of agent projects will be canceled by the end of 2027, partly due to weak risk controls. That's a forecast, not a fact. Either way, set the guardrails before you hand over the keys.</p>
+
+<!-- ============================================================ -->
+<!-- SOURCES / FOOTER -->
+<!-- ============================================================ -->
+
+<footer class="article-footer">
+  <h3>Sources & References</h3>
+  <ol>
+    <li>OWASP GenAI Security Project. "OWASP Top 10 for Agentic Applications for 2026." December 9, 2025. <a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank">genai.owasp.org</a></li>
+    <li>Sharwood, S. "Replit makes vibe-y promise to prevent vibe coding disasters." The Register, July 22, 2025. <a href="https://www.theregister.com/2025/07/22/replit_saastr_response/" target="_blank">theregister.com</a></li>
+    <li>OWASP GenAI Security Project. Top 10 for LLM Applications 2025: LLM01 Prompt Injection, LLM06 Excessive Agency and LLM10 Unbounded Consumption. <a href="https://genai.owasp.org/llmrisk/llm01-prompt-injection/" target="_blank">LLM01</a>; <a href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/" target="_blank">LLM06</a>; <a href="https://genai.owasp.org/llmrisk/llm102025-unbounded-consumption/" target="_blank">LLM10</a></li>
+    <li>NIST Center for AI Standards and Innovation. "Technical Blog: Strengthening AI Agent Hijacking Evaluations." January 17, 2025, updated December 19, 2025. <a href="https://www.nist.gov/news-events/news/2025/01/technical-blog-strengthening-ai-agent-hijacking-evaluations" target="_blank">nist.gov</a></li>
+    <li>Willison, S. "The lethal trifecta for AI agents: private data, untrusted content, and external communication." June 16, 2025. <a href="https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" target="_blank">simonwillison.net</a></li>
+    <li>CVE-2025-32711, "M365 Copilot Information Disclosure Vulnerability." Published by Microsoft, June 11, 2025. <a href="https://www.cve.org/CVERecord?id=CVE-2025-32711" target="_blank">cve.org</a>; coverage of Aim Security's EchoLeak research: The Hacker News, June 2025. <a href="https://thehackernews.com/2025/06/zero-click-ai-vulnerability-exposes.html" target="_blank">thehackernews.com</a></li>
+    <li>Model Context Protocol, official documentation. <a href="https://modelcontextprotocol.io/" target="_blank">modelcontextprotocol.io</a></li>
+    <li>Lakshmanan, R. "First Malicious MCP Server Found Stealing Emails in Rogue Postmark-MCP Package." The Hacker News, September 29, 2025. <a href="https://thehackernews.com/2025/09/first-malicious-mcp-server-found.html" target="_blank">thehackernews.com</a></li>
+    <li>Lakshmanan, R. "Researchers Find 341 Malicious ClawHub Skills Stealing Data from OpenClaw Users." The Hacker News, February 2, 2026. <a href="https://thehackernews.com/2026/02/researchers-find-341-malicious-clawhub.html" target="_blank">thehackernews.com</a></li>
+    <li>Shi, B., Zytek, O., Razavi, P., Barres, V. "τ-knowledge: benchmarking agents on realistic knowledge." Sierra, May 13, 2026. <a href="https://sierra.ai/blog/tau-knowledge" target="_blank">sierra.ai</a></li>
+    <li>Sierra. τ-bench leaderboard, τ-Banking domain: standard submissions for Qwen 3.8 Max, Claude Opus 5, GPT-5.6-sol and Claude Fable 5, submitted August 4, 2026 (pass^1 and pass^4). <a href="https://taubench.com/leaderboard/" target="_blank">taubench.com/leaderboard</a></li>
+    <li>Bort, J. "A Meta AI security researcher said an OpenClaw agent ran amok on her inbox." TechCrunch, February 23, 2026. <a href="https://techcrunch.com/2026/02/23/a-meta-ai-security-researcher-said-an-openclaw-agent-ran-amok-on-her-inbox/" target="_blank">techcrunch.com</a></li>
+    <li>AI Incident Database. Incident 1542: "OpenClaw Agent Reportedly Tried to Delete Meta AI Alignment Director Summer Yue's Emails Despite Stop Commands." February 23, 2026. <a href="https://incidentdatabase.ai/cite/1542/" target="_blank">incidentdatabase.ai/cite/1542</a></li>
+    <li>Anthropic. "Project Vend: Can Claude run a small shop? (And why does that matter?)" June 27, 2025. <a href="https://www.anthropic.com/research/project-vend-1" target="_blank">anthropic.com</a></li>
+    <li>Cloud Security Alliance. "New Cloud Security Alliance Survey Reveals 82% of Enterprises Have Unknown AI Agents in Their Environments." April 21, 2026 (survey of 418 IT and security professionals, January 2026, commissioned by Token Security). <a href="https://cloudsecurityalliance.org/press-releases/2026/04/21/new-cloud-security-alliance-survey-reveals-82-of-enterprises-have-unknown-ai-agents-in-their-environments" target="_blank">cloudsecurityalliance.org</a></li>
+    <li>IBM and Ponemon Institute. Cost of a Data Breach Report 2026. July 29, 2026. <a href="https://www.ibm.com/reports/data-breach" target="_blank">ibm.com/reports/data-breach</a>; press release <a href="https://newsroom.ibm.com/2026-07-29-ibm-study-one-in-four-malicious-breaches-are-ai-enabled,-costing-companies-6-million-on-average" target="_blank">newsroom.ibm.com</a></li>
+    <li>Kessem, L., IBM X-Force. "2025 Cost of a Data Breach Report: Navigating the AI rush without sidelining security." July 2025 (source of the 2025 figures in the IBM chart). <a href="https://www.ibm.com/think/x-force/2025-cost-of-a-data-breach-navigating-ai" target="_blank">ibm.com</a></li>
+    <li>NIST. AI Risk Management Framework (AI RMF 1.0). <a href="https://www.nist.gov/itl/ai-risk-management-framework" target="_blank">nist.gov</a></li>
+    <li>Gartner. "Gartner Predicts Over 40% of Agentic AI Projects Will Be Canceled by End of 2027." June 25, 2025. <a href="https://www.gartner.com/en/newsroom/press-releases/2025-06-25-gartner-predicts-over-40-percent-of-agentic-ai-projects-will-be-canceled-by-end-of-2027" target="_blank">gartner.com</a></li>
+  </ol>
+
+  <p style="margin-top: 20px;"><strong>Note:</strong> Facts and figures were checked against the sources above in October 2026. The Replit and OpenClaw inbox accounts rely mainly on the users' own posts and the companies' public responses; TechCrunch notes it could not independently verify what happened to the inbox. Counts of malicious OpenClaw add-ons grew after Koi's first audit and vary between researchers; this article uses the first published figure. The CSA figures come from a self-reported survey. Test results describe specific models in specific setups, not every agent. The diagram, charts and table were created for this article.</p>
+
+  <div class="tags">
+    <span>AI Agents</span>
+    <span>AI Security</span>
+    <span>Prompt Injection</span>
+    <span>Guardrails</span>
+    <span>OWASP</span>
+    <span>AI for Everyone</span>
+    <span>Deep Dive</span>
+  </div>
+
+  <p style="margin-top: 32px;"><a href="../">← More from Under the Hood</a></p>
+</footer>
+
+</div>
+
+</body>
+</html>

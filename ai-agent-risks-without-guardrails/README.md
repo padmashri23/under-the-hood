@@ -24,7 +24,7 @@ All visuals are static images or a plain HTML table with no interactive elements
 | Visual | What it shows |
 |---|---|
 | `images/agent-risk-diagram.png` | Concept diagram: where each of the seven risks enters an agent, and where guardrails sit |
-| `images/agent-hijacking-success-rates.png` | NIST CAISI's agent hijacking test results, including retries (January 2025) |
+| `images/agent-hijacking-chart.png` | NIST CAISI's agent hijacking test results, including retries (January 2025) |
 | `images/agent-reliability-2026.png` | Four 2026 models on τ-bench banking tasks: solved on a single try vs on all four tries (August 2026) |
 | `images/ai-breach-access-controls.png` | AI security gaps among breached organizations, IBM 2025 vs 2026 |
 | `images/social-card.png` | 1200 × 630 preview image shown when the link is shared |

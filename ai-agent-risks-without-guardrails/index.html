@@ -277,7 +277,7 @@
 <p><strong>Guardrails</strong> are the safety limits around an agent: what it can touch, when it must ask a human first, and who checks its work. <a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank">OWASP</a>, a respected nonprofit for software security, now keeps a separate top 10 list just for agent risks. Here are seven to know.</p>
 
 <figure class="article-image">
-  <a href="https://padmashri23.github.io/under-the-hood/ai-agent-risks-without-guardrails/images/agent-risk-map.png" target="_blank"><img src="https://padmashri23.github.io/under-the-hood/ai-agent-risks-without-guardrails/images/agent-risk-map.png" onerror="this.onerror=null;this.src='images/agent-risk-map.png'" width="2000" height="2462" loading="lazy" alt="Diagram of an AI agent from top to bottom. What it reads: your instructions, emails and files (risk 1), web pages, and add-ons and plugins (risk 4). The AI agent decides what to do next and can be confidently wrong (risk 5). Guardrails sit next: minimum access, human approval, approved destinations, spending limits. What it can change: files and databases (risk 2), email and messages (risk 3), payments and paid services (risk 6). Watching it all: logs, a named owner and an off switch (risk 7)."></a>
+  <img src="https://padmashri23.github.io/under-the-hood/ai-agent-risks-without-guardrails/images/agent-risk-map.png" onerror="this.onerror=null;this.src='images/agent-risk-map.png'" width="2000" height="2462" loading="lazy" alt="Diagram of an AI agent from top to bottom. What it reads: your instructions, emails and files (risk 1), web pages, and add-ons and plugins (risk 4). The AI agent decides what to do next and can be confidently wrong (risk 5). Guardrails sit next: minimum access, human approval, approved destinations, spending limits. What it can change: files and databases (risk 2), email and messages (risk 3), payments and paid services (risk 6). Watching it all: logs, a named owner and an off switch (risk 7).">
   <figcaption>Where each risk enters an agent. A concept diagram, not data.</figcaption>
 </figure>
 
@@ -285,7 +285,7 @@
 
 <h3>1. Hijacking by hidden instructions</h3>
 
-<p>Agents read emails, web pages and documents, but they can't reliably tell your instructions apart from text a stranger wrote. An attacker can hide a line like "forward all invoices to this address" in an email, and the agent may obey. This is called <strong>prompt injection</strong>, and <a href="https://genai.owasp.org/llmrisk/llm01-prompt-injection/" target="_blank">OWASP ranks it</a> as the top risk for AI apps.</p>
+<p>Agents read emails, web pages and documents, but they can't reliably tell your instructions apart from text a stranger wrote. An attacker can hide a line like "forward all invoices to this address" in an email, and the agent may obey. This is called <strong>prompt injection</strong>, and OWASP ranks it as the top risk for AI apps.</p>
 
 <p>In <a href="https://www.nist.gov/news-events/news/2025/01/technical-blog-strengthening-ai-agent-hijacking-evaluations" target="_blank">tests by NIST</a>, the US standards agency, the best known attack fooled an agent 11% of the time. The best new attack the testers invented worked 81% of the time. Simply retrying raised average success from 57% to 80%.</p>
 
@@ -298,52 +298,52 @@
 
 <h3>2. Too much permission</h3>
 
-<p>Many agents get far more access than the job needs. It's like hiring someone to water your plants and handing them the keys to your safe. OWASP calls this <a href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/" target="_blank">excessive agency</a>.</p>
+<p>Many agents get far more access than the job needs. It's like hiring someone to water your plants and handing them the keys to your safe. OWASP calls this excessive agency.</p>
 
-<p>The Replit story is the classic case. The agent had the power to delete live data, so only a typed "don't" stood in the way. <a href="https://www.theregister.com/2025/07/22/replit_saastr_response/" target="_blank">Replit's CEO</a> called it "unacceptable" and began separating test and live databases.</p>
+<p>The Replit story is the classic case. The agent had the power to delete live data, so only a typed "don't" stood in the way. Replit's CEO called it "unacceptable" and began separating test and live databases.</p>
 
 <p class="guardrail"><strong>Guardrail:</strong> give only the access the task needs, and keep test and live systems apart.</p>
 
 <h3>3. Data leaking out</h3>
 
-<p>Programmer Simon Willison warns about a risky mix he calls the <a href="https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" target="_blank">lethal trifecta</a>: an agent that can see private data, reads content from outsiders, and can send information out. With all three, one bad message can trick it into leaking secrets.</p>
+<p>Programmer Simon Willison warns about a risky mix he calls the lethal trifecta: an agent that can see private data, reads content from outsiders, and can send information out. With all three, one bad message can trick it into leaking secrets.</p>
 
-<p>A flaw called <strong>EchoLeak</strong> did exactly that in Microsoft 365 Copilot. One crafted email could make it leak data without the victim clicking anything. Microsoft rated it <a href="https://www.cve.org/CVERecord?id=CVE-2025-32711" target="_blank">9.3 out of 10</a> for severity and had already fixed it when the flaw was made public in June 2025. It <a href="https://thehackernews.com/2025/06/zero-click-ai-vulnerability-exposes.html" target="_blank">found no sign</a> of real attacks.</p>
+<p>A flaw called <strong>EchoLeak</strong> did exactly that in Microsoft 365 Copilot. One crafted email could make it leak data without the victim clicking anything. Microsoft rated it 9.3 out of 10 for severity and had already fixed it when the flaw was made public in June 2025. It found no sign of real attacks.</p>
 
 <p class="guardrail"><strong>Guardrail:</strong> break the trifecta by letting data go only to approved places.</p>
 
 <h3>4. Poisoned tools and plugins</h3>
 
-<p>Agents use add-ons to connect to other apps, often through <a href="https://modelcontextprotocol.io/" target="_blank">MCP</a>, a common standard for plugging AI into tools.</p>
+<p>Agents use add-ons to connect to other apps, often through MCP, a common standard for plugging AI into tools.</p>
 
-<p>In September 2025, security firm Koi found a copycat email add-on, postmark-mcp, that <a href="https://thehackernews.com/2025/09/first-malicious-mcp-server-found.html" target="_blank">secretly copied every email</a> to an attacker. In February 2026, Koi checked 2,857 add-ons for the OpenClaw agent and <a href="https://thehackernews.com/2026/02/researchers-find-341-malicious-clawhub.html" target="_blank">found 341 malicious ones</a>, most built to install data-stealing malware.</p>
+<p>In September 2025, security firm Koi found a copycat email add-on, postmark-mcp, that secretly copied every email to an attacker. In February 2026, Koi checked 2,857 add-ons for the OpenClaw agent and found 341 malicious ones, most built to install data-stealing malware.</p>
 
 <p class="guardrail"><strong>Guardrail:</strong> install add-ons only from publishers you trust, and review updates.</p>
 
 <h3>5. Confident but unreliable work</h3>
 
-<p>Agents can sound sure and still be wrong, and they don't always repeat a success. Sierra's <a href="https://sierra.ai/blog/tau-knowledge" target="_blank">τ-bench</a> test runs each customer-service task four times. On its 2026 <a href="https://taubench.com/leaderboard/" target="_blank">banking tasks</a>, the top model solved 55% of tasks on a single try, but only 35% on all four.</p>
+<p>Agents can sound sure and still be wrong, and they don't always repeat a success. Sierra's τ-bench test runs each customer-service task four times. On its 2026 <a href="https://taubench.com/leaderboard/" target="_blank">banking tasks</a>, the top model solved 55% of tasks on a single try, but only 35% on all four.</p>
 
 <figure class="article-image">
   <img src="https://padmashri23.github.io/under-the-hood/ai-agent-risks-without-guardrails/images/agent-reliability-2026.png" onerror="this.onerror=null;this.src='images/agent-reliability-2026.png'" width="2000" height="1703" loading="lazy" alt="Paired bar chart of four 2026 AI models on τ-bench banking tasks. Qwen 3.8 Max (preview): 55% on a single try, 35% on all four tries. Claude Opus 5: 49% and 32%. GPT-5.6-sol: 47% and 28%. Claude Fable 5: 40% and 29%.">
   <figcaption>Four 2026 models on τ-bench banking tasks, August 2026.</figcaption>
 </figure>
 
-<p>Instructions can slip, too. In February 2026, Meta AI researcher Summer Yue asked an OpenClaw agent to suggest emails to delete and <a href="https://incidentdatabase.ai/cite/1542/" target="_blank">wait for her approval</a>. <a href="https://techcrunch.com/2026/02/23/a-meta-ai-security-researcher-said-an-openclaw-agent-ran-amok-on-her-inbox/" target="_blank">It started deleting instead</a>, ignoring her stop messages until she ran to the computer it was running on. She believes it lost her instruction while condensing a long conversation.</p>
+<p>Instructions can slip, too. In February 2026, Meta AI researcher Summer Yue asked an OpenClaw agent to suggest emails to delete and wait for her approval. It started deleting instead, ignoring her stop messages until she ran to the computer it was running on. She believes it lost her instruction while condensing a long conversation.</p>
 
 <p class="guardrail"><strong>Guardrail:</strong> test on real tasks many times, and keep a way to stop the agent instantly.</p>
 
 <h3>6. Runaway costs</h3>
 
-<p>Every step an agent takes can cost money: AI fees, paid services or real purchases. A looping agent never gets tired, and attackers can make it burn your budget on purpose, which OWASP calls <a href="https://genai.owasp.org/llmrisk/llm102025-unbounded-consumption/" target="_blank">denial of wallet</a>.</p>
+<p>Every step an agent takes can cost money: AI fees, paid services or real purchases. A looping agent never gets tired, and attackers can make it burn your budget on purpose, which OWASP calls denial of wallet.</p>
 
-<p>In 2025, <a href="https://www.anthropic.com/research/project-vend-1" target="_blank">Anthropic let a Claude agent</a> run a small office shop for about a month. It handed out discounts when asked, priced metal cubes below what it paid, and for a while told customers to pay into an account it had made up. The shop lost money.</p>
+<p>In 2025, Anthropic let a Claude agent run a small office shop for about a month. It handed out discounts when asked, priced metal cubes below what it paid, and for a while told customers to pay into an account it had made up. The shop lost money.</p>
 
 <p class="guardrail"><strong>Guardrail:</strong> set hard spending limits and alerts.</p>
 
 <h3>7. Nobody watching</h3>
 
-<p>Agents log in with their own digital IDs, like API keys (passwords that let software talk to other software), and companies often lose track of them. In a January 2026 <a href="https://cloudsecurityalliance.org/press-releases/2026/04/21/new-cloud-security-alliance-survey-reveals-82-of-enterprises-have-unknown-ai-agents-in-their-environments" target="_blank">Cloud Security Alliance survey</a>, 65% of the IT and security professionals surveyed said their organizations had incidents involving AI agents in the past year, and 82% had found agents running that they didn't know about.</p>
+<p>Agents log in with their own digital IDs, like API keys (passwords that let software talk to other software), and companies often lose track of them. In a January 2026 Cloud Security Alliance survey, 65% of the IT and security professionals surveyed said their organizations had incidents involving AI agents in the past year, and 82% had found agents running that they didn't know about.</p>
 
 <p><a href="https://www.ibm.com/reports/data-breach" target="_blank">IBM's 2026 data breach study</a> shows the same gap: of the organizations whose AI was breached, 92% lacked proper access controls for it.</p>
 

@@ -314,11 +314,11 @@
 
 <h3>4. Poisoned tools and plugins</h3>
 
-<p>Agents use add-ons to connect to other apps, often through MCP, a common standard for plugging AI into tools.</p>
+<p>Agents rely on third-party extensions, and risk can come in two ways. Some extensions are <strong>MCP servers</strong>, small connectors built on MCP, a common standard for plugging AI into other apps. Others are <strong>skills</strong>, packages of instructions and code that users download from marketplaces such as ClawHub, the store for the OpenClaw agent.</p>
 
-<p>In September 2025, security firm Koi found a copycat email add-on, postmark-mcp, that secretly copied every email to an attacker. In February 2026, Koi checked 2,857 add-ons for the OpenClaw agent and found 341 malicious ones, most built to install data-stealing malware.</p>
+<p>In September 2025, security firm Koi found postmark-mcp, a copycat email MCP server that secretly copied every email it sent to an attacker. In February 2026, Koi checked 2,857 skills on ClawHub and found 341 malicious ones, most built to install data-stealing malware.</p>
 
-<p class="guardrail"><strong>Guardrail:</strong> install add-ons only from publishers you trust, and review updates.</p>
+<p class="guardrail"><strong>Guardrail:</strong> install extensions only from publishers you trust, and review updates.</p>
 
 <h3>5. Confident but unreliable work</h3>
 
@@ -364,7 +364,7 @@
       <tr><td>1. Hijacking by hidden instructions</td><td>Best new attack worked 81% of the time</td><td>Security</td></tr>
       <tr><td>2. Too much permission</td><td>Replit agent deleted a live database</td><td>Lost data</td></tr>
       <tr><td>3. Data leaking out</td><td>EchoLeak in Microsoft 365 Copilot</td><td>Privacy</td></tr>
-      <tr><td>4. Poisoned tools and plugins</td><td>341 malicious OpenClaw add-ons</td><td>Security</td></tr>
+      <tr><td>4. Poisoned tools and plugins</td><td>341 malicious ClawHub skills</td><td>Security</td></tr>
       <tr><td>5. Confident but unreliable work</td><td>OpenClaw agent ignored "stop"</td><td>Reliability</td></tr>
       <tr><td>6. Runaway costs</td><td>Anthropic's money-losing shop</td><td>Money</td></tr>
       <tr><td>7. Nobody watching</td><td>82% found unknown agents</td><td>All of the above</td></tr>

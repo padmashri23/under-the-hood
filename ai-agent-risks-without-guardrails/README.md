@@ -15,7 +15,7 @@ A chatbot that gets something wrong gives you a bad answer. An AI agent that get
 - Nobody watching: the Cloud Security Alliance's 2026 agent survey and IBM's 2026 Cost of a Data Breach study
 - A guardrail for each risk, plus tips for people trying agents themselves
 
-Written for beginners: short sentences, everyday comparisons, and technical terms explained where they first appear. Each risk has its own subheading and ends with a one-line guardrail. About 1,110 words above Sources & References, counting headings, captions and the table.
+Written for beginners: short sentences, everyday comparisons, and technical terms explained where they first appear. Each risk has its own subheading and ends with a one-line guardrail. About 1,160 words above Sources & References, counting headings, captions and the table.
 
 ## Visuals
 

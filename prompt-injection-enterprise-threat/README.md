@@ -1,4 +1,4 @@
-# OWASP Ranks Prompt Injection the #1 AI Security Risk in 2026: Here's How to Mitigate It
+# Prompt Injection Is the #1 Enterprise AI Threat in 2026 – Here's How to Mitigate It
 
 **📖 Read it here: https://padmashri23.github.io/under-the-hood/prompt-injection-enterprise-threat/**
 

@@ -285,7 +285,7 @@
   <span class="tag">Deep Dive</span>
   <h1>Prompt Injection Is the #1 Enterprise AI Threat in 2026 – Here's How to Mitigate It</h1>
   <p class="subtitle">OWASP ranks it first. NIST tested it. Microsoft patched a zero-click exploit caused by it. Here's what prompt injection actually is and what to do about it.</p>
-  <p class="meta">Researched &amp; written October 2026 · ~14 min read · Sources cited throughout</p>
+  <p class="meta">Researched &amp; written October 2026 · ~15 min read · Sources cited throughout</p>
 </header>
 
 <!-- ============================================================ -->
@@ -344,7 +344,7 @@
 
 <h3>Is it really the number-one threat?</h3>
 
-<p><a href="https://genai.owasp.org/llmrisk/llm01-prompt-injection/" target="_blank">OWASP</a> is a nonprofit whose security "top 10" lists are widely used by developers. It has ranked prompt injection as the number-one risk for apps built on language models in every edition of its list since the first one in 2023, including the <a href="https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/" target="_blank">2026 edition</a> published in August 2026. Its newer <a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank">Top 10 for Agentic Applications</a> covers AI that takes actions, and it puts a closely related risk first: "Agent Goal Hijack," where injected content redirects what an agent is trying to do.</p>
+<p><a href="https://genai.owasp.org/llmrisk/llm01-prompt-injection/" target="_blank">OWASP</a> is a nonprofit whose security "top 10" lists are widely used by developers. It has ranked prompt injection as the number-one risk for apps built on language models in every edition of its list since the first one in 2023, including the <a href="https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/" target="_blank">2026 edition</a>, which is dated August 2026 and was <a href="https://genai.owasp.org/2026/09/01/owasp-genai-security-project-unveils-2026-top-10-for-llm-applications-new-agent-control-standard-and-sponsors-as-community-tops-30000-members/" target="_blank">officially announced</a> on September 1, 2026. Prompt injection is LLM01, the first entry, in that list. Its newer <a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank">Top 10 for Agentic Applications</a> covers AI that takes actions, and it puts a closely related risk first: "Agent Goal Hijack," where injected content redirects what an agent is trying to do.</p>
 
 <p>So "number one" is OWASP's ranking. Other security groups may order their lists differently, depending on what they measure. What nobody disputes is that prompt injection is a real, well-documented problem that has already caused serious security flaws in well-known products.</p>
 
@@ -406,7 +406,7 @@
 
 <p>Here's how their demonstration worked. An attacker posted a message containing instructions in a public Slack channel. Later, the victim asked Cursor to summarize their Slack messages. The AI read the attacker's message and followed it, adding a new entry to one of Cursor's settings files. Cursor ran that entry straight away, without asking the user, which let the attacker run commands on the developer's computer.</p>
 
-<p>GitHub, which issued the CVE, rated it 8.5 out of 10 (High). The US National Vulnerability Database rated it 9.8 (Critical). Cursor fixed it in version 1.3.9, a security update in the 1.3 series released in summer 2025, and no real-world attacks using it were reported.</p>
+<p>GitHub, which issued the CVE, rated it 8.5 out of 10 (High). The US National Vulnerability Database rated it 9.8 (Critical). Cursor fixed it in version 1.3.9, a security update in the 1.3 series released in summer 2025. When CISA, the US cybersecurity agency, assessed the flaw in August 2025, it recorded exploitation as "none" in the <a href="https://www.cve.org/CVERecord?id=CVE-2025-54135" target="_blank">CVE record</a>, meaning no known real-world attacks at that time.</p>
 
 <h3>🚨 Real example (2026): ShareLeak in Microsoft Copilot Studio</h3>
 
@@ -414,7 +414,7 @@
 
 <p>In <a href="https://www.capsulesecurity.io/blog-post/shareleak-taking-the-wheel-of-microsofts-copilot-studio-cve-2026-21520" target="_blank">Capsule's demonstration</a>, an agent handled submissions from a SharePoint form. The attacker typed instructions into the form's "Comments" box. When the form was submitted, the agent mixed that text in with its own instructions. It then read a connected customer list with names, addresses and phone numbers, and emailed it to the attacker. Capsule says the data still leaked even when Microsoft's safety checks flagged the request.</p>
 
-<p>Microsoft rated it Critical on its own severity scale, with a CVSS score of 7.5 out of 10 (High). Microsoft uses its own severity scale alongside CVSS, which is why the two labels differ. It fixed the flaw on its own servers in January 2026, three months before the research went public, so customers didn't need to do anything. Microsoft reported no sign of real-world attacks.</p>
+<p>Microsoft rated it Critical on its own severity scale, with a CVSS score of 7.5 out of 10 (High). Microsoft uses its own severity scale alongside CVSS, which is why the two labels differ. It fixed the flaw on its own servers in January 2026, three months before the research went public, so customers didn't need to do anything. <a href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-21520" target="_blank">Microsoft's advisory</a> lists it as not exploited, and CISA's January 2026 assessment in the <a href="https://www.cve.org/CVERecord?id=CVE-2026-21520" target="_blank">CVE record</a> also recorded exploitation as "none."</p>
 
 <p>The same month, <a href="https://www.securityweek.com/claude-code-gemini-cli-github-copilot-agents-vulnerable-to-prompt-injection-via-comments/" target="_blank">researchers showed</a> that text planted in GitHub pull request titles and issue comments could make AI coding agents from Anthropic, Google and GitHub leak API keys and access tokens.</p>
 
@@ -441,8 +441,8 @@
     <tbody>
       <tr><td>Best previously known attack, one try</td><td>11%</td></tr>
       <tr><td>Best new attack the testers designed, one try</td><td>81%</td></tr>
-      <tr><td>Average of five hijack tasks, one try each</td><td>57%</td></tr>
-      <tr><td>Same five tasks, 25 tries each</td><td>80%</td></tr>
+      <tr><td>New attack, average of five hijack tasks, one try each</td><td>57%</td></tr>
+      <tr><td>New attack, same five tasks, 25 tries each</td><td>80%</td></tr>
     </tbody>
   </table>
   </div>
@@ -547,21 +547,21 @@
   <h2>Sources &amp; References</h2>
   <ol>
     <li>OWASP GenAI Security Project. "LLM01:2025 Prompt Injection." <a href="https://genai.owasp.org/llmrisk/llm01-prompt-injection/" target="_blank">genai.owasp.org</a></li>
-    <li>OWASP GenAI Security Project. "OWASP GenAI LLM Top 10 2026." August 3, 2026. <a href="https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/" target="_blank">genai.owasp.org</a></li>
+    <li>OWASP GenAI Security Project. "OWASP GenAI LLM Top 10 2026." Resource page dated August 3, 2026; the PDF lists "LLM01:2026 Prompt Injection" first. <a href="https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/" target="_blank">genai.owasp.org</a>; official announcement, "OWASP GenAI Security Project Unveils 2026 Top 10 for LLM Applications, New Agent Control Standard and Sponsors as Community Tops 30,000 Members." September 1, 2026. <a href="https://genai.owasp.org/2026/09/01/owasp-genai-security-project-unveils-2026-top-10-for-llm-applications-new-agent-control-standard-and-sponsors-as-community-tops-30000-members/" target="_blank">genai.owasp.org</a></li>
     <li>OWASP GenAI Security Project. "OWASP Top 10 for Agentic Applications for 2026." December 9, 2025. <a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank">genai.owasp.org</a></li>
     <li>NIST Center for AI Standards and Innovation. "Technical Blog: Strengthening AI Agent Hijacking Evaluations." January 17, 2025, updated December 19, 2025. <a href="https://www.nist.gov/news-events/news/2025/01/technical-blog-strengthening-ai-agent-hijacking-evaluations" target="_blank">nist.gov</a></li>
     <li>Willison, S. "The lethal trifecta for AI agents: private data, untrusted content, and external communication." June 16, 2025. <a href="https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" target="_blank">simonwillison.net</a></li>
     <li>CVE-2025-32711, "M365 Copilot Information Disclosure Vulnerability." Published by Microsoft, June 11, 2025. <a href="https://www.cve.org/CVERecord?id=CVE-2025-32711" target="_blank">cve.org</a>; coverage of Aim Security's EchoLeak research: The Hacker News, June 2025. <a href="https://thehackernews.com/2025/06/zero-click-ai-vulnerability-exposes.html" target="_blank">thehackernews.com</a></li>
-    <li>CVE-2025-54135. GitHub Security Advisory GHSA-4cxx-hrm3-49rm, "Arbitrary code execution from Cursor Agent through a prompt injection via MCP Special Files." August 2, 2025. CVSS 8.5, patched in version 1.3.9. <a href="https://github.com/cursor/cursor/security/advisories/GHSA-4cxx-hrm3-49rm" target="_blank">github.com</a>; NVD entry (CVSS 9.8): <a href="https://nvd.nist.gov/vuln/detail/CVE-2025-54135" target="_blank">nvd.nist.gov</a>; CVE record: <a href="https://www.cve.org/CVERecord?id=CVE-2025-54135" target="_blank">cve.org</a></li>
+    <li>CVE-2025-54135. GitHub Security Advisory GHSA-4cxx-hrm3-49rm, "Arbitrary code execution from Cursor Agent through a prompt injection via MCP Special Files." August 2, 2025. CVSS 8.5, patched in version 1.3.9. <a href="https://github.com/cursor/cursor/security/advisories/GHSA-4cxx-hrm3-49rm" target="_blank">github.com</a>; NVD entry (CVSS 9.8): <a href="https://nvd.nist.gov/vuln/detail/CVE-2025-54135" target="_blank">nvd.nist.gov</a>; CVE record, including CISA's August 5, 2025 assessment (exploitation: none): <a href="https://www.cve.org/CVERecord?id=CVE-2025-54135" target="_blank">cve.org</a></li>
     <li>Aim Labs. "When Public Prompts Turn Into Local Shells: 'CurXecute', RCE in Cursor via MCP Auto-Start." August 1, 2025. <a href="https://www.aim.security/lp/aim-labs-curxecute-blogpost" target="_blank">aim.security</a></li>
     <li>Cursor. "Changelog 1.3." July 29, 2025. <a href="https://cursor.com/changelog/1-3" target="_blank">cursor.com</a></li>
-    <li>CVE-2026-21520, Copilot Studio information disclosure vulnerability. Microsoft Security Response Center, January 22, 2026. <a href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-21520" target="_blank">msrc.microsoft.com</a></li>
+    <li>CVE-2026-21520, Copilot Studio information disclosure vulnerability. Microsoft Security Response Center, January 22, 2026 (exploited: no). <a href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-21520" target="_blank">msrc.microsoft.com</a>; CVE record, including CISA's January 24, 2026 assessment (exploitation: none): <a href="https://www.cve.org/CVERecord?id=CVE-2026-21520" target="_blank">cve.org</a></li>
     <li>Kaduri, B. (Capsule Security). "ShareLeak: Taking the Wheel of Microsoft's Copilot Studio (CVE-2026-21520)." Publicly disclosed April 15, 2026. <a href="https://www.capsulesecurity.io/blog-post/shareleak-taking-the-wheel-of-microsofts-copilot-studio-cve-2026-21520" target="_blank">capsulesecurity.io</a></li>
     <li>Guan, A., with Liu, Z. and Zhong, G. "Comment and Control: Prompt Injection to Credential Theft in Claude Code, Gemini CLI, and GitHub Copilot Agent." April 15, 2026. <a href="https://oddguan.com/blog/comment-and-control-prompt-injection-credential-theft-claude-code-gemini-cli-github-copilot/" target="_blank">oddguan.com</a>; coverage: SecurityWeek, April 16, 2026. <a href="https://www.securityweek.com/claude-code-gemini-cli-github-copilot-agents-vulnerable-to-prompt-injection-via-comments/" target="_blank">securityweek.com</a></li>
     <li>NIST. AI Risk Management Framework (AI RMF 1.0). <a href="https://www.nist.gov/itl/ai-risk-management-framework" target="_blank">nist.gov</a></li>
   </ol>
 
-  <p style="margin-top: 20px;"><strong>Note:</strong> Facts and figures were checked against the sources above in October 2026. The "number one" claim reflects OWASP's ranking of risks for LLM applications; its agentic list ranks a closely related risk, Agent Goal Hijack, first. Other security frameworks may prioritize differently. NIST test results describe agents built on Claude 3.5 Sonnet (October 2024) in a specific setup, not every AI system. EchoLeak and ShareLeak were both patched before public disclosure, and Microsoft found no evidence of real-world exploitation. Severity scores for CurXecute differ by source: GitHub, which issued the CVE, rated it 8.5, and NVD rated it 9.8. The diagrams and tables were created for this article. The diagrams are conceptual, not data-driven, and the example email uses made-up names.</p>
+  <p style="margin-top: 20px;"><strong>Note:</strong> Facts and figures were checked against the sources above in October 2026. The "number one" claim reflects OWASP's ranking of risks for LLM applications; its agentic list ranks a closely related risk, Agent Goal Hijack, first. Other security frameworks may prioritize differently. NIST test results describe agents built on Claude 3.5 Sonnet (October 2024) in a specific setup, not every AI system. EchoLeak and ShareLeak were both patched before public disclosure, and Microsoft's advisories list both as not exploited. "No known real-world attacks" reflects the vendor and CISA assessments at the dates given; it does not rule out attacks nobody has reported. Severity scores for CurXecute differ by source: GitHub, which issued the CVE, rated it 8.5, and NVD rated it 9.8. The diagrams and tables were created for this article. The diagrams are conceptual, not data-driven, and the example email uses made-up names.</p>
 
   <div class="tags">
     <span>Prompt Injection</span>

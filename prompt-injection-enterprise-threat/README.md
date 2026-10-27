@@ -16,7 +16,7 @@ OWASP ranks it first. NIST tested it. Microsoft patched a zero-click exploit cau
 - Layered defenses in five groups: limit access, keep a human in the loop, check inputs and outputs, keep untrusted content apart, and watch, log and test
 - The limits of guardrails, a starter checklist for companies, and tips for people who use AI at work
 
-Written for beginners: short sentences, everyday comparisons, and technical terms explained where they first appear. Every section has subheadings, so the outline shows up in Notion's table of contents. About 2,850 words above Sources & References, counting headings, captions and tables.
+Written for beginners: short sentences, everyday comparisons, and technical terms explained where they first appear. Every section has subheadings, so the outline shows up in Notion's table of contents. About 2,910 words above Sources & References, counting headings, captions and tables.
 
 ## Visuals
 

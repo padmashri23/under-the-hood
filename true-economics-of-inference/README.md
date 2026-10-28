@@ -13,6 +13,7 @@ Where an AI bill actually comes from, why token spend grows so fast in productio
 - Six ways to cut token costs (caching, less context, shorter answers, model routing, batching, plus semantic caching and quantization), with an at-a-glance comparison table
 - Whether 60% is realistic: a worked example reaching a modeled 62% saving, the 50% and 36% cases, and why the math is the same on OpenAI's matching models
 - Where to start: four steps in order
+- A short conclusion
 - Links to two earlier Under the Hood articles (LLM vs SLM, and the hidden infrastructure behind AI answers)
 
 Written for beginners: short sentences, technical terms explained where they first appear, and emoji section headings with subheadings so the outline shows up in Notion's table of contents. About 1,450 words above Sources & References, counting headings, captions and tables (just under 1,500 including the title block).

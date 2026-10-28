@@ -287,7 +287,7 @@
 <header class="article-header">
   <span class="tag">Deep Dive</span>
   <h1>The True Economics of Inference: FinOps Strategies for Cutting Token Costs by 60% in Production</h1>
-  <p class="subtitle">Where AI bills come from, why they grow, and how to bring them down, with the math shown.</p>
+  <p class="subtitle">Where AI bills come from, and how to bring them down.</p>
   <p class="meta">Researched &amp; written October 2026 · ~7 min read · Prices checked October 28, 2026</p>
 </header>
 
@@ -321,7 +321,6 @@
     </thead>
     <tbody>
       <tr><td>Token</td><td>A small chunk of text, roughly four characters of English; the exact split varies by model. You're billed per token.</td></tr>
-      <tr><td>Context</td><td>Everything sent to the model with a request: instructions, documents and chat history.</td></tr>
       <tr><td>System prompt</td><td>Instructions your app sends with every request, such as "answer politely and follow our refund policy."</td></tr>
     </tbody>
   </table>
@@ -354,7 +353,7 @@
 
 <h3>Every chat turn re-sends the whole conversation</h3>
 
-<p>Chat models don't remember earlier messages on their own. <a href="https://platform.claude.com/docs/en/build-with-claude/working-with-messages" target="_blank">Anthropic's documentation</a> says you "always send the full conversational history" with each request. So on turn ten, turns one through nine are sent again, and even APIs that store the chat for you, <a href="https://developers.openai.com/api/docs/guides/conversation-state" target="_blank">like OpenAI's</a>, still bill them as input.</p>
+<p><a href="https://platform.claude.com/docs/en/build-with-claude/working-with-messages" target="_blank">Anthropic's documentation</a> says you "always send the full conversational history" with each request. So on turn ten, turns one through nine are sent again, and even APIs that store the chat for you, <a href="https://developers.openai.com/api/docs/guides/conversation-state" target="_blank">like OpenAI's</a>, still bill them as input.</p>
 
 <p>In the animation below, a ten-turn chat contains 8,000 tokens of text, but you pay for 54,000 input tokens. Stretch it to 20 turns and you pay for 158,000.</p>
 
@@ -400,7 +399,7 @@
 
 <p><strong>Model routing</strong> means picking a model for each request. Claude Haiku 5.5 costs $0.10 per million input tokens and $0.50 per million output tokens (for prompts up to 100,000 tokens), one twentieth of Sonnet 5.5's price. A small classifier can send simple questions, like password resets, to the cheap model.</p>
 
-<p>In 2024, LMSYS's <a href="https://lmsys.org/blog/2024-07-01-routellm/" target="_blank">RouteLLM</a> routers cut costs by over 85% on the MT Bench benchmark while keeping 95% of GPT-4's performance, but only 35% on GSM8K math problems. Test with your own requests, and pass anything the small model gets wrong to the bigger one. Our earlier article, <a href="https://padmashri23.github.io/under-the-hood/llm-vs-slm-production/">Large Language Models vs Small Language Models</a>, covers this choice in depth.</p>
+<p>In 2024, LMSYS's <a href="https://lmsys.org/blog/2024-07-01-routellm/" target="_blank">RouteLLM</a> routers cut costs by over 85% on the MT Bench benchmark while keeping 95% of GPT-4's performance, but only 35% on GSM8K math problems. Test with your own requests, and pass anything the small model gets wrong to the bigger one. For more, see <a href="https://padmashri23.github.io/under-the-hood/llm-vs-slm-production/">Large Language Models vs Small Language Models</a>.</p>
 
 <h3>5. Batch work that can wait</h3>
 
@@ -464,13 +463,17 @@
 <h2>📏 Where to start</h2>
 
 <ol>
-  <li>Measure first: log input, cached, output and thinking tokens per request, with its feature and whether the task succeeded.</li>
+  <li>Measure first: log input, cached, output and thinking tokens per request, and whether the task succeeded.</li>
   <li>Turn on caching, with fixed instructions at the start of the prompt.</li>
   <li>Trim history and documents, and ask for shorter answers.</li>
   <li>Test routing on real traffic before moving users to a smaller model.</li>
 </ol>
 
-<p>Change one thing at a time, and watch quality and latency too. The bill is simply tokens multiplied by price. Once you can see both, you can bring it down.</p>
+<p>Change one thing at a time, and watch quality and latency too.</p>
+
+<h2>✅ Conclusion</h2>
+
+<p>An AI bill is simply tokens multiplied by price. Most of the waste hides in text sent again and again, and in answers longer than they need to be. A 60% cut is possible for some workloads, but the number that counts is the one you measure on your own.</p>
 
 <!-- ============================================================ -->
 <!-- SOURCES / FOOTER -->

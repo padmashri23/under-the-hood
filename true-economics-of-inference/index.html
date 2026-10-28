@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="How LLM inference costs add up in production, why token bills grow with scale, and the FinOps techniques that cut them, with a transparent worked example that tests the 60% figure.">
+<meta property="og:title" content="The True Economics of Inference: FinOps Strategies for Cutting Token Costs by 60% in Production">
+<meta property="og:description" content="Where an AI bill actually comes from, why it grows so fast in production, and the engineering habits that bring it back down. With the math shown.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://padmashri23.github.io/under-the-hood/true-economics-of-inference/">
+<meta property="og:image" content="https://padmashri23.github.io/under-the-hood/true-economics-of-inference/images/social-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The True Economics of Inference: FinOps Strategies for Cutting Token Costs by 60% in Production">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://padmashri23.github.io/under-the-hood/true-economics-of-inference/images/social-card.png">
+<title>The True Economics of Inference: FinOps Strategies for Cutting Token Costs by 60% in Production</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --bg-card: #111113;
+    --bg-elevated: #18181b;
+    --text-primary: #e4e4e7;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    --accent: #4A9EFF;
+    --accent-warm: #f59e0b;
+    --accent-green: #22c55e;
+    --accent-purple: #a855f7;
+    --accent-red: #ef4444;
+    --accent-teal: #14b8a6;
+    --border: #27272a;
+    --serif: 'Instrument Serif', 'Georgia', serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--sans);
+    font-size: 18px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .article-container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Header */
+  .article-header {
+    padding: 80px 0 40px;
+    text-align: center;
+  }
+  .article-header .tag {
+    display: inline-block;
+    background: var(--accent);
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 4px;
+    margin-bottom: 32px;
+  }
+  .article-header h1 {
+    font-family: var(--serif);
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1.15;
+    font-weight: 400;
+    margin-bottom: 24px;
+    color: #fff;
+  }
+  .article-header .subtitle {
+    font-size: 19px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 680px;
+    margin: 0 auto 32px;
+    font-weight: 300;
+  }
+  .article-header .meta {
+    font-size: 14px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  /* Typography */
+  p { margin-bottom: 20px; color: var(--text-primary); }
+  strong { color: #fff; font-weight: 600; }
+  em { color: var(--text-secondary); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .drop-cap::first-letter {
+    font-family: var(--serif);
+    font-size: 72px;
+    float: left;
+    line-height: 0.8;
+    margin: 4px 12px 0 0;
+    color: #fff;
+    font-weight: 400;
+  }
+
+  ul, ol { margin: 16px 0 24px 28px; color: var(--text-primary); }
+  li { margin-bottom: 8px; }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 400;
+    line-height: 1.2;
+    color: #fff;
+    margin: 64px 0 20px;
+  }
+  h3 {
+    font-family: var(--sans);
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    margin: 40px 0 16px;
+  }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+  /* Guardrail line */
+  .guardrail {
+    background: var(--bg-card);
+    border-left: 3px solid var(--accent-teal);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 20px;
+    margin: 24px 0 32px;
+    font-size: 16px;
+    color: var(--text-secondary);
+  }
+  .guardrail strong { color: var(--accent-teal); }
+
+  /* Key points box */
+  .keypoints {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 22px 26px 8px;
+    margin: 8px 0 24px;
+  }
+  .keypoints .kp-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .keypoints ul { margin: 0 0 14px 20px; font-size: 16px; }
+  .keypoints li { margin-bottom: 8px; color: var(--text-secondary); }
+
+  /* Image figures */
+  .article-image {
+    margin: 48px -40px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+  .article-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .article-image figcaption {
+    padding: 14px 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    line-height: 1.5;
+  }
+
+  /* Table figures */
+  .tbl {
+    margin: 48px 0;
+  }
+  .table-wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    line-height: 1.5;
+    background: var(--bg-card);
+  }
+  thead { background: var(--bg-elevated); }
+  th {
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border);
+    vertical-align: bottom;
+  }
+  td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { color: #fff; font-weight: 500; }
+  td small { display: block; color: var(--text-muted); font-size: 12px; font-weight: 400; }
+  .tbl figcaption {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  /* Footer */
+  .article-footer {
+    padding: 48px 0 80px;
+    border-top: 1px solid var(--border);
+    margin-top: 64px;
+  }
+  .article-footer h2 {
+    font-size: 30px;
+    margin: 0 0 24px;
+  }
+  .article-footer h3 {
+    font-family: var(--sans);
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 20px;
+  }
+  .article-footer p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+  .article-footer ol {
+    margin: 0 0 24px 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .article-footer li { margin-bottom: 10px; }
+  .tags { margin-top: 24px; }
+  .tags span {
+    display: inline-block;
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin: 4px 4px 4px 0;
+    border: 1px solid var(--border);
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .article-image { margin: 40px -24px; border-radius: 0; border-left: none; border-right: none; }
+  }
+  @media (max-width: 760px) {
+    .table-wrapper { margin: 0 -24px; border-radius: 0; border-left: none; border-right: none; }
+    .drop-cap::first-letter { font-size: 56px; }
+    h2 { font-size: 26px; margin-top: 48px; }
+  }
+  code { font-family: var(--mono); font-size: 0.85em; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; color: var(--text-primary); }
+  .article-image video { width: 100%; height: auto; display: block; background: #F7F0E4; }
+  .article-footer .refs-label { font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="article-container">
+
+<header class="article-header">
+  <span class="tag">Deep Dive</span>
+  <h1>The True Economics of Inference: FinOps Strategies for Cutting Token Costs by 60% in Production</h1>
+  <p class="subtitle">Where AI bills come from, why they grow, and how to bring them down, with the math shown.</p>
+  <p class="meta">Researched &amp; written October 2026 · ~7 min read · Prices checked October 28, 2026</p>
+</header>
+
+<!-- ============================================================ -->
+<!-- ARTICLE BODY -->
+<!-- ============================================================ -->
+
+<h2>💸 Why AI bills surprise teams</h2>
+
+<p class="drop-cap">The first bill from an AI provider usually looks tiny: a prototype answers a few hundred test questions for a few dollars. Then the feature launches, traffic climbs toward a million requests a month, and the bill climbs too. The cause is rarely one big mistake. It's small costs, repeated millions of times.</p>
+
+<h2>🧩 How inference costs work</h2>
+
+<h3>Tokens are what you pay for</h3>
+
+<p><strong>Inference</strong> is the moment a trained AI model answers a request. You pay for each one.</p>
+
+<p>Models read and write text in small pieces called <strong>tokens</strong>. <a href="https://ai.google.dev/gemini-api/docs/tokens" target="_blank">Google's Gemini docs</a> say a token is about four characters, and 100 tokens equal roughly 60 to 80 English words.</p>
+
+<h3>Input and output have different prices</h3>
+
+<p><strong>Input tokens</strong> (also called prompt tokens) are everything you send to the model. <strong>Output tokens</strong> (also called completion tokens) are everything it writes back. Output costs more. <a href="https://platform.claude.com/docs/en/about-claude/pricing" target="_blank">Claude Sonnet 5.5</a> charges $2 per million input tokens and $10 per million output tokens, and <a href="https://developers.openai.com/api/docs/pricing" target="_blank">OpenAI prices GPT-6.1 Sol</a> the same way. One output token costs as much as five input tokens.</p>
+
+<h3>📖 Words you'll see in this article</h3>
+
+<figure class="tbl">
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr><th>Term</th><th>What it means</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Token</td><td>A small chunk of text, roughly four characters of English; the exact split varies by model. You're billed per token.</td></tr>
+      <tr><td>Context</td><td>Everything sent to the model with a request: instructions, documents and chat history.</td></tr>
+      <tr><td>System prompt</td><td>Instructions your app sends with every request, such as "answer politely and follow our refund policy."</td></tr>
+    </tbody>
+  </table>
+  </div>
+</figure>
+
+<h3>What one request really costs</h3>
+
+<p>Besides the user's question, a support chatbot sends a system prompt, tool definitions (descriptions of actions the AI can take), help articles and the conversation so far. Here's an illustrative request:</p>
+
+<ul>
+  <li>3,000 tokens of system prompt and tool definitions</li>
+  <li>2,000 tokens of earlier conversation</li>
+  <li>1,000 tokens of help articles plus the new question</li>
+  <li>a 500-token answer</li>
+</ul>
+
+<p>Input costs $0.012 and output $0.005, so the request costs 1.7 cents. The answer is under 8% of the tokens but 29% of the cost.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/true-economics-of-inference/images/request-anatomy.png" onerror="this.onerror=null;this.src='images/request-anatomy.png'" width="1400" height="940" loading="lazy" alt="Two stacked bars for one illustrative support request on Claude Sonnet 5.5. By tokens: system prompt 3,000, earlier conversation 2,000, documents and question 1,000, answer 500, for 6,500 tokens. By cost: $0.006, $0.004, $0.002 and $0.005, for $0.017. The answer is 8% of the tokens but 29% of the cost. At 1,000,000 requests a month the bill is $17,000, and $6,000 of it pays for the same system prompt and tool definitions.">
+  <figcaption>Figure 1. One illustrative request in tokens and in dollars. Prices: Anthropic, October 2026.</figcaption>
+</figure>
+
+<h2>📈 Why costs grow in production</h2>
+
+<h3>Small numbers, multiplied</h3>
+
+<p>At a million requests a month, 1.7 cents becomes $17,000. The system prompt and tool definitions, the same on every request, cost $6,000 of that.</p>
+
+<h3>Every chat turn re-sends the whole conversation</h3>
+
+<p>Chat models don't remember earlier messages on their own. <a href="https://platform.claude.com/docs/en/build-with-claude/working-with-messages" target="_blank">Anthropic's documentation</a> says you "always send the full conversational history" with each request. So on turn ten, turns one through nine are sent again, and even APIs that store the chat for you, <a href="https://developers.openai.com/api/docs/guides/conversation-state" target="_blank">like OpenAI's</a>, still bill them as input.</p>
+
+<p>In the animation below, a ten-turn chat contains 8,000 tokens of text, but you pay for 54,000 input tokens. Stretch it to 20 turns and you pay for 158,000.</p>
+
+<figure class="article-image">
+  <video width="1280" height="720" autoplay muted loop playsinline controls preload="metadata" poster="https://padmashri23.github.io/under-the-hood/true-economics-of-inference/images/context-growth-poster.png" aria-label="Animated bar chart of a 10-turn chat on Claude Sonnet 5.5. Each turn's input bar grows from 3,150 to 7,650 tokens because earlier turns are re-sent. 8,000 tokens of chat become 54,000 billed input tokens costing $0.143. With prompt caching, the re-sent history is read from cache and the chat costs $0.059, 59% less.">
+    <source src="https://padmashri23.github.io/under-the-hood/true-economics-of-inference/images/context-growth.webm" type="video/webm">
+    <source src="images/context-growth.webm" type="video/webm">
+  </video>
+  <figcaption>An illustrative 10-turn chat, first at full price, then with prompt caching.</figcaption>
+</figure>
+
+<h3>Thinking tokens you never see</h3>
+
+<p>Many newer models reason privately before they answer, and you pay for that reasoning. <a href="https://developers.openai.com/api/docs/guides/reasoning" target="_blank">OpenAI says</a> reasoning tokens "are billed as output tokens" and aren't visible in the response. <a href="https://platform.claude.com/docs/en/build-with-claude/thinking-steering-and-cost" target="_blank">Anthropic</a> bills thinking as output too, and its API reports how many output tokens were thinking.</p>
+
+<h3>Agents call the model again and again</h3>
+
+<p>An AI agent works in steps, calling the model after each one with the growing history. <a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank">Anthropic's engineers</a> note that agentic systems "often trade latency and cost for better task performance."</p>
+
+<h2>🧮 What FinOps means for AI</h2>
+
+<p>The <a href="https://www.finops.org/introduction/what-is-finops/" target="_blank">FinOps Foundation</a> describes FinOps as "an operational framework and cultural practice which maximizes the business value of technology." For AI, that means measuring each feature's tokens, giving each cost an owner, and weighing it against its value.</p>
+
+<p>The Foundation's <a href="https://www.finops.org/wg/finops-for-ai-overview/" target="_blank">AI guidance</a> suggests tracking cost per inference. Better still, track <strong>cost per successful task</strong>: a cheap answer that gets retried or handed to a human wasn't cheap.</p>
+
+<h2>🛠️ Six ways to cut token costs</h2>
+
+<h3>1. Cache the parts that repeat</h3>
+
+<p><strong>Prompt caching</strong> lets the provider reuse work when the start of your request is identical every time, like your system prompt. It's like keeping a book open at the right page.</p>
+
+<p>On Claude Sonnet 5.5, a cache read costs $0.10 per million tokens, 5% of the normal input price. Writing to the cache costs 25% extra, and entries <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching" target="_blank">last five minutes</a> by default. <a href="https://developers.openai.com/api/docs/guides/prompt-caching" target="_blank">OpenAI</a> discounts cached input by up to 95%. The cached part must match exactly, so put fixed instructions first. In the animation, caching cuts the chat from $0.143 to $0.059.</p>
+
+<h3>2. Send less context</h3>
+
+<p>Keep the last few chat turns as they are and replace older ones with a short summary. If you search help articles, send the three best matches instead of ten.</p>
+
+<h3>3. Keep answers short</h3>
+
+<p>Output tokens cost more, so shorter answers save real money. Ask for concise replies, and set a <code>max_tokens</code> limit as a safety net. An answer that hits the limit is cut off, often mid-sentence, marked with a <a href="https://platform.claude.com/docs/en/build-with-claude/handling-stop-reasons" target="_blank"><code>max_tokens</code> stop reason</a>.</p>
+
+<h3>4. Send easy requests to a smaller model</h3>
+
+<p><strong>Model routing</strong> means picking a model for each request. Claude Haiku 5.5 costs $0.10 per million input tokens and $0.50 per million output tokens (for prompts up to 100,000 tokens), one twentieth of Sonnet 5.5's price. A small classifier can send simple questions, like password resets, to the cheap model.</p>
+
+<p>In 2024, LMSYS's <a href="https://lmsys.org/blog/2024-07-01-routellm/" target="_blank">RouteLLM</a> routers cut costs by over 85% on the MT Bench benchmark while keeping 95% of GPT-4's performance, but only 35% on GSM8K math problems. Test with your own requests, and pass anything the small model gets wrong to the bigger one. Our earlier article, <a href="https://padmashri23.github.io/under-the-hood/llm-vs-slm-production/">Large Language Models vs Small Language Models</a>, covers this choice in depth.</p>
+
+<h3>5. Batch work that can wait</h3>
+
+<p>Jobs like nightly reports or document tagging can go through a batch API at half price. <a href="https://platform.claude.com/docs/en/build-with-claude/batch-processing" target="_blank">Anthropic says</a> most batches finish within an hour, but they can take up to 24.</p>
+
+<h3>6. Two more options to know</h3>
+
+<p><strong>Semantic caching</strong> reuses a saved answer when a new question means the same thing as an old one. The <a href="https://arxiv.org/abs/2502.03771" target="_blank">vCache researchers</a> warn that fixed matching thresholds "result in unexpected error rates."</p>
+
+<p><strong>Quantization</strong> stores a self-hosted model's numbers with less precision. <a href="https://docs.vllm.ai/en/latest/features/quantization/llm_compressor/fp8/" target="_blank">vLLM's docs</a> say FP8 halves model memory and raises throughput by up to 1.6 times on GPUs that support it, with minimal impact on accuracy. For the hardware side of these costs, see <a href="https://padmashri23.github.io/under-the-hood/the-hidden-infrastructure-behind-every-ai-answer/">The Hidden Infrastructure Behind Every AI Answer</a>.</p>
+
+<h3>📋 The six techniques at a glance</h3>
+
+<figure class="tbl">
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr><th>Technique</th><th>Best for</th><th>Watch out for</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Prompt caching</td><td>Long instructions sent every time</td><td>Any change in the cached text</td></tr>
+      <tr><td>Less context</td><td>Long chats, document search</td><td>Dropping something the model needs</td></tr>
+      <tr><td>Shorter answers</td><td>Chatty replies</td><td>Answers cut off at the limit</td></tr>
+      <tr><td>Model routing</td><td>Many simple questions</td><td>Wrong answers from the small model</td></tr>
+      <tr><td>Batching</td><td>Work that can wait</td><td>Results can take up to 24 hours</td></tr>
+      <tr><td>Semantic caching, quantization</td><td>FAQs, self-hosted models</td><td>Wrong matches, lost accuracy</td></tr>
+    </tbody>
+  </table>
+  </div>
+</figure>
+
+<h2>🎯 Can you really cut costs by 60%?</h2>
+
+<h3>A worked example</h3>
+
+<p>This is a calculation, not a measured result. Start from the $17,000-a-month chatbot and apply four changes in order:</p>
+
+<ul>
+  <li>Cache the system prompt and tool definitions, with 95% of requests hitting the cache: <strong>$11,660</strong></li>
+  <li>Trim chat history from 2,000 to 1,200 tokens: <strong>$10,060</strong></li>
+  <li>Shorten average answers from 500 to 350 tokens: <strong>$8,560</strong></li>
+  <li>Send 30% of requests to Haiku 5.5, re-answer 1 in 10 of those on Sonnet, and add a small routing step: <strong>$6,424</strong></li>
+</ul>
+
+<p>That's 62% less than the starting bill. OpenAI's GPT-6.1 Sol and GPT-6 Luna list exactly the same input, output and cache prices as Sonnet 5.5 and Haiku 5.5, so at the same cache hit rate the math is the same there.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/true-economics-of-inference/images/savings-waterfall.png" onerror="this.onerror=null;this.src='images/savings-waterfall.png'" width="1400" height="956" loading="lazy" alt="Bar chart of modeled monthly cost for 1,000,000 requests. Baseline $17,000. After caching the static prompt $11,660 (31% lower), after trimming history $10,060 (41%), after shorter answers $8,560 (50%), after routing 30% of requests to Haiku 5.5 $6,424 (62%). A side panel shows 62% for this model, 50% without routing, and 36% in a pessimistic case.">
+  <figcaption>Figure 2. Modeled savings, not measured results. Each bar adds one more change.</figcaption>
+</figure>
+
+<h3>When the assumptions change</h3>
+
+<p>With fewer cache hits (70%), smaller trims, only 15% of requests routed and a quarter of those passed back to Sonnet, the saving drops to about 36%. Without routing, it stops near 50%. So 60% is possible for a busy chatbot with long, repeated instructions, but it isn't a guarantee or an industry standard.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/true-economics-of-inference/images/volume-spend.png" onerror="this.onerror=null;this.src='images/volume-spend.png'" width="1400" height="953" loading="lazy" alt="Line chart of modeled monthly spend against requests per month, from 0 to 2 million. Baseline rises at $0.017 per request to $34,000 at 2 million. Optimized rises at about $0.0064 per request to $12,848. The gap is $10,576 a month at 1 million requests and $21,152 at 2 million.">
+  <figcaption>Figure 3. Spend grows with traffic, so the same percentage saves more dollars. Illustrative model.</figcaption>
+</figure>
+
+<h2>📏 Where to start</h2>
+
+<ol>
+  <li>Measure first: log input, cached, output and thinking tokens per request, with its feature and whether the task succeeded.</li>
+  <li>Turn on caching, with fixed instructions at the start of the prompt.</li>
+  <li>Trim history and documents, and ask for shorter answers.</li>
+  <li>Test routing on real traffic before moving users to a smaller model.</li>
+</ol>
+
+<p>Change one thing at a time, and watch quality and latency too. The bill is simply tokens multiplied by price. Once you can see both, you can bring it down.</p>
+
+<!-- ============================================================ -->
+<!-- SOURCES / FOOTER -->
+<!-- ============================================================ -->
+
+<footer class="article-footer">
+  <h2>Sources &amp; References</h2>
+  <ol>
+    <li>Anthropic. "Pricing." Model, prompt caching and batch prices for Claude Sonnet 5.5 and Claude Haiku 5.5. Checked October 28, 2026. <a href="https://platform.claude.com/docs/en/about-claude/pricing" target="_blank">platform.claude.com</a></li>
+    <li>OpenAI. "Pricing." Standard, cache-write and Batch rates, including GPT-6.1 Sol and GPT-6 Luna. Checked October 28, 2026. <a href="https://developers.openai.com/api/docs/pricing" target="_blank">developers.openai.com</a></li>
+    <li>OpenAI. "Prompt caching." <a href="https://developers.openai.com/api/docs/guides/prompt-caching" target="_blank">developers.openai.com</a></li>
+    <li>OpenAI. "Reasoning models." Reasoning tokens are billed as output tokens. <a href="https://developers.openai.com/api/docs/guides/reasoning" target="_blank">developers.openai.com</a></li>
+    <li>OpenAI. "Conversation state." Earlier turns in a stored conversation are billed as input tokens. <a href="https://developers.openai.com/api/docs/guides/conversation-state" target="_blank">developers.openai.com</a></li>
+    <li>Google. "Understand and count tokens." Gemini API documentation. <a href="https://ai.google.dev/gemini-api/docs/tokens" target="_blank">ai.google.dev</a></li>
+    <li>Anthropic. "Using the Messages API." <a href="https://platform.claude.com/docs/en/build-with-claude/working-with-messages" target="_blank">platform.claude.com</a></li>
+    <li>Anthropic. "Prompt caching." <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching" target="_blank">platform.claude.com</a></li>
+    <li>Anthropic. "Stop reasons and fallback." <a href="https://platform.claude.com/docs/en/build-with-claude/handling-stop-reasons" target="_blank">platform.claude.com</a></li>
+    <li>Anthropic. "Steering thinking." Thinking tokens are billed as output tokens. <a href="https://platform.claude.com/docs/en/build-with-claude/thinking-steering-and-cost" target="_blank">platform.claude.com</a></li>
+    <li>Anthropic. "Building effective agents." <a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank">anthropic.com</a></li>
+    <li>Anthropic. "Batch processing." <a href="https://platform.claude.com/docs/en/build-with-claude/batch-processing" target="_blank">platform.claude.com</a></li>
+    <li>FinOps Foundation. "What is FinOps?" <a href="https://www.finops.org/introduction/what-is-finops/" target="_blank">finops.org</a></li>
+    <li>FinOps Foundation. "FinOps for AI Overview." Updated February 17, 2026. <a href="https://www.finops.org/wg/finops-for-ai-overview/" target="_blank">finops.org</a></li>
+    <li>Ong, I., Almahairi, A., et al. "RouteLLM: An Open-Source Framework for Cost-Effective LLM Routing." LMSYS Org, July 1, 2024. <a href="https://lmsys.org/blog/2024-07-01-routellm/" target="_blank">lmsys.org</a></li>
+    <li>Schroeder, L. G., et al. "vCache: Verified Semantic Prompt Caching." arXiv:2502.03771, 2025, revised February 2026. <a href="https://arxiv.org/abs/2502.03771" target="_blank">arxiv.org</a></li>
+    <li>vLLM. "FP8 W8A8." Quantization with LLM Compressor, vLLM documentation. <a href="https://docs.vllm.ai/en/latest/features/quantization/llm_compressor/fp8/" target="_blank">docs.vllm.ai</a></li>
+  </ol>
+
+  <p style="margin-top: 20px;"><strong>Note:</strong> Prices were checked against the providers' pricing pages on October 28, 2026 and change often. The support-bot workload, the 10-turn chat and every savings figure in this article are an illustrative model built on those prices, not measurements from a production system. Model assumptions: 1,000,000 requests a month; 3,000 static prompt tokens, 2,000 history tokens, 1,000 document and question tokens, 500 output tokens per request; Claude Sonnet 5.5 at $2 input, $10 output, $2.50 cache write and $0.10 cache read per million tokens; Claude Haiku 5.5 at $0.10, $0.50, $0.125 and $0.01 (prompts up to 100,000 tokens); OpenAI lists the same four prices for GPT-6.1 Sol and GPT-6 Luna (30-minute cache writes); a 400-input, 5-output-token Haiku router call on every request after routing; caching applied on both models. The pessimistic case uses a 70% cache hit rate, 1,600 history tokens, 450 output tokens, 15% routed and 25% of routed requests escalated. RouteLLM, vCache and vLLM figures are benchmark or documentation results, not guarantees for any particular workload. The charts and animation were created for this article from those assumptions.</p>
+
+  <div class="tags">
+    <span>Inference Costs</span>
+    <span>FinOps</span>
+    <span>Prompt Caching</span>
+    <span>Model Routing</span>
+    <span>Tokens</span>
+    <span>AI for Everyone</span>
+    <span>Deep Dive</span>
+  </div>
+
+  <p style="margin-top: 32px;"><a href="../">← More from Under the Hood</a></p>
+</footer>
+
+</div>
+
+</body>
+</html>

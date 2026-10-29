@@ -353,21 +353,21 @@
 
 <h3>Every chat turn re-sends the whole conversation</h3>
 
-<p><a href="https://platform.claude.com/docs/en/build-with-claude/working-with-messages" target="_blank">Anthropic's documentation</a> says you "always send the full conversational history" with each request. So on turn ten, turns one through nine are sent again, and even APIs that store the chat for you, <a href="https://developers.openai.com/api/docs/guides/conversation-state" target="_blank">like OpenAI's</a>, still bill them as input.</p>
+<p><a href="https://platform.claude.com/docs/en/build-with-claude/working-with-messages" target="_blank">Anthropic's documentation</a> says you "always send the full conversational history" with each request. Even APIs that store the chat for you, <a href="https://developers.openai.com/api/docs/guides/conversation-state" target="_blank">like OpenAI's</a>, still bill earlier turns as input.</p>
 
-<p>In the animation below, a ten-turn chat contains 8,000 tokens of text, but you pay for 54,000 input tokens. Stretch it to 20 turns and you pay for 158,000.</p>
+<p>The chat below starts with a 3,000-token system prompt and adds 500 tokens per turn, question plus answer. After ten turns it holds 8,000 tokens. But each turn re-sends everything before it, so you pay for 54,000 input tokens, and 158,000 at 20 turns.</p>
 
 <figure class="article-image">
   <video width="1280" height="720" autoplay muted loop playsinline controls preload="metadata" poster="https://padmashri23.github.io/under-the-hood/true-economics-of-inference/images/context-growth-poster.png" aria-label="Animated bar chart of a 10-turn chat on Claude Sonnet 5.5. Each turn's input bar grows from 3,150 to 7,650 tokens because earlier turns are re-sent. 8,000 tokens of chat become 54,000 billed input tokens costing $0.143. With prompt caching, the re-sent history is read from cache and the chat costs $0.059, 59% less.">
     <source src="https://padmashri23.github.io/under-the-hood/true-economics-of-inference/images/context-growth.webm" type="video/webm">
     <source src="images/context-growth.webm" type="video/webm">
   </video>
-  <figcaption>An illustrative 10-turn chat, first at full price, then with prompt caching.</figcaption>
+  <figcaption>The same chat at full price, then with prompt caching. Illustrative.</figcaption>
 </figure>
 
 <h3>Thinking tokens you never see</h3>
 
-<p>Many newer models reason privately before they answer, and you pay for that reasoning. <a href="https://developers.openai.com/api/docs/guides/reasoning" target="_blank">OpenAI says</a> reasoning tokens "are billed as output tokens" and aren't visible in the response. <a href="https://platform.claude.com/docs/en/build-with-claude/thinking-steering-and-cost" target="_blank">Anthropic</a> bills thinking as output too, and its API reports how many output tokens were thinking.</p>
+<p>Many newer models reason privately before answering, and you pay for it. <a href="https://developers.openai.com/api/docs/guides/reasoning" target="_blank">OpenAI says</a> reasoning tokens "are billed as output tokens" and aren't visible in the response. <a href="https://platform.claude.com/docs/en/build-with-claude/thinking-steering-and-cost" target="_blank">Anthropic</a> bills thinking as output too, and its API reports how many output tokens were thinking.</p>
 
 <h3>Agents call the model again and again</h3>
 
@@ -399,7 +399,7 @@
 
 <p><strong>Model routing</strong> means picking a model for each request. Claude Haiku 5.5 costs $0.10 per million input tokens and $0.50 per million output tokens (for prompts up to 100,000 tokens), one twentieth of Sonnet 5.5's price. A small classifier can send simple questions, like password resets, to the cheap model.</p>
 
-<p>In 2024, LMSYS's <a href="https://lmsys.org/blog/2024-07-01-routellm/" target="_blank">RouteLLM</a> routers cut costs by over 85% on the MT Bench benchmark while keeping 95% of GPT-4's performance, but only 35% on GSM8K math problems. Test with your own requests, and pass anything the small model gets wrong to the bigger one. For more, see <a href="https://padmashri23.github.io/under-the-hood/llm-vs-slm-production/">Large Language Models vs Small Language Models</a>.</p>
+<p>In 2024, LMSYS's <a href="https://lmsys.org/blog/2024-07-01-routellm/" target="_blank">RouteLLM</a> routers cut costs by over 85% on the MT Bench benchmark while still achieving 95% of GPT-4's performance; the cost reduction is smaller on MMLU (45%) and GSM8K (35%). Test on your own requests, and pass anything the small model gets wrong to the bigger one. For more, see <a href="https://padmashri23.github.io/under-the-hood/llm-vs-slm-production/">Large Language Models vs Small Language Models</a>.</p>
 
 <h3>5. Batch work that can wait</h3>
 
@@ -407,7 +407,7 @@
 
 <h3>6. Two more options to know</h3>
 
-<p><strong>Semantic caching</strong> reuses a saved answer when a new question means the same thing as an old one. The <a href="https://arxiv.org/abs/2502.03771" target="_blank">vCache researchers</a> warn that fixed matching thresholds "result in unexpected error rates."</p>
+<p><strong>Semantic caching</strong> reuses a saved answer when a new question means the same as an old one. The <a href="https://arxiv.org/abs/2502.03771" target="_blank">vCache researchers</a> warn that fixed matching thresholds "result in unexpected error rates."</p>
 
 <p><strong>Quantization</strong> stores a self-hosted model's numbers with less precision. <a href="https://docs.vllm.ai/en/latest/features/quantization/llm_compressor/fp8/" target="_blank">vLLM's docs</a> say FP8 halves model memory and raises throughput by up to 1.6 times on GPUs that support it, with minimal impact on accuracy. For the hardware side of these costs, see <a href="https://padmashri23.github.io/under-the-hood/the-hidden-infrastructure-behind-every-ai-answer/">The Hidden Infrastructure Behind Every AI Answer</a>.</p>
 
@@ -501,7 +501,7 @@
     <li>vLLM. "FP8 W8A8." Quantization with LLM Compressor, vLLM documentation. <a href="https://docs.vllm.ai/en/latest/features/quantization/llm_compressor/fp8/" target="_blank">docs.vllm.ai</a></li>
   </ol>
 
-  <p style="margin-top: 20px;"><strong>Note:</strong> Prices were checked against the providers' pricing pages on October 28, 2026 and change often. The support-bot workload, the 10-turn chat and every savings figure in this article are an illustrative model built on those prices, not measurements from a production system. Model assumptions: 1,000,000 requests a month; 3,000 static prompt tokens, 2,000 history tokens, 1,000 document and question tokens, 500 output tokens per request; Claude Sonnet 5.5 at $2 input, $10 output, $2.50 cache write and $0.10 cache read per million tokens; Claude Haiku 5.5 at $0.10, $0.50, $0.125 and $0.01 (prompts up to 100,000 tokens); OpenAI lists the same four prices for GPT-6.1 Sol and GPT-6 Luna (30-minute cache writes); a 400-input, 5-output-token Haiku router call on every request after routing; caching applied on both models. The pessimistic case uses a 70% cache hit rate, 1,600 history tokens, 450 output tokens, 15% routed and 25% of routed requests escalated. RouteLLM, vCache and vLLM figures are benchmark or documentation results, not guarantees for any particular workload. The charts and animation were created for this article from those assumptions.</p>
+  <p style="margin-top: 20px;"><strong>Note:</strong> Prices were checked against the providers' pricing pages on October 28, 2026 and change often. The support-bot workload, the 10-turn chat and every savings figure in this article are an illustrative model built on those prices, not measurements from a production system. Model assumptions: 1,000,000 requests a month; 3,000 static prompt tokens, 2,000 history tokens, 1,000 document and question tokens, 500 output tokens per request; Claude Sonnet 5.5 at $2 input, $10 output, $2.50 cache write and $0.10 cache read per million tokens; Claude Haiku 5.5 at $0.10, $0.50, $0.125 and $0.01 (prompts up to 100,000 tokens); OpenAI lists the same four prices for GPT-6.1 Sol and GPT-6 Luna (30-minute cache writes); a 400-input, 5-output-token Haiku router call on every request after routing; caching applied on both models. The 10-turn chat: turn n sends 3,000 + 500 &times; (n - 1) + 150 input tokens (3,150 on turn 1, 7,650 on turn 10), which sums to 54,000 over 10 turns and 158,000 over 20; the chat itself holds 3,000 + 500 &times; 10 = 8,000 tokens. The pessimistic case uses a 70% cache hit rate, 1,600 history tokens, 450 output tokens, 15% routed and 25% of routed requests escalated. RouteLLM, vCache and vLLM figures are benchmark or documentation results, not guarantees for any particular workload. The charts and animation were created for this article from those assumptions.</p>
 
   <div class="tags">
     <span>Inference Costs</span>

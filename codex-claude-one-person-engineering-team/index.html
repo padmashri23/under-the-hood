@@ -354,21 +354,21 @@
 <h2 id="side-by-side">⚖️ Codex and Claude Code side by side</h2>
 
 <ul>
-  <li><strong>Codex (OpenAI)</strong> runs in the terminal, your IDE, the ChatGPT desktop app and Codex Cloud. It's <a href="https://learn.chatgpt.com/docs/pricing" target="_blank">included in every ChatGPT plan</a>, even Free. The old Codex app moved into the ChatGPT desktop app in July 2026.</li>
+  <li><strong>Codex (OpenAI)</strong> runs in the terminal, your IDE, the ChatGPT desktop app and Codex Cloud. Codex is <a href="https://learn.chatgpt.com/docs/pricing" target="_blank">included in every ChatGPT plan</a>, even Free. Codex Cloud is not: it isn't included with Free or Go, so you need Plus or a higher plan. The old Codex app moved into the ChatGPT desktop app in July 2026.</li>
   <li><strong>Claude Code (Anthropic)</strong> runs in the terminal, your IDE, a desktop app and the browser. It <a href="https://code.claude.com/docs/en/feature-availability" target="_blank">needs a paid Claude plan</a> (Pro, Max, Team or Enterprise) or an API key.</li>
 </ul>
 
 <p>Most features exist in both, under different names. Figure 1 lines them up.</p>
 
 <figure class="article-image">
-  <a class="zoom" href="https://padmashri23.github.io/under-the-hood/codex-claude-one-person-engineering-team/images/codex-vs-claude-code.png" target="_blank"><img src="https://padmashri23.github.io/under-the-hood/codex-claude-one-person-engineering-team/images/codex-vs-claude-code.png" onerror="this.onerror=null;this.src='images/codex-vs-claude-code.png'" width="1920" height="1080" loading="lazy" alt="Comparison table of OpenAI Codex and Anthropic Claude Code. Codex: included in every ChatGPT plan, AGENTS.md with a 32 KiB default cap, /plan, subagents on by default, skills in .agents/skills called with $name, hooks.json trusted via /hooks, worktrees and cloud tasks with up to 4 attempts, /review and @codex review, codex exec. Claude Code: Pro, Max, Team, Enterprise or API key, CLAUDE.md or AGENTS.md, Shift+Tab or /plan, built-in Explore and Plan subagents, skills in .claude/skills called with /name, hooks in settings.json, claude --worktree and claude --cloud, /code-review and /security-review, claude -p."></a>
+  <a class="zoom" href="https://padmashri23.github.io/under-the-hood/codex-claude-one-person-engineering-team/images/codex-vs-claude-code.png" target="_blank"><img src="https://padmashri23.github.io/under-the-hood/codex-claude-one-person-engineering-team/images/codex-vs-claude-code.png" onerror="this.onerror=null;this.src='images/codex-vs-claude-code.png'" width="1920" height="1080" loading="lazy" alt="Comparison table of OpenAI Codex and Anthropic Claude Code. Codex: included in every ChatGPT plan, with Codex Cloud on Plus or higher, AGENTS.md with a 32 KiB default cap, /plan, subagents on by default, skills in .agents/skills called with $name, hooks.json trusted via /hooks, worktrees and cloud tasks with up to 4 attempts, /review and @codex review, codex exec. Claude Code: Pro, Max, Team, Enterprise or API key, CLAUDE.md or AGENTS.md, Shift+Tab or /plan, built-in Explore and Plan subagents, skills in .claude/skills called with /name, hooks in settings.json, claude --worktree and claude --cloud, /code-review and /security-review, claude -p."></a>
   <figcaption>Figure 1. Each feature's name in both tools, from the official docs (October 30, 2026). The "reach for" lines are our advice. Tap any figure to open it full size.</figcaption>
 </figure>
 
 <div class="keypoints">
   <div class="kp-title">Which one should I start with?</div>
   <ul>
-    <li>Already use ChatGPT, even the free plan? Start with Codex.</li>
+    <li>Already use ChatGPT, even the free plan? Start with Codex. Cloud tasks need Plus or higher.</li>
     <li>Already pay for a Claude plan? Start with Claude Code.</li>
     <li>All seven tricks work in either tool. You don't need both to begin.</li>
   </ul>
@@ -441,7 +441,7 @@
 
 <ul>
   <li><strong>Claude Code:</strong> <code>claude --cloud "Fix the flaky date test"</code> starts a cloud session. A flaky test is one that sometimes passes and sometimes fails.</li>
-  <li><strong>Codex:</strong> a Codex Cloud task <a href="https://learn.chatgpt.com/docs/cloud" target="_blank">"can keep working while your computer is asleep."</a> The experimental <code>--attempts</code> option runs up to four separate attempts at the same task, so you can keep the best result.</li>
+  <li><strong>Codex:</strong> a Codex Cloud task <a href="https://learn.chatgpt.com/docs/cloud" target="_blank">"can keep working while your computer is asleep."</a> The experimental <code>--attempts</code> flag on <code>codex cloud exec</code> runs 1 to 4 separate attempts at the same task, so you can keep the best result. For example: <code>codex cloud exec --env ENV_ID --attempts 3 "Fix the flaky date test"</code>.</li>
 </ul>
 
 <figure class="article-image">

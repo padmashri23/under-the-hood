@@ -26,7 +26,7 @@ Seven practical, documented techniques for OpenAI Codex and Anthropic's Claude C
 - A short conclusion
 - A link to the earlier Under the Hood article on AI agent guardrails
 
-Figure 1 doubles as the at-a-glance command comparison. Written for beginners and tech starters: a key points box, a glossary of the basic terms (terminal, IDE, branch, pull request, tokens, CI), sentences averaging about 13 words, and every trick in the same pattern (the idea in plain words, then a Codex bullet and a Claude Code bullet, then a prompt to try or a "Good to know" note). Emoji section headings with subheadings so the outline shows up in Notion's table of contents. About 2,470 words above Sources & References, counting headings, captions, tables and about 90 words of copy-and-paste starter files (a notes file, a SKILL.md and a formatter hook).
+Figure 1 doubles as the at-a-glance command comparison. Written for beginners and tech starters: a key points box, a glossary of the basic terms (terminal, IDE, branch, pull request, tokens, CI), sentences averaging about 13 words, and every trick in the same pattern (the idea in plain words, then a Codex bullet and a Claude Code bullet, then a prompt to try or a "Good to know" note). Emoji section headings with subheadings so the outline shows up in Notion's table of contents. About 2,510 words above Sources & References, counting headings, captions, tables and about 90 words of copy-and-paste starter files (a notes file, a SKILL.md and a formatter hook).
 
 ## Visuals
 

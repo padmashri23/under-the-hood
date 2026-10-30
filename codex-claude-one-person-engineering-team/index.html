@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A beginner-friendly, fact-checked guide to seven practical OpenAI Codex and Claude Code techniques: AGENTS.md and CLAUDE.md, plan mode, tests, subagents, parallel worktrees and cloud tasks, skills and hooks, and cross-agent code review.">
+<meta property="og:title" content="7 Codex &amp; Claude Tricks That Turn You Into a One-Person Engineering Team">
+<meta property="og:description" content="Seven documented Codex and Claude Code features that help one developer plan, build, test and review like a small team.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://padmashri23.github.io/under-the-hood/codex-claude-one-person-engineering-team/">
+<meta property="og:image" content="https://padmashri23.github.io/under-the-hood/codex-claude-one-person-engineering-team/images/social-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="7 Codex &amp; Claude Tricks That Turn You Into a One-Person Engineering Team">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://padmashri23.github.io/under-the-hood/codex-claude-one-person-engineering-team/images/social-card.png">
+<title>7 Codex &amp; Claude Tricks That Turn You Into a One-Person Engineering Team</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --bg-card: #111113;
+    --bg-elevated: #18181b;
+    --text-primary: #e4e4e7;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    --accent: #4A9EFF;
+    --accent-warm: #f59e0b;
+    --accent-green: #22c55e;
+    --accent-purple: #a855f7;
+    --accent-red: #ef4444;
+    --accent-teal: #14b8a6;
+    --border: #27272a;
+    --serif: 'Instrument Serif', 'Georgia', serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--sans);
+    font-size: 18px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .article-container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Header */
+  .article-header {
+    padding: 80px 0 40px;
+    text-align: center;
+  }
+  .article-header .tag {
+    display: inline-block;
+    background: var(--accent);
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 4px;
+    margin-bottom: 32px;
+  }
+  .article-header h1 {
+    font-family: var(--serif);
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1.15;
+    font-weight: 400;
+    margin-bottom: 24px;
+    color: #fff;
+  }
+  .article-header .subtitle {
+    font-size: 19px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 680px;
+    margin: 0 auto 32px;
+    font-weight: 300;
+  }
+  .article-header .meta {
+    font-size: 14px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  /* Typography */
+  p { margin-bottom: 20px; color: var(--text-primary); }
+  strong { color: #fff; font-weight: 600; }
+  em { color: var(--text-secondary); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .drop-cap::first-letter {
+    font-family: var(--serif);
+    font-size: 72px;
+    float: left;
+    line-height: 0.8;
+    margin: 4px 12px 0 0;
+    color: #fff;
+    font-weight: 400;
+  }
+
+  ul, ol { margin: 16px 0 24px 28px; color: var(--text-primary); }
+  li { margin-bottom: 8px; }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 400;
+    line-height: 1.2;
+    color: #fff;
+    margin: 64px 0 20px;
+  }
+  h3 {
+    font-family: var(--sans);
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    margin: 40px 0 16px;
+  }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+  /* Guardrail line */
+  .guardrail {
+    background: var(--bg-card);
+    border-left: 3px solid var(--accent-teal);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 20px;
+    margin: 24px 0 32px;
+    font-size: 16px;
+    color: var(--text-secondary);
+  }
+  .guardrail strong { color: var(--accent-teal); }
+
+  /* Key points box */
+  .keypoints {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 22px 26px 8px;
+    margin: 8px 0 24px;
+  }
+  .keypoints .kp-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .keypoints ul { margin: 0 0 14px 20px; font-size: 16px; }
+  .keypoints li { margin-bottom: 8px; color: var(--text-secondary); }
+
+  /* Image figures */
+  .article-image {
+    margin: 48px -40px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+  .article-image a.zoom { display: block; cursor: zoom-in; }
+  .article-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .article-image figcaption {
+    padding: 14px 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    line-height: 1.5;
+  }
+
+  /* Table figures */
+  .tbl {
+    margin: 48px 0;
+  }
+  .table-wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    line-height: 1.5;
+    background: var(--bg-card);
+  }
+  thead { background: var(--bg-elevated); }
+  th {
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border);
+    vertical-align: bottom;
+  }
+  td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { color: #fff; font-weight: 500; }
+  td small { display: block; color: var(--text-muted); font-size: 12px; font-weight: 400; }
+  .tbl figcaption {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  /* Footer */
+  .article-footer {
+    padding: 48px 0 80px;
+    border-top: 1px solid var(--border);
+    margin-top: 64px;
+  }
+  .article-footer h2 {
+    font-size: 30px;
+    margin: 0 0 24px;
+  }
+  .article-footer h3 {
+    font-family: var(--sans);
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 20px;
+  }
+  .article-footer p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+  .article-footer ol {
+    margin: 0 0 24px 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .article-footer li { margin-bottom: 10px; }
+  .tags { margin-top: 24px; }
+  .tags span {
+    display: inline-block;
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin: 4px 4px 4px 0;
+    border: 1px solid var(--border);
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .article-image { margin: 40px -24px; border-radius: 0; border-left: none; border-right: none; }
+  }
+  @media (max-width: 760px) {
+    .table-wrapper { margin: 0 -24px; border-radius: 0; border-left: none; border-right: none; }
+    .drop-cap::first-letter { font-size: 56px; }
+    h2 { font-size: 26px; margin-top: 48px; }
+  }
+  code { font-family: var(--mono); font-size: 0.85em; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; color: var(--text-primary); }
+  .article-image video { width: 100%; height: auto; display: block; background: #F7F0E4; }
+  pre { font-family: var(--mono); font-size: 14px; line-height: 1.6; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin: 8px 0 24px; overflow-x: auto; color: var(--text-primary); }
+  pre.wrap { white-space: pre-wrap; overflow-wrap: anywhere; }
+  pre code { background: none; border: none; padding: 0; font-size: inherit; }
+  blockquote.prompt { background: var(--bg-card); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 14px 20px; margin: 8px 0 24px; font-size: 16px; color: var(--text-secondary); }
+  blockquote.prompt b { display: block; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+  .article-footer .refs-label { font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="article-container">
+
+<header class="article-header">
+  <span class="tag">Deep Dive</span>
+  <h1>7 Codex &amp; Claude Tricks That Turn You Into a One-Person Engineering Team</h1>
+  <p class="subtitle">Seven documented Codex and Claude Code features that help one developer plan, build, test and review like a small team.</p>
+  <p class="meta">Researched &amp; written October 2026 · ~10 min read · Sources cited throughout</p>
+</header>
+
+<!-- ============================================================ -->
+<!-- ARTICLE BODY -->
+<!-- ============================================================ -->
+
+<h2 id="problem">🧑‍💻 The problem with building alone</h2>
+
+<p class="drop-cap">When you build software alone, you do every job yourself. You plan, write the code, test it and review it. Nobody checks your work. And when you open an old project, you can lose hours just working out how it fits together.</p>
+
+<p>An <strong>AI coding agent</strong> can take some of that load. It's an AI that works inside your project: it reads your files, changes code and runs commands, such as your tests. You tell it what you want in plain English.</p>
+
+<p>This article covers the two best-known agents, <strong>Codex</strong> from OpenAI and <strong>Claude Code</strong> from Anthropic, with seven tricks and six smaller tips. Every feature comes from the official docs.</p>
+
+<div class="keypoints">
+  <div class="kp-title">Key points</div>
+  <ul>
+    <li>Give the agent a short notes file about your project.</li>
+    <li>Ask for a plan before any code, and tests that prove the work is done.</li>
+    <li>Let several agents work at once, each in its own copy of your code.</li>
+    <li>Have one agent review the other. You still make the final call.</li>
+  </ul>
+</div>
+
+<div class="keypoints">
+  <div class="kp-title">In this article</div>
+  <ol>
+    <li><a href="#side-by-side">Codex and Claude Code side by side</a></li>
+    <li><a href="#seven-tricks">Seven tricks, one at a time</a></li>
+    <li><a href="#one-day">One day, two agents</a></li>
+    <li><a href="#more-tips">Six more tips</a></li>
+    <li><a href="#stay-safe">Staying safe</a> and <a href="#mistakes">common mistakes</a></li>
+    <li><a href="#where-to-start">Where to start</a> and the <a href="#cheat-sheet">cheat sheet</a></li>
+  </ol>
+</div>
+
+<h3>📖 Words you'll see in this article</h3>
+
+<figure class="tbl">
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr><th>Term</th><th>What it means</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Terminal</td><td>The text window where you type commands. A <strong>CLI</strong> is a tool you use there.</td></tr>
+      <tr><td>IDE</td><td>The app you write code in, such as VS Code.</td></tr>
+      <tr><td>Branch</td><td>A separate line of work in Git, the tool that tracks code changes.</td></tr>
+      <tr><td>Pull request (PR)</td><td>A request to add a branch's changes to the main code, so they can be reviewed first.</td></tr>
+      <tr><td>Tokens</td><td>Small chunks of text an AI reads and writes. The more tokens a task uses, the more of your plan's usage it takes.</td></tr>
+      <tr><td>CI</td><td>Tools that run checks automatically every time code changes.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</figure>
+
+<h2 id="side-by-side">⚖️ Codex and Claude Code side by side</h2>
+
+<ul>
+  <li><strong>Codex (OpenAI)</strong> runs in the terminal, your IDE, the ChatGPT desktop app and Codex Cloud. It's <a href="https://learn.chatgpt.com/docs/pricing" target="_blank">included in every ChatGPT plan</a>, even Free. The old Codex app moved into the ChatGPT desktop app in July 2026.</li>
+  <li><strong>Claude Code (Anthropic)</strong> runs in the terminal, your IDE, a desktop app and the browser. It <a href="https://code.claude.com/docs/en/feature-availability" target="_blank">needs a paid Claude plan</a> (Pro, Max, Team or Enterprise) or an API key.</li>
+</ul>
+
+<p>Most features exist in both, under different names. Figure 1 lines them up.</p>
+
+<figure class="article-image">
+  <a class="zoom" href="https://padmashri23.github.io/under-the-hood/codex-claude-one-person-engineering-team/images/codex-vs-claude-code.png" target="_blank"><img src="https://padmashri23.github.io/under-the-hood/codex-claude-one-person-engineering-team/images/codex-vs-claude-code.png" onerror="this.onerror=null;this.src='images/codex-vs-claude-code.png'" width="1920" height="1080" loading="lazy" alt="Comparison table of OpenAI Codex and Anthropic Claude Code. Codex: included in every ChatGPT plan, AGENTS.md with a 32 KiB default cap, /plan, subagents on by default, skills in .agents/skills called with $name, hooks.json trusted via /hooks, worktrees and cloud tasks with up to 4 attempts, /review and @codex review, codex exec. Claude Code: Pro, Max, Team, Enterprise or API key, CLAUDE.md or AGENTS.md, Shift+Tab or /plan, built-in Explore and Plan subagents, skills in .claude/skills called with /name, hooks in settings.json, claude --worktree and claude --cloud, /code-review and /security-review, claude -p."></a>
+  <figcaption>Figure 1. Each feature's name in both tools, from the official docs (October 30, 2026). The "reach for" lines are our advice. Tap any figure to open it full size.</figcaption>
+</figure>
+
+<div class="keypoints">
+  <div class="kp-title">Which one should I start with?</div>
+  <ul>
+    <li>Already use ChatGPT, even the free plan? Start with Codex.</li>
+    <li>Already pay for a Claude plan? Start with Claude Code.</li>
+    <li>All seven tricks work in either tool. You don't need both to begin.</li>
+  </ul>
+</div>
+
+<h2 id="seven-tricks">🛠️ Seven tricks, one at a time</h2>
+
+<p>Each trick explains the idea first, then shows how to do it in each tool.</p>
+
+<h3>1. Give the agent a notes file</h3>
+
+<p>Both tools read a notes file from your project at the start of every session. Think of it as onboarding docs for the AI: how to run the tests, and what not to touch.</p>
+
+<ul>
+  <li><strong>Codex</strong> reads <code>AGENTS.md</code>. If you have several, Codex combines them, and the one <a href="https://learn.chatgpt.com/docs/agent-configuration/agents-md" target="_blank">closest to the folder you're working in</a> takes priority.</li>
+  <li><strong>Claude Code</strong> reads <code>CLAUDE.md</code>. Version 2.1.277 and later also read <code>AGENTS.md</code>, but by default <a href="https://code.claude.com/docs/en/memory" target="_blank">only if there's no CLAUDE.md or CLAUDE.local.md</a>. Run <code>claude --version</code> to check yours. To share one file, write <code>@AGENTS.md</code> inside CLAUDE.md.</li>
+  <li><strong>Both</strong> have an <code>/init</code> command that writes a first draft.</li>
+</ul>
+
+<p>Start with the command that runs your tests. Anthropic calls it "the single most useful line" in the file.</p>
+
+<pre><code>## Commands
+- Run tests: npm test
+
+## Rules
+- Never edit files in /migrations by hand.</code></pre>
+
+<h3>2. Ask for a plan before any code</h3>
+
+<p>In <strong>plan mode</strong>, the agent researches your code and writes a plan for you to approve. In Claude Code, it can't edit your files until you approve the plan. You fix the plan first, then let it start. Fixing a plan takes a minute; undoing wrong changes takes much longer.</p>
+
+<ul>
+  <li><strong>Claude Code:</strong> press <code>Shift+Tab</code> until the status bar shows plan mode, or start your message with <code>/plan</code>. Claude will "research and propose changes without making them."</li>
+  <li><strong>Codex:</strong> type <code>/plan</code> and your request.</li>
+</ul>
+
+<p>It's also the easiest way into a project you didn't write. The agent reads all the code; you read a short summary.</p>
+
+<blockquote class="prompt"><b>Try this</b>/plan Explain how an order moves from the cart to payment. Then propose how to add discount codes, and list the files you'd change.</blockquote>
+
+<h3>3. Give the agent a test it can run</h3>
+
+<p>An agent can't tell whether its work is right unless it can check. Tests give it that check, because they pass or fail. Anthropic's advice: <a href="https://code.claude.com/docs/en/best-practices" target="_blank">"Give Claude something it can run that comes back pass or fail."</a></p>
+
+<p>For bugs, ask for the test first. A test that fails before the fix and passes after it proves the bug is gone.</p>
+
+<blockquote class="prompt"><b>Try this</b>Checkout shows a 500 error when the cart is empty. Error message: [paste]. Write a failing test that shows the bug, fix it, then run all the tests.</blockquote>
+
+<h3>4. Hand side jobs to subagents</h3>
+
+<p>In a long session, the AI has more to keep in mind and can forget early details. A <strong>subagent</strong> is a helper the main agent sends off to do one focused job, like searching the code. It works separately and reports back only its answer.</p>
+
+<ul>
+  <li><strong>Claude Code:</strong> each subagent "runs in its own context window," its own separate memory. A built-in one, Explore, searches code without changing it. Add your own in <code>.claude/agents/</code>.</li>
+  <li><strong>Codex:</strong> subagents are on by default. Add your own in <code>.codex/agents/</code>.</li>
+</ul>
+
+<p class="guardrail"><strong>Good to know:</strong> OpenAI says subagents "consume more tokens than comparable single-agent runs," so they use up your limits faster.</p>
+
+<h3>5. Run several agents at the same time</h3>
+
+<p>Two agents in the same folder can overwrite each other's changes. The fix is a <strong>Git worktree</strong>: a second copy of your project on its own branch.</p>
+
+<ul>
+  <li><strong>Claude Code:</strong> <code>claude --worktree feature-auth</code> <a href="https://code.claude.com/docs/en/worktrees" target="_blank">starts a session in its own worktree</a>.</li>
+  <li><strong>Codex:</strong> worktrees "let Codex run multiple independent chats in the same project without interfering with each other."</li>
+</ul>
+
+<p>You can also send work to the cloud, so it runs on the provider's computers instead of your laptop:</p>
+
+<ul>
+  <li><strong>Claude Code:</strong> <code>claude --cloud "Fix the flaky date test"</code> starts a cloud session. A flaky test is one that sometimes passes and sometimes fails.</li>
+  <li><strong>Codex:</strong> a Codex Cloud task <a href="https://learn.chatgpt.com/docs/cloud" target="_blank">"can keep working while your computer is asleep."</a> The experimental <code>--attempts</code> option runs up to four separate attempts at the same task, so you can keep the best result.</li>
+</ul>
+
+<figure class="article-image">
+  <video width="1920" height="1080" autoplay muted loop playsinline controls preload="metadata" poster="https://padmashri23.github.io/under-the-hood/codex-claude-one-person-engineering-team/images/parallel-agents-poster.png" aria-label="Animation in two parts. First, one developer works through Plan, Build feature, Fix bug, Write tests and Review in a single row, one after another, with nobody checking the work. Then the developer plans, three agent lanes (Claude Code in a worktree, a Codex cloud task, Codex in a worktree) build, fix and write tests side by side, each showing tests pass, the other agent reviews the pull requests, and the developer reads and merges. Illustrative, not measured timings.">
+    <source src="https://padmashri23.github.io/under-the-hood/codex-claude-one-person-engineering-team/images/parallel-agents.mp4" type="video/mp4">
+    <source src="images/parallel-agents.mp4" type="video/mp4">
+  </video>
+  <figcaption>Figure 2. One person doing five jobs in a row, then agents sharing the middle jobs. Illustrative, not measured timings. Can't see the video? <a href="https://padmashri23.github.io/under-the-hood/codex-claude-one-person-engineering-team/images/parallel-agents.gif" target="_blank">Open the GIF version</a>.</figcaption>
+</figure>
+
+<p>Your job becomes writing clear tasks and checking results (Figure 3). Before letting agents run alone, read our guide to <a href="https://padmashri23.github.io/under-the-hood/ai-agent-risks-without-guardrails/">AI agent guardrails</a>.</p>
+
+<figure class="article-image">
+  <a class="zoom" href="https://padmashri23.github.io/under-the-hood/codex-claude-one-person-engineering-team/images/agent-workflow.png" target="_blank"><img src="https://padmashri23.github.io/under-the-hood/codex-claude-one-person-engineering-team/images/agent-workflow.png" onerror="this.onerror=null;this.src='images/agent-workflow.png'" width="1920" height="1080" loading="lazy" alt="Workflow diagram. Step 1: you plan the work with /plan. Step 2: three jobs run side by side: Claude Code builds the login page in a worktree (claude --worktree feature-auth), a Codex Cloud task fixes a flaky test (codex cloud exec --env my-app --attempts 3), and a read-only Claude Code Explore subagent maps the payments code. Step 3: tests and hooks check the code changes. Step 4: the other agent reviews each pull request (@codex review, /code-review). Step 5: you read and merge."></a>
+  <figcaption>Figure 3. Plan, split the work, let tests check it, cross-review, merge. An example, not measured data.</figcaption>
+</figure>
+
+<h3>6. Automate chores with skills and hooks</h3>
+
+<p>A <strong>skill</strong> is a saved set of instructions for a job you repeat, like "prepare a release." It's a folder with a <code>SKILL.md</code> file inside.</p>
+
+<ul>
+  <li><strong>Claude Code:</strong> keep skills in <code>.claude/skills/</code> and run one with <code>/</code> plus its name.</li>
+  <li><strong>Codex:</strong> keep skills in <code>.agents/skills/</code> and <a href="https://learn.chatgpt.com/docs/build-skills" target="_blank">call one with <code>$</code> plus its name</a>. <code>$skill-creator</code> helps you write one.</li>
+</ul>
+
+<p>A skill only needs a name, a description that says when to use it, and the steps. This one works in either tool, saved as <code>release-notes/SKILL.md</code> in the folder above:</p>
+
+<pre><code>---
+name: release-notes
+description: Writes release notes from the commits since the last tag. Use when preparing a release.
+---
+1. List the commits since the last Git tag.
+2. Group them into Features, Fixes and Other.
+3. Add the notes to the top of CHANGELOG.md.</code></pre>
+
+<p>An agent can still skip a skill's advice. A <strong>hook</strong> can't be skipped: it's a small script that runs automatically at a set moment, every time. Anthropic says hooks make "certain actions always happen rather than relying on the LLM to choose to run them." For example, a hook can run your code formatter after every edit, or block edits to <code>.env</code>, the file that usually holds passwords.</p>
+
+<p>Here's Anthropic's <a href="https://code.claude.com/docs/en/hooks-guide" target="_blank">documented formatter hook</a>. It goes in <code>.claude/settings.json</code> and needs <code>jq</code> and Prettier installed:</p>
+
+<pre><code>{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | xargs npx prettier --write"
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+
+<p>Claude Code keeps hooks in its settings file. Codex has hooks too, in <code>hooks.json</code>, and asks you to trust each one before it runs. Both agents also run inside scripts and CI, without a chat window, using <code>codex exec</code> or <code>claude -p</code>.</p>
+
+<h3>7. Let one agent review the other</h3>
+
+<p>Mistakes are hard to spot in your own code, because you know what you meant. So ask the agent that didn't write a change to review it.</p>
+
+<ul>
+  <li><strong>Codex:</strong> type <code>/review</code> to check your changes, or comment <code>@codex review</code> on a GitHub pull request. There, Codex <a href="https://learn.chatgpt.com/docs/third-party/github" target="_blank">"flags only P0 and P1 issues,"</a> the most serious ones.</li>
+  <li><strong>Claude Code:</strong> type <code>/code-review</code> to check your changes, or <code>/security-review</code> to look for security holes. Team and Enterprise plans can also turn on <a href="https://code.claude.com/docs/en/code-review" target="_blank">Code Review</a> for GitHub pull requests.</li>
+</ul>
+
+<p class="guardrail"><strong>Good to know:</strong> Anthropic's Code Review "never approves or blocks the pull request." The agents point out problems; you decide what gets merged.</p>
+
+<figure class="article-image">
+  <a class="zoom" href="https://padmashri23.github.io/under-the-hood/codex-claude-one-person-engineering-team/images/tricks-roles.png" target="_blank"><img src="https://padmashri23.github.io/under-the-hood/codex-claude-one-person-engineering-team/images/tricks-roles.png" onerror="this.onerror=null;this.src='images/tricks-roles.png'" width="1920" height="1080" loading="lazy" alt="Matrix of seven tricks against six roles. Project notes file: mainly onboarding, also tech lead. Plan mode: mainly tech lead, also onboarding. A check it can run: mainly QA, also developer. Subagents: mainly developer, also reviewer and onboarding. Parallel agents: mainly developer, also tech lead. Skills and hooks: mainly DevOps, also developer and QA. Cross review: mainly reviewer, also QA. Each row lists a task to try it on."></a>
+  <figcaption>Figure 4. Which team role each trick helps you cover. Our own mapping, not measured data.</figcaption>
+</figure>
+
+<h2 id="one-day">📅 Putting it together: one day, two agents</h2>
+
+<p>Here's how the tricks fit together on a normal working day. It's an example, not a recorded session.</p>
+
+<ol>
+  <li><strong>Tech lead.</strong> You open Claude Code in plan mode and ask how sign-up works today, then for a plan to add Google login. You fix one step and approve the plan.</li>
+  <li><strong>Developer.</strong> Claude Code builds the feature in its own worktree. Meanwhile, a Codex Cloud task fixes the flaky test you've been ignoring for weeks.</li>
+  <li><strong>QA.</strong> Both agents run the test suite before saying they're done, and a hook formats every file Claude Code touched.</li>
+  <li><strong>Reviewer.</strong> You comment <code>@codex review</code> on Claude's pull request and run <code>/code-review</code> on Codex's.</li>
+  <li><strong>Decision maker.</strong> You read both reviews and the changes, ask for one fix, and merge.</li>
+</ol>
+
+<p>That's four roles covered in one day, and you still made every decision.</p>
+
+<h2 id="more-tips">⚡ Six more tips worth knowing</h2>
+
+<ul>
+  <li><strong>Undo a bad edit.</strong> In Claude Code, press <code>Esc</code> twice with an empty prompt box, or type <code>/rewind</code> to go back to an earlier point. It can't undo files changed only by terminal commands, so keep saving your work in Git.</li>
+  <li><strong>Keep the notes file short.</strong> Anthropic suggests under 200 lines per CLAUDE.md, because longer files "consume more context and reduce adherence." In other words, the agent follows them less closely.</li>
+  <li><strong>Connect your other tools.</strong> MCP (Model Context Protocol) is a standard way to plug tools like Notion into an agent. Add one with <code>codex mcp add</code> or <code>claude mcp add</code>.</li>
+  <li><strong>Start work from an issue.</strong> In the Linear task tracker, you can assign an issue to Codex on paid plans. On GitHub, run <code>/install-github-app</code> once, then mention <code>@claude</code> in an issue or pull request.</li>
+  <li><strong>Bring cloud work home.</strong> <code>claude --teleport</code> pulls a Claude Code cloud session into your terminal to finish locally.</li>
+  <li><strong>Put chores on a schedule.</strong> In the ChatGPT desktop app, scheduled tasks run Codex jobs on a timetable, like a weekly check for outdated packages. The Codex CLI can't manage them.</li>
+</ul>
+
+<h2 id="stay-safe">🔒 Stay safe while agents work</h2>
+
+<p>An agent runs real commands on your computer. So decide how much it may do without asking you first.</p>
+
+<ul>
+  <li><strong>Codex:</strong> choose a mode with <code>/permissions</code>. OpenAI's advice is simple: <a href="https://learn.chatgpt.com/docs/permission-modes" target="_blank">"For most work, start with Ask for approval."</a> OpenAI describes its Full access mode as "Unrestricted access to the internet and any file on your computer," so keep it for throwaway setups. Network access is off by default.</li>
+  <li><strong>Claude Code:</strong> new terminal sessions start in auto mode, which acts without asking but runs safety checks in the background. If you want Claude to ask before every edit or command, press <code>Shift+Tab</code> to switch to Manual mode. The mode that skips every check, <code>bypassPermissions</code>, is meant for <a href="https://code.claude.com/docs/en/permission-modes" target="_blank">"isolated containers and VMs only."</a></li>
+</ul>
+
+<h2 id="mistakes">⚠️ Common beginner mistakes</h2>
+
+<ul>
+  <li><strong>Vague tasks.</strong> "Fix the app" gives the agent nothing to check. Say what's wrong, where, and how to test the fix.</li>
+  <li><strong>Merging without reading.</strong> Agents make mistakes. Read every change before it goes in, even after an agent review.</li>
+  <li><strong>One endless session.</strong> Start fresh for each new task. In Claude Code, Anthropic suggests <code>/clear</code> between unrelated tasks.</li>
+</ul>
+
+<h2 id="where-to-start">🚀 Where to start</h2>
+
+<ol>
+  <li>Run <code>/init</code> to create a notes file, and add your test command.</li>
+  <li>Use plan mode for your next feature, and fix the plan before you say yes.</li>
+  <li>For every bug, ask for a failing test first.</li>
+  <li>Run one task in a worktree or the cloud, and have the other agent review it before you merge.</li>
+</ol>
+
+<h2 id="cheat-sheet">📋 Cheat sheet</h2>
+
+<p>The main commands from this article in one place.</p>
+
+<figure class="tbl">
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr><th>Job</th><th>Codex</th><th>Claude Code</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Create a notes file</td><td><code>/init</code> (writes AGENTS.md)</td><td><code>/init</code> (writes CLAUDE.md)</td></tr>
+      <tr><td>Plan first</td><td><code>/plan</code></td><td><code>Shift+Tab</code> until plan mode shows, or <code>/plan</code></td></tr>
+      <tr><td>Work in parallel</td><td>Worktrees</td><td><code>claude --worktree &lt;name&gt;</code></td></tr>
+      <tr><td>Send a task to the cloud</td><td><code>codex cloud exec --env &lt;id&gt; "&lt;task&gt;"</code></td><td><code>claude --cloud "&lt;task&gt;"</code></td></tr>
+      <tr><td>Use a skill</td><td><code>$skill-name</code></td><td><code>/skill-name</code></td></tr>
+      <tr><td>Review changes</td><td><code>/review</code>, <code>@codex review</code></td><td><code>/code-review</code>, <code>/security-review</code></td></tr>
+      <tr><td>Run in scripts and CI</td><td><code>codex exec</code></td><td><code>claude -p</code></td></tr>
+      <tr><td>Connect a tool</td><td><code>codex mcp add</code></td><td><code>claude mcp add</code></td></tr>
+      <tr><td>Set permissions</td><td><code>/permissions</code></td><td><code>Shift+Tab</code> (modes), <code>/permissions</code> (rules)</td></tr>
+      <tr><td>Undo an edit</td><td>Use Git</td><td><code>Esc</code> twice or <code>/rewind</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+</figure>
+
+<p>And the three prompts to copy:</p>
+
+<pre class="wrap"><code>/plan Explain how an order moves from the cart to payment. Then propose how to add discount codes, and list the files you'd change.
+
+Checkout shows a 500 error when the cart is empty. Error message: [paste]. Write a failing test that shows the bug, fix it, then run all the tests.
+
+Use a subagent to find every place this app sends an email, and list the files.</code></pre>
+
+<h2 id="conclusion">✅ Conclusion</h2>
+
+<p>These tools don't replace a team's judgment. What changes is where your time goes: less typing, more planning and checking.</p>
+
+<p>Use Codex for clear jobs you can hand to the cloud, and Claude Code for work you want to guide closely on your own machine. Then let each review the other. That gives a solo developer what's usually missing: a second pair of eyes on every change.</p>
+
+<!-- ============================================================ -->
+<!-- SOURCES / FOOTER -->
+<!-- ============================================================ -->
+
+<footer class="article-footer">
+  <h2>Sources &amp; References</h2>
+  <ol>
+    <li>OpenAI. "Custom instructions with AGENTS.md." Checked October 30, 2026. <a href="https://learn.chatgpt.com/docs/agent-configuration/agents-md" target="_blank">learn.chatgpt.com</a></li>
+    <li>Anthropic. "How Claude remembers your project." Checked October 30, 2026. <a href="https://code.claude.com/docs/en/memory" target="_blank">code.claude.com</a></li>
+    <li>Anthropic. "Best practices for Claude Code." Checked October 30, 2026. <a href="https://code.claude.com/docs/en/best-practices" target="_blank">code.claude.com</a></li>
+    <li>Anthropic. "Choose a permission mode." Checked October 30, 2026. <a href="https://code.claude.com/docs/en/permission-modes" target="_blank">code.claude.com</a></li>
+    <li>OpenAI. "Developer commands." Checked October 30, 2026. <a href="https://learn.chatgpt.com/docs/developer-commands" target="_blank">learn.chatgpt.com</a></li>
+    <li>Anthropic. "Create custom subagents." Checked October 30, 2026. <a href="https://code.claude.com/docs/en/sub-agents" target="_blank">code.claude.com</a></li>
+    <li>OpenAI. "Subagents." Checked October 30, 2026. <a href="https://learn.chatgpt.com/docs/agent-configuration/subagents" target="_blank">learn.chatgpt.com</a></li>
+    <li>Anthropic. "Run parallel sessions with worktrees." Checked October 30, 2026. <a href="https://code.claude.com/docs/en/worktrees" target="_blank">code.claude.com</a></li>
+    <li>OpenAI. "Worktrees." Checked October 30, 2026. <a href="https://learn.chatgpt.com/docs/environments/git-worktrees" target="_blank">learn.chatgpt.com</a></li>
+    <li>Anthropic. "Use Claude Code in the cloud." Checked October 30, 2026. <a href="https://code.claude.com/docs/en/claude-code-on-the-web" target="_blank">code.claude.com</a></li>
+    <li>OpenAI. "Codex Cloud." Checked October 30, 2026. <a href="https://learn.chatgpt.com/docs/cloud" target="_blank">learn.chatgpt.com</a></li>
+    <li>Anthropic. "Extend Claude with skills." Checked October 30, 2026. <a href="https://code.claude.com/docs/en/skills" target="_blank">code.claude.com</a></li>
+    <li>OpenAI. "Build skills." Checked October 30, 2026. <a href="https://learn.chatgpt.com/docs/build-skills" target="_blank">learn.chatgpt.com</a></li>
+    <li>Anthropic. "Automate actions with hooks." Checked October 30, 2026. <a href="https://code.claude.com/docs/en/hooks-guide" target="_blank">code.claude.com</a></li>
+    <li>OpenAI. "Hooks." Checked October 30, 2026. <a href="https://learn.chatgpt.com/docs/hooks" target="_blank">learn.chatgpt.com</a></li>
+    <li>OpenAI. "Non-interactive mode." Checked October 30, 2026. <a href="https://learn.chatgpt.com/docs/non-interactive-mode" target="_blank">learn.chatgpt.com</a></li>
+    <li>Anthropic. "Run Claude Code programmatically." Checked October 30, 2026. <a href="https://code.claude.com/docs/en/headless" target="_blank">code.claude.com</a></li>
+    <li>OpenAI. "Review GitHub pull requests with Codex." Checked October 30, 2026. <a href="https://learn.chatgpt.com/docs/third-party/github" target="_blank">learn.chatgpt.com</a></li>
+    <li>Anthropic. "Commands." Checked October 30, 2026. <a href="https://code.claude.com/docs/en/commands" target="_blank">code.claude.com</a></li>
+    <li>Anthropic. "Code Review." Checked October 30, 2026. <a href="https://code.claude.com/docs/en/code-review" target="_blank">code.claude.com</a></li>
+    <li>OpenAI. "Pricing." Checked October 30, 2026. <a href="https://learn.chatgpt.com/docs/pricing" target="_blank">learn.chatgpt.com</a></li>
+    <li>OpenAI. "ChatGPT &amp; Codex changelog," entry of July 9, 2026: "Codex joins the ChatGPT desktop app." <a href="https://learn.chatgpt.com/docs/changelog" target="_blank">learn.chatgpt.com</a></li>
+    <li>Anthropic. "Feature availability." Checked October 30, 2026. <a href="https://code.claude.com/docs/en/feature-availability" target="_blank">code.claude.com</a></li>
+    <li>Anthropic. "Checkpointing." Checked October 30, 2026. <a href="https://code.claude.com/docs/en/checkpointing" target="_blank">code.claude.com</a></li>
+    <li>Anthropic. "Connect Claude Code to tools via MCP." Checked October 30, 2026. <a href="https://code.claude.com/docs/en/mcp" target="_blank">code.claude.com</a></li>
+    <li>OpenAI. "Model Context Protocol." Checked October 30, 2026. <a href="https://learn.chatgpt.com/docs/extend/mcp" target="_blank">learn.chatgpt.com</a></li>
+    <li>OpenAI. "Use Codex in Linear." Checked October 30, 2026. <a href="https://learn.chatgpt.com/docs/third-party/linear" target="_blank">learn.chatgpt.com</a></li>
+    <li>Anthropic. "Claude Code GitHub Actions." Checked October 30, 2026. <a href="https://code.claude.com/docs/en/github-actions" target="_blank">code.claude.com</a></li>
+    <li>OpenAI. "Scheduled tasks." Checked October 30, 2026. <a href="https://learn.chatgpt.com/docs/automations" target="_blank">learn.chatgpt.com</a></li>
+    <li>OpenAI. "Permissions." Checked October 30, 2026. <a href="https://learn.chatgpt.com/docs/permission-modes" target="_blank">learn.chatgpt.com</a></li>
+    <li>OpenAI. "Agent approvals &amp; security." Checked October 30, 2026. <a href="https://learn.chatgpt.com/docs/agent-approvals-security" target="_blank">learn.chatgpt.com</a></li>
+  </ol>
+
+  <p style="margin-top: 20px;"><strong>Note:</strong> Every feature, command and quote was checked against OpenAI's and Anthropic's documentation on October 30, 2026. OpenAI's Codex docs moved from developers.openai.com to learn.chatgpt.com, and the old links redirect. Both products change often, so check the docs before relying on a specific flag. <code>codex cloud</code> is marked experimental, Claude Code reads <code>AGENTS.md</code> directly only in recent versions, and Claude's GitHub Code Review is limited to Team and Enterprise plans. The article makes no speed or productivity claims: Figures 2 and 3 are illustrative workflows, and Figure 4 is an editorial mapping, not measured data. The prompts are examples, not output from a real session.</p>
+
+  <div class="tags">
+    <span>Codex</span>
+    <span>Claude Code</span>
+    <span>AI coding agents</span>
+    <span>Developer productivity</span>
+    <span>AI for Everyone</span>
+    <span>Deep Dive</span>
+  </div>
+
+  <p style="margin-top: 32px;"><a href="../">← More from Under the Hood</a></p>
+</footer>
+
+</div>
+
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="October 2026's worst security incidents explained: Binance, GitLab, PHP2Shell, Zeabur, OpenCode, Railway, LiteLLM, GMO, SBI, eMudhra and PAN-OS. How attackers got in and what to do.">
+<meta name="description" content="October 2026's worst security incidents explained: Binance, GitLab, PHP2Shell, Node2Shell, Zeabur, OpenCode, Railway, LiteLLM, GMO, SBI, eMudhra and PAN-OS. How attackers got in and what to do.">
 <meta property="og:title" content="Black October 2026: Worst Infrastructure Hacks Analyzed">
 <meta property="og:description" content="A $6.3 billion crypto theft, a hosting company breached with keys it never changed, and two perfect-10 GitLab bugs. What happened, and what to do about each.">
 <meta property="og:type" content="article">
@@ -288,7 +288,7 @@
 <header class="article-header">
   <span class="tag">Deep Dive</span>
   <h1>Black October 2026: Worst Infrastructure Hacks Analyzed</h1>
-  <p class="subtitle">A $6.3 billion crypto theft, a hosting company breached with keys it never changed, and two perfect-10 GitLab bugs. What happened, and what to do about each.</p>
+  <p class="subtitle">A $6.3 billion crypto theft, a hosting company breached with keys it never changed, and two perfect-10 GitLab bugs.</p>
   <p class="meta">Researched &amp; written November 2026 · ~8 min read · Sources cited throughout</p>
 </header>
 
@@ -300,21 +300,21 @@
 
 <p class="drop-cap">On October 29, about $6.3 billion left Binance's wallets, most of it in roughly 20 minutes. Binance traced it to one engineer's compromised laptop. Two weeks earlier, a cloud host called Zeabur was breached with admin tokens nobody had changed since January 2024. It later chose to shut down, partly because of the breaches.</p>
 
-<p>Most of October's incidents weren't clever new attacks. Someone got hold of a key, or found a door that should have been locked. Below are eleven, in date order.</p>
+<p>Most of October's incidents weren't clever new attacks. Someone got hold of a key, or found a door that should have been locked. Below are twelve, in date order.</p>
 
 <p>Each one is checked against the company's statement, a vendor advisory or a government notice.</p>
 
 <h3>🙋 Does this affect you?</h3>
 
 <ul>
-  <li>Run your own GitLab server, PHP website or Palo Alto firewall? Patch now (Figure 4).</li>
+  <li>Run your own GitLab server, PHP website, Node.js app or Palo Alto firewall? Patch now (Figure 4).</li>
   <li>Kept keys on Zeabur, Railway or OpenCode Console? Rotate them.</li>
   <li>Installed LiteLLM 1.107.0? Treat that machine as compromised.</li>
 </ul>
 
 <figure class="article-image">
-  <a class="zoom" href="https://padmashri23.github.io/under-the-hood/black-october-2026-infrastructure-hacks/images/october-timeline.png" target="_blank"><img src="https://padmashri23.github.io/under-the-hood/black-october-2026-infrastructure-hacks/images/october-timeline.png" onerror="this.onerror=null;this.src='images/october-timeline.png'" width="1920" height="1080" loading="lazy" alt="Timeline of eleven October 2026 incidents. Oct 12 and 21: two 10.0-severity GitLab flaws. Oct 14: exploited Palo Alto PAN-OS firewall flaw. Oct 14 to 15: Zeabur breached with a never-expiring admin token, 321,810 accounts' data read. Oct 16 to 17: OpenCode Console AI provider keys of 1.4% of users may be exposed. Oct 17: eight eMudhra certificate keys could be guessed. Oct 20: GMO Onamae Desktop Cloud break-in, data taken, ransom refused. Oct 20 to 22: Railway secrets decrypted in up to about 100,000 workspaces. Oct 21: poisoned LiteLLM 1.107.0. Oct 21: PHP2Shell flaws, exploited by Oct 26. Oct 21: State Bank of India, 3,897 customer records found among about 375,000 on the dark web. Oct 29 to 30: Binance, about 6.3 billion dollars withdrawn after a DevOps laptop was compromised."></a>
-  <figcaption>Figure 1. The eleven incidents in date order.</figcaption>
+  <a class="zoom" href="https://padmashri23.github.io/under-the-hood/black-october-2026-infrastructure-hacks/images/october-timeline.png" target="_blank"><img src="https://padmashri23.github.io/under-the-hood/black-october-2026-infrastructure-hacks/images/october-timeline.png" onerror="this.onerror=null;this.src='images/october-timeline.png'" width="1920" height="1080" loading="lazy" alt="Timeline of twelve October 2026 incidents. Oct 12 and 21: two 10.0-severity GitLab flaws. Oct 14: exploited Palo Alto PAN-OS firewall flaw. Oct 14 to 15: Zeabur breached with a never-expiring admin token, 321,810 accounts' data read. Oct 16 to 17: OpenCode Console AI provider keys of 1.4% of users may be exposed. Oct 17: eight eMudhra certificate keys could be guessed. Oct 20: GMO Onamae Desktop Cloud break-in, data taken, ransom refused. Oct 20 to 22: Railway secrets decrypted in up to about 100,000 workspaces. Oct 21: poisoned LiteLLM 1.107.0. Oct 21: PHP2Shell flaws, exploited by Oct 26. Oct 21: Node.js Node2Shell Brotli flaw, exploited by Oct 27. Oct 21: State Bank of India, 3,897 customer records found among about 375,000 on the dark web. Oct 29 to 30: Binance, about 6.3 billion dollars withdrawn after a DevOps laptop was compromised."></a>
+  <figcaption>Figure 1. The twelve incidents in date order.</figcaption>
 </figure>
 
 <h3>📖 Words you'll see in this article</h3>
@@ -346,17 +346,17 @@
 
 <p><strong>How they got in.</strong> With the first bug, a specially crafted pattern in a CI/CD configuration, the file that tells GitLab how to build code, lets someone with no login run code on the server. GitLab says the second "could have allowed an unauthenticated user to execute arbitrary code." Both are integer overflows: a number grows past its limit and wraps around, like an old car odometer rolling back to zero. No attacks on the second bug have been reported.</p>
 
-<p><strong>What to do.</strong> GitLab.com is already patched. Self-managed servers need 19.5.1, 19.4.3 or 19.3.6, or the backport for an older branch. A server patched on October 12 is still exposed to the second bug.</p>
+<p><strong>What to do.</strong> GitLab.com is already patched. Self-managed servers need 19.5.1, 19.4.3, 19.3.6 or an older branch's backport. A server patched on October 12 is still exposed to the second bug. Running GitLab on your own Ruby? Upgrade Ruby to 3.3.13, 3.4.12 or 4.0.9+ too.</p>
 
 <h2 id="panos">🧱 Palo Alto PAN-OS: a firewall zero-day (Oct 14)</h2>
 
-<p>CVE-2026-0322 lets an attacker who already has credentials and network access to the firewall's management page run code as root. Palo Alto said "very limited exploitation" had been observed, and CISA gave federal agencies three days to fix it. There is no workaround: upgrade, and allow the management page only from trusted internal addresses.</p>
+<p>CVE-2026-0322 lets an attacker who already has credentials and network access to the firewall's management page run code as root. Palo Alto saw "very limited exploitation," and CISA gave federal agencies three days to fix it. There is no workaround: upgrade, and limit the management page to trusted internal addresses.</p>
 
 <h2 id="zeabur">🔑 Zeabur: keys nobody changed (Oct 14 to 15)</h2>
 
 <p><strong>What happened.</strong> Zeabur hosted apps for developers. An attacker reached its shared cluster in nine regions, signed in as root on 101 dedicated servers and read the platform database: data for 321,810 accounts and 3,218,965 environment-variable records.</p>
 
-<p><strong>How they got in.</strong> Zeabur says the attacker used "leaked Zeabur internal credentials": AWS keys and cluster admin tokens. The admin tokens "had no expiry, had not been rotated since they were created in January 2024." They sat in plain text in a private repository, and the admin interface was open to the internet. Picture a master key nobody changed for 1,008 days. Zeabur's reset after an August breach "did not cover the cluster admin tokens and AWS keys."</p>
+<p><strong>How they got in.</strong> Zeabur says the attacker used "leaked Zeabur internal credentials": AWS keys and cluster admin tokens. The admin tokens "had no expiry, had not been rotated since they were created in January 2024." They sat in plain text in a private repository, and the admin interface was open to the internet. Picture a master key nobody changed for 1,008 days.</p>
 
 <p><strong>What to do.</strong> Zeabur will stop all services by December 31. Customers should rotate every secret stored there and move their apps.</p>
 
@@ -378,7 +378,7 @@
 
 <h2 id="emudhra">🔒 eMudhra: certificate keys anyone could guess (Oct 17)</h2>
 
-<p>eMudhra is an Indian certificate authority, one of the companies that vouch for the padlock in your browser. A researcher found that eight of its intermediate certificates had private keys with "values smaller than 256," so anyone could guess them in 256 tries and forge trusted certificates. Mozilla blocked them on October 17, and Chrome blocked the six that could issue website certificates. eMudhra said it found no evidence they were misused, and it is winding down its global TLS certificate business. India's Digital Signature Certificates and eSign are unaffected, according to India's IT ministry.</p>
+<p>eMudhra is an Indian certificate authority, one of the companies that vouch for the padlock in your browser. Eight of its intermediate certificates had private keys anyone could guess in 256 tries, enough to forge trusted certificates. Browsers started blocking them on October 17. eMudhra found no evidence of misuse and is leaving the global TLS certificate business. India's IT ministry says local Digital Signature Certificates and eSign are unaffected.</p>
 
 <h2 id="gmo">🖥️ GMO Onamae.com Desktop Cloud: a hidden program (Oct 20)</h2>
 
@@ -404,7 +404,7 @@
 
 <p><strong>How they got in.</strong> They held three developers' GitHub login tokens. One overrode the release safeguards, a second approved the release and a third deleted the records afterward.</p>
 
-<p><strong>What to do.</strong> If you installed it, remove it, rebuild from scratch on 1.106.2, and rotate every secret that machine could reach.</p>
+<p><strong>What to do.</strong> Don't start with pip: any Python run, pip included, restarts the malware. From the shell, delete cook.pth, cook.py, sitecustomize.py and their cached copies, then kill the hidden Python process. Rebuild from scratch on 1.106.2 and rotate every secret that machine could reach.</p>
 
 <figure class="article-image">
   <a class="zoom" href="https://padmashri23.github.io/under-the-hood/black-october-2026-infrastructure-hacks/images/litellm-window.png" target="_blank"><img src="https://padmashri23.github.io/under-the-hood/black-october-2026-infrastructure-hacks/images/litellm-window.png" onerror="this.onerror=null;this.src='images/litellm-window.png'" width="1920" height="1080" loading="lazy" alt="Timeline chart for October 21, 2026, in UTC. Attack setup from 10:08 to 11:39. The malicious LiteLLM 1.107.0 was on PyPI from 11:39 to 13:23 (1 hour 44 minutes), on GitHub's container registry from 11:46 to 13:51 (2 hours 5 minutes), and on Docker Hub from 11:46 to 14:20 (2 hours 34 minutes)."></a>
@@ -417,24 +417,28 @@
 
 <p><strong>How they got in.</strong> PHP says the risk is highest with Apache's mod_php, where a demonstrated attack works "before any application code runs." No login and no buggy plugin are needed.</p>
 
-<p><strong>What to do.</strong> Upgrade to 8.5.12, 8.4.27, 8.3.36 or 8.2.35. PHP 8.1 and older get no official release, though the team posted minimal source fixes for 7.4, 8.0 and 8.1. Anything older gets no fix from the PHP project, though some Linux distributions and paid support vendors backport one.</p>
+<p><strong>What to do.</strong> Upgrade to 8.5.12, 8.4.27, 8.3.36 or 8.2.35. PHP 8.1 and older get no official release, though the team posted minimal source fixes for 7.4, 8.0 and 8.1. Older versions need a fix from a Linux distribution or support vendor.</p>
 
 <figure class="article-image">
-  <a class="zoom" href="https://padmashri23.github.io/under-the-hood/black-october-2026-infrastructure-hacks/images/patch-now.png" target="_blank"><img src="https://padmashri23.github.io/under-the-hood/black-october-2026-infrastructure-hacks/images/patch-now.png" onerror="this.onerror=null;this.src='images/patch-now.png'" width="1920" height="1080" loading="lazy" alt="Patch card. GitLab self-managed, CVE-2026-97229 and CVE-2026-110264, both CVSS 10.0, the first on CISA's exploited list on Oct 29: upgrade to 19.5.1, 19.4.3 or 19.3.6; the Oct 12 fixes do not cover the second bug; custom Ruby must be 3.3.13, 3.4.12 or 4.0.9 or later. PHP2Shell, CVE-2026-109618 and CVE-2026-109619, exploited, on CISA's list Oct 26: upgrade to 8.5.12, 8.4.27, 8.3.36 or 8.2.35; 8.1 and older get no official release, minimal source fixes for 7.4, 8.0 and 8.1; for older versions, ask your Linux distribution or support vendor. Palo Alto PAN-OS, CVE-2026-0322, CVSS 8.6, on CISA's list Oct 14: fixed builds for 10.2, 11.1, 11.2, 12.1 and 12.2; no workaround; restrict the management interface."></a>
-  <figcaption>Figure 4. The versions that fix October's three big software bugs.</figcaption>
+  <a class="zoom" href="https://padmashri23.github.io/under-the-hood/black-october-2026-infrastructure-hacks/images/patch-now.png" target="_blank"><img src="https://padmashri23.github.io/under-the-hood/black-october-2026-infrastructure-hacks/images/patch-now.png" onerror="this.onerror=null;this.src='images/patch-now.png'" width="1920" height="1080" loading="lazy" alt="Patch card. GitLab self-managed, CVE-2026-97229 and CVE-2026-110264, both CVSS 10.0, the first on CISA's exploited list on Oct 29: upgrade to 19.5.1, 19.4.3 or 19.3.6; the Oct 12 fixes do not cover the second bug; custom Ruby must be 3.3.13, 3.4.12 or 4.0.9 or later. PHP2Shell, CVE-2026-109618 and CVE-2026-109619, exploited, on CISA's list Oct 26: upgrade to 8.5.12, 8.4.27, 8.3.36 or 8.2.35; 8.1 and older get no official release, minimal source fixes for 7.4, 8.0 and 8.1; for older versions, ask your Linux distribution or support vendor. Palo Alto PAN-OS, CVE-2026-0322, CVSS 8.6, on CISA's list Oct 14: fixed builds for 10.2, 11.1, 11.2, 12.1 and 12.2; no workaround; restrict the management interface. Node.js Node2Shell, CVE-2026-111497, Google CVSS 9.2, on CISA's list Oct 27: upgrade to 22.23.4, 24.22.1 or 26.12.1; versions past end of life get no fix."></a>
+  <figcaption>Figure 4. The versions that fix October's four big software bugs.</figcaption>
 </figure>
+
+<h2 id="node2shell">🗜️ Node.js "Node2Shell": poisoned compressed data (Oct 21)</h2>
+
+<p>On October 21, Node.js, which runs the server side of many apps, fixed CVE-2026-111497, nicknamed Node2Shell, a bug in its built-in Brotli decompression code. Malformed compressed data can corrupt memory and let an attacker run code. Apps are exposed when they unpack compressed data from outsiders, for example through fetch() or Express 5's request parsers. Google, which maintains Brotli, scored it 9.2, and CISA listed it as exploited on October 27. Upgrade to Node.js 22.23.4, 24.22.1 or 26.12.1. Bun, Python's Brotli packages and Microsoft's .NET also needed fixes.</p>
 
 <h2 id="sbi">🏦 State Bank of India: customer data on the dark web (Oct 21)</h2>
 
 <p><strong>What happened.</strong> SBI said that of about 375,000 records (3.75 lakh) found on the dark web, 3,897 held customers' personal details. Those include names, mobile numbers, dates of birth, gender, email and home addresses, plus loan-related details. SBI says funds are safe, and the fields it listed don't include passwords, PINs or OTPs.</p>
 
-<p><strong>How they got in.</strong> The source is still under investigation. SBI was alerted by its threat-intelligence provider, India's Defence Cyber Agency and CERT-In.</p>
+<p><strong>How they got in.</strong> The source is still under investigation.</p>
 
 <p><strong>What to do.</strong> Expect scam calls and texts that know your name and loan details. Never share an OTP, PIN or card number. Report fraud at 1930 or cybercrime.gov.in.</p>
 
 <h2 id="binance">💸 Binance: $6.3 billion through one laptop (Oct 29 to 30)</h2>
 
-<p><strong>What happened.</strong> Blockchain analysts TRM Labs say about $6.36 billion moved out of Binance wallets on ten blockchains from about 20:05 UTC on October 29. Stablecoin issuers and others froze about $2.7 billion, by TRM's count. TRM and Chainalysis attribute the theft to TraderTraitor, a North Korean state-backed group, and the FBI agreed on October 31. Binance hasn't named anyone.</p>
+<p><strong>What happened.</strong> Blockchain analysts TRM Labs say about $6.36 billion left Binance wallets on ten blockchains on October 29. Stablecoin issuers and others froze about $2.7 billion, by TRM's count. TRM and Chainalysis attribute the theft to TraderTraitor, a North Korean state-backed group, and the FBI agreed on October 31.</p>
 
 <p><strong>How they got in.</strong> Binance traced it to a DevOps engineer's compromised laptop. From there the attacker reached a service container and sent unauthorized withdrawals. Binance stresses it "was not a single 'one-click' action" and has found "additional points of breach." It sees no sign that wallet private keys leaked.</p>
 
@@ -443,7 +447,7 @@
   <figcaption>Figure 5. Binance's account of the path so far, with TRM Labs' figures.</figcaption>
 </figure>
 
-<p><strong>What to do.</strong> Binance says "User funds are safe" and will cover losses from its SAFU emergency fund and company money. By November 2 it said about 95% was covered. Treat any "refund" message about the hack as a likely scam.</p>
+<p><strong>What to do.</strong> Binance says "User funds are safe" and will cover losses from its SAFU emergency fund and company money. By November 2 it reported replacing about 95% of stolen assets.</p>
 
 <h2 id="conclusion">✅ Conclusion</h2>
 
@@ -458,7 +462,7 @@
   <ol>
     <li>GitLab. "GitLab Critical Patch Release: 19.5.1, 19.4.3, 19.3.6, 19.2.9, 19.1.9, 19.0.10, 18.11.13." October 21, 2026. <a href="https://docs.gitlab.com/releases/patches/patch-release-gitlab-19-5-1-released/" target="_blank">docs.gitlab.com</a></li>
     <li>Cyber Daily. "Patch now! GitLab publishes fixes for perfect-10 vulnerability CVE-2026-97229." October 15, 2026. <a href="https://www.cyberdaily.au/security/14302-patch-now-gitlab-publishes-fixes-for-perfect-10-vulnerability-cve-2026-97229" target="_blank">cyberdaily.au</a></li>
-    <li>CISA. "Known Exploited Vulnerabilities Catalog." Version 2026.10.30, checked November 3, 2026. <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" target="_blank">cisa.gov</a></li>
+    <li>CISA. "Known Exploited Vulnerabilities Catalog." Version 2026.11.04, checked November 5, 2026. <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" target="_blank">cisa.gov</a></li>
     <li>BleepingComputer (Lawrence Abrams). "Palo Alto Networks warns of PAN-OS RCE flaw exploited in attacks." October 14, 2026. <a href="https://www.bleepingcomputer.com/news/security/palo-alto-networks-warns-of-pan-os-rce-flaw-exploited-in-attacks/" target="_blank">bleepingcomputer.com</a></li>
     <li>Zeabur. "Zeabur October 2026 security incident (preliminary report)." October 19, 2026. <a href="https://zeabur.com/blogs/october-2026-security-incident" target="_blank">zeabur.com</a></li>
     <li>Zeabur. "Zeabur is shutting down: what happens next." October 17, 2026. <a href="https://zeabur.com/blogs/zeabur-is-shutting-down" target="_blank">zeabur.com</a></li>
@@ -474,6 +478,8 @@
     <li>LiteLLM. "Contained: Oct 21, 2026 LiteLLM release v1.107.0 Compromised." October 21, 2026, updated October 30. <a href="https://docs.litellm.ai/blog/security-incident-oct-21-2026" target="_blank">docs.litellm.ai</a></li>
     <li>PHP. "Security advisory: Critical remote code execution vulnerabilities, update now." October 21, 2026. <a href="https://www.php.net/archive/2026.php" target="_blank">php.net</a></li>
     <li>BleepingComputer (Sergiu Gatlan). "CISA confirms PHP2Shell vulnerabilities now exploited in attacks." October 27, 2026. <a href="https://www.bleepingcomputer.com/news/security/cisa-confirms-php2shell-vulnerabilities-now-exploited-in-attacks/" target="_blank">bleepingcomputer.com</a></li>
+    <li>Node.js. "Wednesday, October 21, 2026 Security Releases." October 21, 2026. <a href="https://nodejs.org/en/blog/vulnerability/october-2026-security-releases" target="_blank">nodejs.org</a></li>
+    <li>SecurityWeek (Eduard Kovacs). "Node2Shell: Brotli Flaw Triggers Patching Across Microsoft, Node.js, Python Packages." October 26, 2026. <a href="https://www.securityweek.com/node2shell-brotli-flaw-triggers-patching-across-microsoft-node-js-python-packages/" target="_blank">securityweek.com</a></li>
     <li>Business Today. "3.75 lakh records, 3,897 customers: SBI says address, mobile numbers, email ID leaked in data breach." October 21, 2026. <a href="https://www.businesstoday.in/latest/corporate/story/3-75-lakh-records-3897-customers-sbi-says-address-mobile-numbers-email-id-leaked-in-data-breach-562775-2026-10-21" target="_blank">businesstoday.in</a></li>
     <li>Morung Express (IANS). "SBI says customer funds unaffected after data breach." October 23, 2026. <a href="https://morungexpress.com/sbi-says-customer-funds-unaffected-after-data-breach" target="_blank">morungexpress.com</a></li>
     <li>Ministry of Home Affairs, I4C. "National Cyber Crime Reporting Portal." Checked November 3, 2026. <a href="https://cybercrime.gov.in/" target="_blank">cybercrime.gov.in</a></li>
@@ -483,7 +489,7 @@
     <li>Decrypt. "Binance finds additional points of breach in $6.3B hack." October 2026. <a href="https://decrypt.co/382203/binance-finds-additional-points-of-breach-in-6-3b-hack" target="_blank">decrypt.co</a></li>
   </ol>
 
-  <p style="margin-top: 20px;"><strong>Note:</strong> Facts were checked against the sources above on November 2 and 3, 2026. Most of these investigations are still open, and Binance has promised a full post-mortem, so figures may change. Company figures are as each company reported them. GMO's ransom amount comes from TechCrunch; GMO's own notices give no figure. The Binance timing and frozen-funds figures come from TRM Labs as reported by BleepingComputer. Japanese-language notices were read in translation. No figure in this article uses modeled or illustrative data.</p>
+  <p style="margin-top: 20px;"><strong>Note:</strong> Facts were checked against the sources above on November 2, 3 and 5, 2026. Most of these investigations are still open, and Binance has promised a full post-mortem, so figures may change. Company figures are as each company reported them. GMO's ransom amount comes from TechCrunch; GMO's own notices give no figure. The Binance timing and frozen-funds figures come from TRM Labs as reported by BleepingComputer. Japanese-language notices were read in translation. No figure in this article uses modeled or illustrative data.</p>
 
   <div class="tags">
     <span>Cybersecurity</span>

@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A beginner-friendly, fact-checked guide to the architecture of production-ready multi-agent systems: the orchestration loop, routing, context isolation, structured contracts, state, parallel execution and failure handling.">
+<meta property="og:title" content="The Architecture Behind Production-Ready Multi-Agent Systems">
+<meta property="og:description" content="One hub, a few helper agents, and the plumbing that keeps them from falling apart with real users.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/">
+<meta property="og:image" content="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/social-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Architecture Behind Production-Ready Multi-Agent Systems">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/social-card.png">
+<title>The Architecture Behind Production-Ready Multi-Agent Systems</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --bg-card: #111113;
+    --bg-elevated: #18181b;
+    --text-primary: #e4e4e7;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    --accent: #4A9EFF;
+    --accent-warm: #f59e0b;
+    --accent-green: #22c55e;
+    --accent-purple: #a855f7;
+    --accent-red: #ef4444;
+    --accent-teal: #14b8a6;
+    --border: #27272a;
+    --serif: 'Instrument Serif', 'Georgia', serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--sans);
+    font-size: 18px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .article-container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Header */
+  .article-header {
+    padding: 80px 0 40px;
+    text-align: center;
+  }
+  .article-header .tag {
+    display: inline-block;
+    background: var(--accent);
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 4px;
+    margin-bottom: 32px;
+  }
+  .article-header h1 {
+    font-family: var(--serif);
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1.15;
+    font-weight: 400;
+    margin-bottom: 24px;
+    color: #fff;
+  }
+  .article-header .subtitle {
+    font-size: 19px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 680px;
+    margin: 0 auto 32px;
+    font-weight: 300;
+  }
+  .article-header .meta {
+    font-size: 14px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  /* Typography */
+  p { margin-bottom: 20px; color: var(--text-primary); }
+  strong { color: #fff; font-weight: 600; }
+  em { color: var(--text-secondary); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .drop-cap::first-letter {
+    font-family: var(--serif);
+    font-size: 72px;
+    float: left;
+    line-height: 0.8;
+    margin: 4px 12px 0 0;
+    color: #fff;
+    font-weight: 400;
+  }
+
+  ul, ol { margin: 16px 0 24px 28px; color: var(--text-primary); }
+  li { margin-bottom: 8px; }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 400;
+    line-height: 1.2;
+    color: #fff;
+    margin: 64px 0 20px;
+  }
+  h3 {
+    font-family: var(--sans);
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    margin: 40px 0 16px;
+  }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+  /* Guardrail line */
+  .guardrail {
+    background: var(--bg-card);
+    border-left: 3px solid var(--accent-teal);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 20px;
+    margin: 24px 0 32px;
+    font-size: 16px;
+    color: var(--text-secondary);
+  }
+  .guardrail strong { color: var(--accent-teal); }
+
+  /* Key points box */
+  .keypoints {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 22px 26px 8px;
+    margin: 8px 0 24px;
+  }
+  .keypoints .kp-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .keypoints ul { margin: 0 0 14px 20px; font-size: 16px; }
+  .keypoints li { margin-bottom: 8px; color: var(--text-secondary); }
+  ul.checklist { list-style: none; margin-left: 4px; }
+  ul.checklist li { padding-left: 34px; position: relative; }
+  ul.checklist li::before { content: "\2610"; position: absolute; left: 0; top: -2px; font-size: 22px; color: var(--accent); }
+
+  /* Image figures */
+  .article-image {
+    margin: 48px -40px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+  .article-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .article-image figcaption {
+    padding: 14px 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    line-height: 1.5;
+  }
+
+  /* Table figures */
+  .tbl {
+    margin: 48px 0;
+  }
+  .table-wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    line-height: 1.5;
+    background: var(--bg-card);
+  }
+  thead { background: var(--bg-elevated); }
+  th {
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border);
+    vertical-align: bottom;
+  }
+  td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { color: #fff; font-weight: 500; }
+  td small { display: block; color: var(--text-muted); font-size: 12px; font-weight: 400; }
+  .tbl figcaption {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  /* Footer */
+  .article-footer {
+    padding: 48px 0 80px;
+    border-top: 1px solid var(--border);
+    margin-top: 64px;
+  }
+  .article-footer h2 {
+    font-size: 30px;
+    margin: 0 0 24px;
+  }
+  .article-footer h3 {
+    font-family: var(--sans);
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 20px;
+  }
+  .article-footer p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+  .article-footer ol {
+    margin: 0 0 24px 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .article-footer li { margin-bottom: 10px; }
+  .tags { margin-top: 24px; }
+  .tags span {
+    display: inline-block;
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin: 4px 4px 4px 0;
+    border: 1px solid var(--border);
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .article-image { margin: 40px -24px; border-radius: 0; border-left: none; border-right: none; }
+  }
+  @media (max-width: 760px) {
+    .table-wrapper { margin: 0 -24px; border-radius: 0; border-left: none; border-right: none; }
+    .drop-cap::first-letter { font-size: 56px; }
+    h2 { font-size: 26px; margin-top: 48px; }
+  }
+  code { font-family: var(--mono); font-size: 0.85em; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; color: var(--text-primary); }
+  .article-image video { width: 100%; height: auto; display: block; background: #F7F0E4; }
+  .article-footer .refs-label { font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
+  pre { font-family: var(--mono); font-size: 14px; line-height: 1.6; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin: 8px 0 24px; overflow-x: auto; color: var(--text-primary); }
+  pre code { background: none; border: none; padding: 0; font-size: inherit; }
+  pre .c { color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<div class="article-container">
+
+<header class="article-header">
+  <span class="tag">Deep Dive</span>
+  <h1>The Architecture Behind Production-Ready Multi-Agent Systems</h1>
+  <p class="subtitle">One hub, a few helper agents, and the plumbing that keeps them from falling apart with real users.</p>
+  <p class="meta">Researched &amp; written November 2026 · ~8 min read · Sources cited throughout</p>
+</header>
+
+<div class="keypoints">
+  <div class="kp-title">Key points</div>
+  <ul>
+    <li>One hub agent runs the job. It calls helper agents (spokes) like tools.</li>
+    <li>Each spoke gets a short brief and a fresh context, and returns a short, checked result.</li>
+    <li>Production-ready means limits, contracts, saved state and a plan for failure.</li>
+  </ul>
+</div>
+
+<p class="drop-cap">Ask one AI agent to research a market, crunch numbers and write a report, and things get messy. Its memory fills with web pages. It loses the plan. It repeats itself.</p>
+
+<p>Most teams fix this like a busy manager would. One agent coordinates. A few helpers each take one piece.</p>
+
+<p>Anthropic built its Research feature this way. On its internal research eval, a Claude Opus 4 lead with Claude Sonnet 4 helpers <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">beat a single Claude Opus 4 agent by 90.2%</a>.</p>
+
+<p>This shape is called hub and spoke, or orchestrator-worker. A demo is easy. Surviving real users takes seven pieces of plumbing.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/hub-and-spoke.png" onerror="this.onerror=null;this.src='images/hub-and-spoke.png'" width="1400" height="916" loading="lazy" alt="Hub and spoke diagram. The user sends a request to the hub (orchestrator), which runs the loop, picks the right spoke, writes each brief, checks every result and owns the task state, saved to a state store. The hub sends a brief to each of three spokes (research, data and writer agents, each with a fresh context and one job) and gets a result back, then returns the final answer to the user.">
+  <figcaption>Figure 1. The hub sends briefs and gets results back. Conceptual diagram.</figcaption>
+</figure>
+
+<h3>📖 Words you'll see in this article</h3>
+
+<figure class="tbl">
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr><th>Term</th><th>What it means</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Agent</td><td>An AI model working in a loop: pick a step, use a tool, check, repeat.</td></tr>
+      <tr><td>Hub (orchestrator)</td><td>The agent in charge. It plans and hands out work.</td></tr>
+      <tr><td>Spoke (sub-agent)</td><td>A helper agent doing one focused job.</td></tr>
+      <tr><td>Tool calling</td><td>The model asking your code to run a named function. Also called function calling.</td></tr>
+      <tr><td>Context window</td><td>Everything the model can see at once. It has a size limit.</td></tr>
+      <tr><td>Token</td><td>A small chunk of text. Models are priced in tokens.</td></tr>
+      <tr><td>JSON schema</td><td>A rule for the shape of data: which fields, and what type.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</figure>
+
+<h2>🔁 1. The orchestration loop</h2>
+
+<p>The hub doesn't plan everything up front. It works in a loop:</p>
+
+<ol>
+  <li>Receive the task.</li>
+  <li>Plan the next step.</li>
+  <li>Call a sub-agent.</li>
+  <li>Read the result.</li>
+  <li>Decide: another spoke, or finish.</li>
+</ol>
+
+<p>Step 3 is the neat part. To the hub, a sub-agent is just a tool with a name, a description and inputs. In the OpenAI Agents SDK, <code>Agent.as_tool()</code> does exactly that. A manager agent <a href="https://openai.github.io/openai-agents-python/multi_agent/" target="_blank">"keeps control of the conversation"</a> and calls specialists through tool calls.</p>
+
+<h3>When does the loop stop?</h3>
+
+<p>A loop with no exit is a bill with no ceiling. Use at least one stop condition:</p>
+
+<ul>
+  <li>A turn limit. The OpenAI SDK raises <code>MaxTurnsExceeded</code> past <code>max_turns</code>. Anthropic also suggests <a href="https://www.anthropic.com/research/building-effective-agents" target="_blank">"a maximum number of iterations"</a>.</li>
+  <li>A "task complete" signal. The OpenAI SDK ends the run when the model answers without calling a tool.</li>
+  <li>A token or cost budget. That one is usually your own code.</li>
+</ul>
+
+<figure class="article-image">
+  <video width="1280" height="720" autoplay muted loop playsinline controls preload="metadata" poster="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/orchestration-loop-poster.png" aria-label="Animation of the hub's loop: receive task, plan, call a spoke, read result, decide next step. The hub calls the research, data and writer agents in turn, sending a brief and getting a result each time, while a panel tracks iterations against a limit of 10 and a token budget. After 3 iterations the task complete signal turns green and the hub finishes.">
+    <source src="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/orchestration-loop.webm" type="video/webm">
+    <source src="images/orchestration-loop.webm" type="video/webm">
+  </video>
+  <figcaption>Figure 2. The loop, with its stop conditions on the right. Illustrative run.</figcaption>
+</figure>
+
+<h3>What it looks like in code</h3>
+
+<p>A hub with two spokes, registered as tools, in the OpenAI Agents SDK:</p>
+
+<pre><code>from agents import Agent, Runner
+from pydantic import BaseModel
+
+class Findings(BaseModel):     <span class="c"># output contract</span>
+    summary: str
+    sources: list[str]
+
+researcher = Agent(name="Researcher", output_type=Findings,
+    instructions="Answer only your brief. Cite sources.")
+writer = Agent(name="Writer",
+    instructions="Write the answer from the notes given.")
+
+hub = Agent(name="Hub",
+    instructions="Plan, use your tools, stop when done.",
+    tools=[
+        researcher.as_tool(tool_name="research",
+            tool_description="Find facts for one narrow question."),
+        writer.as_tool(tool_name="write",
+            tool_description="Turn notes into the final answer."),
+    ])
+
+result = Runner.run_sync(hub, "Postgres or MongoDB?", max_turns=10)</code></pre>
+
+<p>Underneath, the loop looks roughly like this (pseudocode):</p>
+
+<pre><code>for turn in range(MAX_TURNS):
+    reply = call_model(history, tools)
+    if not reply.tool_calls:           <span class="c"># task complete</span>
+        return reply.text
+    for call in reply.tool_calls:      <span class="c"># one brief per spoke</span>
+        history.append(run_spoke(call))
+    if tokens_used(history) &gt; BUDGET:  <span class="c"># cost guard</span>
+        raise OverBudget()
+raise TooManyTurns()</code></pre>
+
+<h2>🧭 2. Routing: how the hub picks a spoke</h2>
+
+<p><strong>The model decides.</strong> It reads each tool's name and description. In Anthropic's Agent SDK, Claude picks sub-agents <a href="https://code.claude.com/docs/en/agent-sdk/subagents" target="_blank">"based on the task and each subagent's <code>description</code>"</a>. So that description is your routing logic. Write it like a job ad.</p>
+
+<p><strong>Rules or a classifier decide.</strong> "Mentions an invoice? Send it to billing." Anthropic notes that classification can be done <a href="https://www.anthropic.com/research/building-effective-agents" target="_blank">"either by an LLM or a more traditional classification model/algorithm."</a> OpenAI's docs call orchestrating in code <a href="https://openai.github.io/openai-agents-python/multi_agent/" target="_blank">"more deterministic and predictable, in terms of speed, cost and performance."</a></p>
+
+<p><strong>Hybrid.</strong> Rules for the requests you know. The model for the odd ones.</p>
+
+<figure class="tbl">
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr><th>Approach</th><th>Good for</th><th>Watch out for</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Model routing</td><td>Messy, open-ended requests</td><td>Vague descriptions cause wrong picks</td></tr>
+      <tr><td>Rules or classifier</td><td>Known, repeated requests</td><td>Misses anything new</td></tr>
+      <tr><td>Hybrid</td><td>A mix of both</td><td>Two systems to maintain</td></tr>
+    </tbody>
+  </table>
+  </div>
+</figure>
+
+<h2>📦 3. Context isolation and passing</h2>
+
+<p>Here's the surprising rule: a sub-agent shouldn't see the whole conversation. In Anthropic's SDK, each one <a href="https://code.claude.com/docs/en/agent-sdk/subagents" target="_blank">"runs in its own conversation, which starts fresh."</a> It only gets the prompt the hub writes.</p>
+
+<p>Why? Anthropic describes context rot: <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank">"as the number of tokens in the context window increases, the model's ability to accurately recall information from that context decreases."</a> Small contexts are more accurate. They're cheaper too, since every token read is billed.</p>
+
+<h3>Write a brief, not a forward</h3>
+
+<p>Anthropic found <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">"Each subagent needs an objective, an output format, guidance on the tools and sources to use, and clear task boundaries."</a> For a pricing spoke:</p>
+
+<ul>
+  <li>Goal: current prices for three named models.</li>
+  <li>Inputs: the model names.</li>
+  <li>Constraints: official pricing pages, 10 searches max.</li>
+  <li>Expected output: model, prices, source link.</li>
+</ul>
+
+<h3>Send back the short version</h3>
+
+<p>A spoke may read tens of thousands of tokens. Anthropic's sub-agents return <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank">"a condensed, distilled summary of its work (often 1,000-2,000 tokens)."</a> That keeps the hub's context from overflowing.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/context-isolation.png" onerror="this.onerror=null;this.src='images/context-isolation.png'" width="1400" height="768" loading="lazy" alt="Bar chart. Three research spokes each work through 40,000 tokens in their own context. If the hub got everything it would hold 120,000 tokens. Instead it gets three 1,500-token summaries, 4,500 tokens, under 4% of the raw total.">
+  <figcaption>Figure 3. The spokes read 120,000 tokens. The hub sees 4,500. Illustrative example.</figcaption>
+</figure>
+
+<h2>📝 4. Structured input/output contracts</h2>
+
+<p>With free-text replies, the hub has to guess where the answer is. That breaks at random, the worst way to break.</p>
+
+<p>So give each spoke a JSON schema for its input and output. The <code>Findings</code> class above is one. OpenAI's Structured Outputs <a href="https://developers.openai.com/api/docs/guides/structured-outputs" target="_blank">"ensures the model will always generate responses that adhere to your supplied JSON Schema."</a> Anthropic's strict tool use <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/strict-tool-use" target="_blank">"guarantees Claude's tool inputs match your JSON Schema."</a></p>
+
+<p>But a schema checks shape, not truth. A price of $0 fits fine. So the hub validates every result: schema first, then your own rules. On a failure, retry once with the error in the brief. Fail again? Reject it.</p>
+
+<h2>🗂️ 5. State management</h2>
+
+<p>The hub owns the task state: what's done, what's pending, what each spoke found. Spokes ideally stay stateless. They take a brief, do one job and return. That makes them easy to retry or swap.</p>
+
+<p>In-memory state is fine for a 30-second task. For an hour-long one, a crash means starting over. So keep state in an external store, like a database.</p>
+
+<p>LangGraph's checkpointers save <a href="https://docs.langchain.com/oss/python/langgraph/checkpointers" target="_blank">"a snapshot of graph state at each super-step"</a>, so a failed run restarts from the last good step. Its docs suggest <code>PostgresSaver</code> for production. When errors hit, Anthropic's team <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">"can't just restart from the beginning."</a> Their system resumes where the agent was, and the lead agent saves its plan to memory.</p>
+
+<h2>⚡ 6. Execution: parallel vs. sequential</h2>
+
+<p>Checking flights doesn't need the weather. Independent jobs like these can run at once. As Anthropic's SDK docs put it, they <a href="https://code.claude.com/docs/en/agent-sdk/subagents" target="_blank">"finish in the time of the slowest one rather than the sum of all of them."</a> Running 3 to 5 sub-agents in parallel, plus parallel tool calls, <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">"cut research time by up to 90% for complex queries"</a> in Anthropic's system.</p>
+
+<p>Dependent jobs run in order. The writer waits for the research, each output feeding the next spoke.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/parallel-vs-sequential.png" onerror="this.onerror=null;this.src='images/parallel-vs-sequential.png'" width="1400" height="740" loading="lazy" alt="Timeline. Run one after another, flights (20s), hotels (35s), weather (25s) and the writer (15s) take 95 seconds. Run the three research jobs in parallel and then the writer, the job takes 50 seconds, about 47% less, because the writer waits only for the slowest job.">
+  <figcaption>Figure 4. Parallel where you can, in order where you must. Illustrative example.</figcaption>
+</figure>
+
+<p>Then the hub aggregates. It merges results, settles conflicts (two different prices? trust the official source, or flag it) and writes the final answer.</p>
+
+<h2>🛟 7. Failure handling</h2>
+
+<ul>
+  <li><strong>A spoke fails or times out.</strong> Retry. Then fall back to another spoke. Then escalate to a person. Anthropic notes agents can <a href="https://www.anthropic.com/research/building-effective-agents" target="_blank">"pause for human feedback at checkpoints or when encountering blockers."</a></li>
+  <li><strong>A spoke returns junk.</strong> Validation at the hub catches it before it spreads.</li>
+  <li><strong>The hub won't stop delegating.</strong> Early on, Anthropic saw agents <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">"spawning 50 subagents for simple queries."</a> Cap delegations per task.</li>
+</ul>
+
+<p>A 2025 study by Cemri and colleagues annotated 1,642 runs across seven multi-agent frameworks. Two of the top three were loop problems: repeating steps (15.7%) and not knowing when to stop (12.4%). Many failures, the authors write, <a href="https://arxiv.org/abs/2503.13657" target="_blank">"arise from the challenges in organizational design and agent coordination rather than the limitations of individual agents."</a></p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/mast-failures.png" onerror="this.onerror=null;this.src='images/mast-failures.png'" width="1400" height="889" loading="lazy" alt="Bar chart of the six most common multi-agent failure modes in 1,642 annotated runs: step repetition 15.7%, reasoning-action mismatch 13.2%, unaware of termination conditions 12.4%, disobey task specification 11.8%, incorrect verification 9.1%, no or incomplete verification 8.2%. By category: system design issues 44.2%, inter-agent misalignment 32.4%, task verification 23.5%.">
+  <figcaption>Figure 5. The six most common failure modes in the MAST study. Measured data.</figcaption>
+</figure>
+
+<p>For testing before launch, see <a href="https://padmashri23.github.io/under-the-hood/evaluate-ai-agents-before-production/" target="_blank">how to evaluate AI agents</a>.</p>
+
+<h2>💸 The catch: more agents, more tokens</h2>
+
+<p>In Anthropic's data, agents used about 4× the tokens of a chat. Multi-agent systems used about 15×.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/token-cost.png" onerror="this.onerror=null;this.src='images/token-cost.png'" width="1400" height="885" loading="lazy" alt="Bar chart of token use relative to a chat, from Anthropic: chat 1x, single agent about 4x, multi-agent system about 15x.">
+  <figcaption>Figure 6. Token use compared with a chat. Measured by Anthropic.</figcaption>
+</figure>
+
+<p>So don't start here. Anthropic recommends <a href="https://www.anthropic.com/research/building-effective-agents" target="_blank">"finding the simplest solution possible, and only increasing complexity when needed."</a> Multi-agent setups shine when work splits into parallel pieces or won't fit in one context window. Most coding tasks, Anthropic notes, have less truly parallel work than research.</p>
+
+<h3>Where to start</h3>
+
+<ol>
+  <li>Build one agent with tools. Watch where it struggles.</li>
+  <li>Move the job that floods its context into a spoke.</li>
+  <li>Give that spoke a brief template and an output schema.</li>
+  <li>Add a turn limit, a budget and result checks.</li>
+  <li>Save state externally, then add parallel spokes.</li>
+</ol>
+
+<h2>✅ Conclusion</h2>
+
+<p>Most of what makes a multi-agent system production-ready is plumbing. A loop that knows when to stop. Clean briefs going out, short checked results coming back. State that survives a crash.</p>
+
+<p>Get that right, and a new spoke is as easy as a new tool. Skip it, and you'll meet those failure modes on your own bill.</p>
+
+<!-- ============================================================ -->
+<!-- SOURCES / FOOTER -->
+<!-- ============================================================ -->
+
+<footer class="article-footer">
+  <h2>Sources &amp; References</h2>
+  <ol>
+    <li>Anthropic. "How we built our multi-agent research system." Jun 13, 2025. <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">anthropic.com</a></li>
+    <li>Anthropic. "Building effective agents." Dec 19, 2024. <a href="https://www.anthropic.com/research/building-effective-agents" target="_blank">anthropic.com</a></li>
+    <li>Anthropic. "Effective context engineering for AI agents." Sep 29, 2025. <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank">anthropic.com</a></li>
+    <li>Anthropic. "Subagents in the SDK." Claude Agent SDK docs, checked Nov 5, 2026. <a href="https://code.claude.com/docs/en/agent-sdk/subagents" target="_blank">code.claude.com</a></li>
+    <li>Anthropic. "Strict tool use." Claude API docs, checked Nov 5, 2026. <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/strict-tool-use" target="_blank">platform.claude.com</a></li>
+    <li>OpenAI. "Agent orchestration." OpenAI Agents SDK docs, checked Nov 5, 2026. <a href="https://openai.github.io/openai-agents-python/multi_agent/" target="_blank">openai.github.io</a></li>
+    <li>OpenAI. "Tools." OpenAI Agents SDK docs (Agents as tools), checked Nov 5, 2026. <a href="https://openai.github.io/openai-agents-python/tools/" target="_blank">openai.github.io</a></li>
+    <li>OpenAI. "Running agents." OpenAI Agents SDK docs (the agent loop, <code>max_turns</code>), checked Nov 5, 2026. <a href="https://openai.github.io/openai-agents-python/running_agents/" target="_blank">openai.github.io</a></li>
+    <li>OpenAI. "Structured model outputs." API docs, checked Nov 5, 2026. <a href="https://developers.openai.com/api/docs/guides/structured-outputs" target="_blank">developers.openai.com</a></li>
+    <li>LangChain. "Checkpointers." LangGraph docs, checked Nov 5, 2026. <a href="https://docs.langchain.com/oss/python/langgraph/checkpointers" target="_blank">docs.langchain.com</a></li>
+    <li>LangChain. "Persistence." LangGraph docs, checked Nov 5, 2026. <a href="https://docs.langchain.com/oss/python/langgraph/persistence" target="_blank">docs.langchain.com</a></li>
+    <li>Cemri, M. et al. "Why Do Multi-Agent LLM Systems Fail?" arXiv:2503.13657, v3, Oct 26, 2025. <a href="https://arxiv.org/abs/2503.13657" target="_blank">arxiv.org</a></li>
+  </ol>
+
+  <p style="margin-top: 20px;"><strong>Note:</strong> Facts, quotes and SDK details were checked against the sources above on November 5, 2026. SDKs change often, so check the current docs before you build. The 90.2%, 4×, 15× and "up to 90%" figures are Anthropic's own measurements of its Research system on its internal evals, not independent benchmarks. Figure 5 uses measured data from the MAST study; the category totals are our sums of the paper's per-mode percentages. Figures 1 and 2 are conceptual. Figures 3 and 4 and the example brief are illustrative, not measurements. The code samples are minimal sketches: the first uses the OpenAI Agents SDK, and the second is pseudocode.</p>
+
+  <div class="tags">
+    <span>AI agents</span>
+    <span>Multi-agent systems</span>
+    <span>Architecture</span>
+    <span>AI for Everyone</span>
+    <span>Deep Dive</span>
+  </div>
+
+  <p style="margin-top: 32px;"><a href="../">← More from Under the Hood</a></p>
+</footer>
+
+</div>
+
+</body>
+</html>

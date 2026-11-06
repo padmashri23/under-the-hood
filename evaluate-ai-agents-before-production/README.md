@@ -13,7 +13,7 @@ A beginner-friendly guide to testing an AI agent before it meets real users and 
 5. **The tools:** LangSmith, Langfuse, RAGAS, DeepEval and DeepTeam, Promptfoo, Inspect and OpenAI Evals, with what each is good for, what to keep in mind (including the OpenAI Evals platform shutdown) and the metrics each one offers
 6. A ready-to-launch checklist, a key points box, a glossary of every technical term, links to related Under the Hood articles, and a short conclusion
 
-Written for beginners: short sentences (about 9 words on average) and plain-language tool descriptions. About 2,070 words above Sources & References (2,115 including the title block), counting headings, captions and tables. No video.
+Written for beginners: short sentences (about 9 words on average) and plain-language tool descriptions. About 1,933 words above Sources & References (1,978 including the title block), counting headings, captions and tables. No video.
 
 ## Visuals
 

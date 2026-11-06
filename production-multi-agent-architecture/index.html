@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="A beginner-friendly, fact-checked guide to the architecture of production-ready multi-agent systems: the orchestration loop, routing, context isolation, structured contracts, state, parallel execution and failure handling.">
 <meta property="og:title" content="The Architecture Behind Production-Ready Multi-Agent Systems">
-<meta property="og:description" content="One hub, a few helper agents, and the plumbing that keeps them from falling apart with real users.">
+<meta property="og:description" content="One AI agent in charge, a few helpers, and the simple rules that keep them working.">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/">
 <meta property="og:image" content="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/social-card.png">
@@ -284,6 +284,8 @@
   pre { font-family: var(--mono); font-size: 14px; line-height: 1.6; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin: 8px 0 24px; overflow-x: auto; color: var(--text-primary); }
   pre code { background: none; border: none; padding: 0; font-size: inherit; }
   pre .c { color: var(--text-muted); }
+  p.plain { font-size: 19px; }
+  p.plain strong:first-child { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -293,30 +295,32 @@
 <header class="article-header">
   <span class="tag">Deep Dive</span>
   <h1>The Architecture Behind Production-Ready Multi-Agent Systems</h1>
-  <p class="subtitle">One hub, a few helper agents, and the plumbing that keeps them from falling apart with real users.</p>
-  <p class="meta">Researched &amp; written November 2026 · ~8 min read · Sources cited throughout</p>
+  <p class="subtitle">One AI agent in charge, a few helpers, and the simple rules that keep them working.</p>
+  <p class="meta">Researched &amp; written November 2026 · ~11 min read · Sources cited throughout</p>
 </header>
 
 <div class="keypoints">
   <div class="kp-title">Key points</div>
   <ul>
-    <li>One hub agent runs the job. It calls helper agents (spokes) like tools.</li>
-    <li>Each spoke gets a short brief and a fresh context, and returns a short, checked result.</li>
-    <li>Production-ready means limits, contracts, saved state and a plan for failure.</li>
+    <li>One "hub" agent runs the job. It hands work to helper agents called "spokes".</li>
+    <li>Each helper gets a short task and sends back a short answer in a fixed format.</li>
+    <li>The hub checks answers, tracks progress, handles errors and knows when to stop.</li>
   </ul>
 </div>
 
-<p class="drop-cap">Ask one AI agent to research a market, crunch numbers and write a report, and things get messy. Its memory fills with web pages. It loses the plan. It repeats itself.</p>
+<p class="drop-cap">Imagine asking an AI assistant: "Plan a 3-day trip to Tokyo in March."</p>
 
-<p>Most teams fix this like a busy manager would. One agent coordinates. A few helpers each take one piece.</p>
+<p>That one request hides a lot of work: flights, hotels, weather and a written plan.</p>
 
-<p>Anthropic built its Research feature this way. On its internal research eval, a Claude Opus 4 lead with Claude Sonnet 4 helpers <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">beat a single Claude Opus 4 agent by 90.2%</a>.</p>
+<p>One AI agent can try to do it all. But its memory fills up with web pages. It loses track. It repeats itself.</p>
 
-<p>This shape is called hub and spoke, or orchestrator-worker. A demo is easy. Surviving real users takes seven pieces of plumbing.</p>
+<p>So builders split the work, like a manager with a small team. Anthropic built its Research feature this way. On Anthropic's internal research test in 2025, a team with a Claude Opus 4 lead and Claude Sonnet 4 helpers <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">did 90.2% better</a> than a single Claude Opus 4 agent.</p>
+
+<p>This design is called <strong>hub and spoke</strong>. The hub is the agent in charge, also called the orchestrator. The spokes are its helpers, also called sub-agents. Making it work every day takes the seven parts below.</p>
 
 <figure class="article-image">
-  <img src="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/hub-and-spoke.png" onerror="this.onerror=null;this.src='images/hub-and-spoke.png'" width="1400" height="916" loading="lazy" alt="Hub and spoke diagram. The user sends a request to the hub (orchestrator), which runs the loop, picks the right spoke, writes each brief, checks every result and owns the task state, saved to a state store. The hub sends a brief to each of three spokes (research, data and writer agents, each with a fresh context and one job) and gets a result back, then returns the final answer to the user.">
-  <figcaption>Figure 1. The hub sends briefs and gets results back. Conceptual diagram.</figcaption>
+  <img src="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/hub-and-spoke.png" onerror="this.onerror=null;this.src='images/hub-and-spoke.png'" width="1400" height="927" loading="lazy" alt="Hub and spoke diagram of a travel assistant. The user asks the hub to plan a 3-day Tokyo trip. The hub (orchestrator) runs the loop, picks the right spoke, writes each brief, checks every result and keeps the task notebook in a state store. It sends a brief to four spokes, the flights, hotels, weather and writer agents, each with a fresh context and one job, gets a result back from each, and returns the trip plan to the user.">
+  <figcaption>Figure 1. A travel assistant: the request comes in, briefs go out, results come back. Conceptual diagram.</figcaption>
 </figure>
 
 <h3>📖 Words you'll see in this article</h3>
@@ -328,13 +332,17 @@
       <tr><th>Term</th><th>What it means</th></tr>
     </thead>
     <tbody>
-      <tr><td>Agent</td><td>An AI model working in a loop: pick a step, use a tool, check, repeat.</td></tr>
-      <tr><td>Hub (orchestrator)</td><td>The agent in charge. It plans and hands out work.</td></tr>
-      <tr><td>Spoke (sub-agent)</td><td>A helper agent doing one focused job.</td></tr>
-      <tr><td>Tool calling</td><td>The model asking your code to run a named function. Also called function calling.</td></tr>
-      <tr><td>Context window</td><td>Everything the model can see at once. It has a size limit.</td></tr>
-      <tr><td>Token</td><td>A small chunk of text. Models are priced in tokens.</td></tr>
-      <tr><td>JSON schema</td><td>A rule for the shape of data: which fields, and what type.</td></tr>
+      <tr><td>Agent</td><td>An AI that works step by step: act, check the result, decide again.</td></tr>
+      <tr><td>LLM</td><td>Large language model. The AI "brain", like GPT or Claude, inside each agent.</td></tr>
+      <tr><td>Tool calling</td><td>The AI asking your code to run a named action, like "search flights". Also called function calling.</td></tr>
+      <tr><td>SDK</td><td>Software development kit. A ready-made code library.</td></tr>
+      <tr><td>Context window</td><td>Everything the AI can "see" at once. Like a desk, space is limited.</td></tr>
+      <tr><td>Token</td><td>A small piece of text, often part of a word. AI use is priced in tokens.</td></tr>
+      <tr><td>JSON</td><td>A simple text format for data, like <code>{"city": "Tokyo"}</code>.</td></tr>
+      <tr><td>Schema</td><td>A rule for the shape of data: which fields it needs, and what type each one is.</td></tr>
+      <tr><td>Latency</td><td>How long you wait for an answer.</td></tr>
+      <tr><td>Framework</td><td>A toolkit of ready-made code for building something, like an agent team.</td></tr>
+      <tr><td>Postgres</td><td>PostgreSQL, a popular free database.</td></tr>
     </tbody>
   </table>
   </div>
@@ -342,196 +350,366 @@
 
 <h2>🔁 1. The orchestration loop</h2>
 
-<p>The hub doesn't plan everything up front. It works in a loop:</p>
+<p class="plain"><strong>In plain words:</strong> the hub works like someone ticking off a to-do list. Do one step, look at the result, pick the next step.</p>
+
+<h3>The loop, step by step</h3>
+
+<p>This cycle is called the agent loop. With our Tokyo trip:</p>
 
 <ol>
-  <li>Receive the task.</li>
-  <li>Plan the next step.</li>
-  <li>Call a sub-agent.</li>
-  <li>Read the result.</li>
-  <li>Decide: another spoke, or finish.</li>
+  <li><strong>Receive the task.</strong> "Plan a Tokyo trip."</li>
+  <li><strong>Plan.</strong> "I need flights, hotels and weather first."</li>
+  <li><strong>Call a sub-agent.</strong> Send the flights agent its task.</li>
+  <li><strong>Read the result.</strong> Look at the flight options.</li>
+  <li><strong>Decide the next step.</strong> Call another sub-agent, or is the job done?</li>
+  <li><strong>Finish.</strong> Send the trip plan to the user.</li>
 </ol>
 
-<p>Step 3 is the neat part. To the hub, a sub-agent is just a tool with a name, a description and inputs. In the OpenAI Agents SDK, <code>Agent.as_tool()</code> does exactly that. A manager agent <a href="https://openai.github.io/openai-agents-python/multi_agent/" target="_blank">"keeps control of the conversation"</a> and calls specialists through tool calls.</p>
+<p>Steps 3 to 5 repeat until the job is done.</p>
 
-<h3>When does the loop stop?</h3>
+<h3>Sub-agents are tools</h3>
 
-<p>A loop with no exit is a bill with no ceiling. Use at least one stop condition:</p>
+<p>Each sub-agent is a tool with a name, a description and inputs. The hub makes a tool call (also called a function call). Your code runs that sub-agent and returns its answer.</p>
+
+<p>In the OpenAI Agents SDK, <code>as_tool()</code> does this. Its docs describe a manager agent that <a href="https://openai.github.io/openai-agents-python/multi_agent/" target="_blank">"keeps control of the conversation"</a> and calls helpers when needed.</p>
+
+<h3>Stop conditions: when does the loop end?</h3>
+
+<p>Without an exit, a loop can run, and cost money, forever. Use at least one stop rule:</p>
 
 <ul>
-  <li>A turn limit. The OpenAI SDK raises <code>MaxTurnsExceeded</code> past <code>max_turns</code>. Anthropic also suggests <a href="https://www.anthropic.com/research/building-effective-agents" target="_blank">"a maximum number of iterations"</a>.</li>
-  <li>A "task complete" signal. The OpenAI SDK ends the run when the model answers without calling a tool.</li>
-  <li>A token or cost budget. That one is usually your own code.</li>
+  <li><strong>Maximum iterations.</strong> Stop after a set number of passes through the loop, like 10. The OpenAI SDK's version is <code>max_turns</code>, which counts AI calls. Anthropic's guide also lists <a href="https://www.anthropic.com/research/building-effective-agents" target="_blank">a maximum number of iterations</a> as a common stopping condition.</li>
+  <li><strong>A "task complete" signal.</strong> In the OpenAI SDK, the AI gives its final answer, with no more tool calls.</li>
+  <li><strong>A token or cost budget.</strong> Stop after a set number of tokens or dollars. Some SDKs have one built in, like <code>max_budget_usd</code> in Claude's Agent SDK. Otherwise, you write this check yourself.</li>
 </ul>
 
 <figure class="article-image">
-  <video width="1280" height="720" autoplay muted loop playsinline controls preload="metadata" poster="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/orchestration-loop-poster.png" aria-label="Animation of the hub's loop: receive task, plan, call a spoke, read result, decide next step. The hub calls the research, data and writer agents in turn, sending a brief and getting a result each time, while a panel tracks iterations against a limit of 10 and a token budget. After 3 iterations the task complete signal turns green and the hub finishes.">
+  <video width="1280" height="720" autoplay muted loop playsinline controls preload="metadata" poster="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/orchestration-loop-poster.png" aria-label="Animation of the hub's loop for a travel assistant. The hub receives the task and plans. In round 1 it sends briefs to the flights, hotels and weather agents at the same time and reads their results. In round 2 it sends a brief to the writer agent. A panel tracks iterations against a limit of 10 and a token budget. After 2 rounds the task complete signal turns green and the loop stops.">
     <source src="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/orchestration-loop.webm" type="video/webm">
     <source src="images/orchestration-loop.webm" type="video/webm">
   </video>
-  <figcaption>Figure 2. The loop, with its stop conditions on the right. Illustrative run.</figcaption>
+  <figcaption>Figure 2. Two rounds, then the "task complete" signal ends the loop. Illustrative run.</figcaption>
 </figure>
 
 <h3>What it looks like in code</h3>
 
-<p>A hub with two spokes, registered as tools, in the OpenAI Agents SDK:</p>
+<p>A tiny travel hub with two sub-agents registered as tools, using the OpenAI Agents SDK in Python:</p>
 
 <pre><code>from agents import Agent, Runner
 from pydantic import BaseModel
 
-class Findings(BaseModel):     <span class="c"># output contract</span>
+class Findings(BaseModel):      <span class="c"># the answer format</span>
     summary: str
     sources: list[str]
 
-researcher = Agent(name="Researcher", output_type=Findings,
-    instructions="Answer only your brief. Cite sources.")
+flights = Agent(name="Flights", output_type=Findings,
+    instructions="Find flights for your brief. List sources.")
 writer = Agent(name="Writer",
-    instructions="Write the answer from the notes given.")
+    instructions="Write a trip plan from the notes you get.")
 
 hub = Agent(name="Hub",
-    instructions="Plan, use your tools, stop when done.",
+    instructions="Plan the trip. Use your tools. Stop when done.",
     tools=[
-        researcher.as_tool(tool_name="research",
-            tool_description="Find facts for one narrow question."),
-        writer.as_tool(tool_name="write",
-            tool_description="Turn notes into the final answer."),
+        flights.as_tool(tool_name="find_flights",
+            tool_description="Find flights for given cities and dates."),
+        writer.as_tool(tool_name="write_plan",
+            tool_description="Turn notes into the final trip plan."),
     ])
 
-result = Runner.run_sync(hub, "Postgres or MongoDB?", max_turns=10)</code></pre>
+result = Runner.run_sync(hub, "Plan a 3-day Tokyo trip.", max_turns=10)</code></pre>
 
-<p>Underneath, the loop looks roughly like this (pseudocode):</p>
+<p>What each part does:</p>
+
+<ul>
+  <li><code>Findings</code> is the answer format: a summary and a list of sources.</li>
+  <li><code>as_tool()</code> turns an agent into a tool. The <code>tool_description</code> tells the hub when to use it.</li>
+  <li><code>Runner.run_sync()</code> starts the hub's loop.</li>
+  <li><code>max_turns=10</code> is the stop rule. After 10 turns (AI calls), the run stops with a <code>MaxTurnsExceeded</code> error. You can also catch it and return a friendly answer.</li>
+</ul>
+
+<p class="guardrail"><strong>💡 Good to know:</strong> to run it yourself, you need Python 3.10 or newer. Install the SDK with <code>pip install openai-agents</code> and set your OpenAI API key as <code>OPENAI_API_KEY</code>. Each run costs a little, because every AI call uses tokens.</p>
+
+<p>Inside, the SDK runs a loop much like this pseudocode (plain steps written like code). The cost check is one you'd add yourself.</p>
 
 <pre><code>for turn in range(MAX_TURNS):
-    reply = call_model(history, tools)
-    if not reply.tool_calls:           <span class="c"># task complete</span>
+    reply = ask_the_ai(notes, tools)
+    if not reply.tool_calls:           <span class="c"># no tools needed: task complete</span>
         return reply.text
-    for call in reply.tool_calls:      <span class="c"># one brief per spoke</span>
-        history.append(run_spoke(call))
-    if tokens_used(history) &gt; BUDGET:  <span class="c"># cost guard</span>
+    for call in reply.tool_calls:      <span class="c"># one brief per sub-agent</span>
+        notes.append(run_spoke(call))  <span class="c"># read the result</span>
+    if tokens_used(notes) &gt; BUDGET:    <span class="c"># your cost check</span>
         raise OverBudget()
-raise TooManyTurns()</code></pre>
+raise TooManyTurns()                   <span class="c"># hit the iteration limit</span></code></pre>
 
 <h2>🧭 2. Routing: how the hub picks a spoke</h2>
 
-<p><strong>The model decides.</strong> It reads each tool's name and description. In Anthropic's Agent SDK, Claude picks sub-agents <a href="https://code.claude.com/docs/en/agent-sdk/subagents" target="_blank">"based on the task and each subagent's <code>description</code>"</a>. So that description is your routing logic. Write it like a job ad.</p>
+<p class="plain"><strong>In plain words:</strong> routing means choosing which helper gets the job. It's like a hospital front desk sending you to the right doctor.</p>
 
-<p><strong>Rules or a classifier decide.</strong> "Mentions an invoice? Send it to billing." Anthropic notes that classification can be done <a href="https://www.anthropic.com/research/building-effective-agents" target="_blank">"either by an LLM or a more traditional classification model/algorithm."</a> OpenAI's docs call orchestrating in code <a href="https://openai.github.io/openai-agents-python/multi_agent/" target="_blank">"more deterministic and predictable, in terms of speed, cost and performance."</a></p>
+<h3>LLM-based routing</h3>
 
-<p><strong>Hybrid.</strong> Rules for the requests you know. The model for the odd ones.</p>
+<p>The AI reads each tool's name and description, then picks the best fit. In Anthropic's Agent SDK, Claude picks a helper <a href="https://code.claude.com/docs/en/agent-sdk/subagents" target="_blank">based on the task and each helper's description</a>. So write each description like a job ad: what the helper does, and when to call it.</p>
+
+<h3>Rule-based or classifier routing</h3>
+
+<p>Plain code decides, with explicit rules: "If the message mentions a hotel, send it to the hotels agent." Or an intent classifier, a small model that sorts each message into a group like "flights" or "hotels". Anthropic notes routing can use <a href="https://www.anthropic.com/research/building-effective-agents" target="_blank">an LLM or a more traditional classification model</a>.</p>
+
+<p>This is cheaper, since there's no big AI call. It's also more predictable. <a href="https://openai.github.io/openai-agents-python/multi_agent/" target="_blank">OpenAI's docs</a> say deciding in code is more predictable in speed, cost and performance.</p>
+
+<h3>Hybrid routing</h3>
+
+<p>Rules handle the known paths: clear, common requests. The LLM handles the ambiguous cases.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/routing-flow.png" onerror="this.onerror=null;this.src='images/routing-flow.png'" width="1400" height="832" loading="lazy" alt="Flowchart of hybrid routing. A new request reaches a decision: does a rule match? Yes, a known path: the rule sends it straight to a spoke with no AI call, for example Find me a hotel in Shinjuku goes to the hotels agent. No, an ambiguous case: the LLM reads each spoke's name and description and picks the best fit, for example Is March good for cherry blossoms? goes to the weather agent.">
+  <figcaption>Figure 3. Hybrid routing: rules take the known paths, the LLM takes the rest. Conceptual diagram.</figcaption>
+</figure>
+
+
+
+<p class="guardrail"><strong>💡 Good to know:</strong> hybrid is a good default. Most travel requests are clear, like "find me a hotel". Rules handle those cheaply.</p>
+
+<h2>📦 3. Context isolation and passing</h2>
+
+<p class="plain"><strong>In plain words:</strong> each helper starts with a clean desk. It only gets a short note from the hub, called a <strong>brief</strong>.</p>
+
+<h3>A fresh, isolated context for each sub-agent</h3>
+
+<p>In Anthropic's Agent SDK, a regular sub-agent <a href="https://code.claude.com/docs/en/agent-sdk/subagents" target="_blank">"runs in its own conversation, which starts fresh"</a>. It doesn't see the main chat. It gets its own instructions plus the prompt the hub writes. (A "fork" is the exception: it copies the chat so far.)</p>
+
+<h3>The brief: goal, inputs, constraints and expected output</h3>
+
+<p>The brief must be complete, because it's all the helper sees. Anthropic says each helper needs <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">a goal, an output format, tool guidance and clear limits</a>. Here's a brief for the flights agent:</p>
+
+<ul>
+  <li><strong>Goal:</strong> find round-trip flights from Delhi to Tokyo.</li>
+  <li><strong>Inputs:</strong> March 10 to 13, one adult.</li>
+  <li><strong>Constraints:</strong> under $900. Use only the flight search tool.</li>
+  <li><strong>Expected output:</strong> the top 3 options, with price, times and a link.</li>
+</ul>
+
+<h3>Why small, clean contexts work better</h3>
+
+<ul>
+  <li><strong>Better accuracy.</strong> The more text an AI holds, the worse it recalls details. Researchers call this "context rot", and <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank">Anthropic's guide</a> warns about it.</li>
+  <li><strong>Lower cost.</strong> You pay for every token the AI reads.</li>
+</ul>
+
+<h3>Condensed results, so the hub doesn't overflow</h3>
+
+<p>A helper may read a lot, but it sends back a short summary. <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank">Anthropic's guide</a> says a sub-agent may use tens of thousands of tokens, but often returns a summary of just 1,000 to 2,000. Send back everything, and the hub's context window overflows.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/context-isolation.png" onerror="this.onerror=null;this.src='images/context-isolation.png'" width="1400" height="768" loading="lazy" alt="Bar chart. The flights, hotels and weather spokes each read 40,000 tokens in their own context. If the hub got everything it would hold 120,000 tokens. Instead it gets three 1,500-token summaries, 4,500 tokens, under 4% of the raw total.">
+  <figcaption>Figure 4. The spokes read 120,000 tokens. The hub only sees 4,500. Illustrative example.</figcaption>
+</figure>
+
+<h2>📝 4. Structured input/output contracts</h2>
+
+<p class="plain"><strong>In plain words:</strong> a contract is an agreed form. Like a bank form, every answer fills in the same boxes.</p>
+
+<h3>Why free text breaks</h3>
+
+<p>Without a contract, a helper might reply: "Found a few, the best is around $640 I think."</p>
+
+<p>The hub must dig the price out of a sentence. That's called parsing free text. It works until the wording changes. Then the hub reads the wrong number, or none, and breaks without warning.</p>
+
+<h3>A JSON schema for each spoke's input and output</h3>
+
+<p>The fix: write a JSON schema for what each spoke receives and returns. Here's the flights agent's output schema. Every answer needs an airline, a price and a link:</p>
+
+<pre><code>{
+  "type": "object",
+  "properties": {
+    "airline":   { "type": "string" },
+    "price_usd": { "type": "number" },
+    "link":      { "type": "string" }
+  },
+  "required": ["airline", "price_usd", "link"]
+}</code></pre>
+
+<p>So every answer looks like this:</p>
+
+<pre><code>{ "airline": "Example Air", "price_usd": 640, "link": "https://..." }</code></pre>
+
+<p>The input schema works the same way, requiring cities, dates and a maximum price. Providers can enforce schemas for you. OpenAI's <a href="https://developers.openai.com/api/docs/guides/structured-outputs" target="_blank">Structured Outputs</a> makes the model's answer follow your schema (except in rare cases, like a refusal or a cut-off reply). Anthropic's <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/strict-tool-use" target="_blank">strict tool use</a> guarantees Claude's tool inputs match your schema.</p>
+
+<h3>Validate before the hub uses it</h3>
+
+<p>The hub still checks every answer before using it. This is called validation:</p>
+
+<ul>
+  <li><strong>Shape check:</strong> does it match the schema? Are all the fields there?</li>
+  <li><strong>Sense check:</strong> does it make sense? A $0 flight fits the schema, but it's wrong.</li>
+</ul>
+
+<h3>Retry or reject when the check fails</h3>
+
+<ul>
+  <li><strong>Retry:</strong> send the task back once, with the error message. "Price is missing. Please include price_usd."</li>
+  <li><strong>Reject:</strong> if it fails again, don't use it. Try another way, or tell the user.</li>
+</ul>
+
+<p class="guardrail"><strong>💡 Good to know:</strong> never pass an unchecked answer to the next step. One bad price can end up in the final plan.</p>
+
+<h2>🗂️ 5. State management</h2>
+
+<p class="plain"><strong>In plain words:</strong> state is the hub's notebook. It records where the job stands right now.</p>
+
+<h3>The hub owns the task state</h3>
+
+<p>For our trip, the notebook might say:</p>
+
+<ul>
+  <li><strong>Done:</strong> flights found. Weather checked.</li>
+  <li><strong>Pending:</strong> hotels still searching. Plan not written.</li>
+  <li><strong>Intermediate results:</strong> the 3 flight options and the weather forecast.</li>
+</ul>
+
+<p>Only the hub keeps it, so there's one clear record.</p>
+
+<h3>Spokes are ideally stateless</h3>
+
+<p>Spokes keep nothing. They do one job, return and forget. This is called being <em>stateless</em>. It makes them easy to retry or swap. If the hotels agent crashes, the hub just sends the brief again.</p>
+
+<h3>Long-running tasks need an external store</h3>
+
+<p>Imagine an hour-long task crashing at minute 40. If the notebook lived only in memory, that work is gone. So save it in an external store, like a database. LangGraph saves a <a href="https://docs.langchain.com/oss/python/langgraph/checkpointers" target="_blank">checkpoint</a>, a snapshot of progress, after each step. If a step fails, you can restart from the last good step instead of from scratch. Its docs suggest a Postgres database for production.</p>
+
+<p class="guardrail"><strong>💡 Good to know:</strong> Anthropic's research system <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">resumes from where the error happened</a> instead of starting over.</p>
+
+<h2>⚡ 6. Execution: parallel vs. sequential</h2>
+
+<p class="plain"><strong>In plain words:</strong> some jobs can happen at the same time. Others have to wait their turn.</p>
+
+<h3>Parallel: independent jobs at the same time</h3>
+
+<p>Flights, hotels and weather don't depend on each other. So the hub sends all three briefs at once. That cuts latency: you only wait for the slowest job. As Anthropic's SDK docs put it, independent subtasks <a href="https://code.claude.com/docs/en/agent-sdk/subagents" target="_blank">"finish in the time of the slowest one rather than the sum of all of them."</a></p>
+
+<h3>Sequential: one output feeds the next</h3>
+
+<p>The writer needs all three results first, so it waits. Dependent jobs run one after another, each output feeding the next spoke.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/parallel-vs-sequential.png" onerror="this.onerror=null;this.src='images/parallel-vs-sequential.png'" width="1400" height="740" loading="lazy" alt="Timeline. Run one after another, flights (20s), hotels (35s), weather (25s) and the writer (15s) take 95 seconds. Run the three research jobs in parallel and then the writer, the job takes 50 seconds, about 47% less, because the writer waits only for the slowest job.">
+  <figcaption>Figure 5. Three lookups at once cut the wait from 95 seconds to 50. Illustrative example.</figcaption>
+</figure>
+
+<p>In 2025, Anthropic's system ran 3 to 5 helpers at once, each using three or more tools at once. Those two changes <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">cut research time by up to 90%</a> for complex questions.</p>
+
+<h3>The hub aggregates the results</h3>
+
+<p>Finally the hub combines everything. This is called aggregating, and it has three steps:</p>
+
+<ul>
+  <li><strong>Merge:</strong> gather all the results in one place.</li>
+  <li><strong>Resolve conflicts:</strong> two prices for one hotel? Trust the official site, or say it's unclear.</li>
+  <li><strong>Build the final response:</strong> write the trip plan for the user.</li>
+</ul>
+
+<h2>🛟 7. Failure handling</h2>
+
+<p class="plain"><strong>In plain words:</strong> things will go wrong. A good hub has a plan for each kind of problem.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/failure-ladder.png" onerror="this.onerror=null;this.src='images/failure-ladder.png'" width="1400" height="796" loading="lazy" alt="Diagram of the failure ladder. When a spoke fails or times out, the hub tries step 1, retry the same spoke; then step 2, fall back to a backup spoke; then step 3, escalate to a human. Below: a weak answer is caught by validation at the hub, then retried or rejected; and loop protection caps delegations per task, for example at 10.">
+  <figcaption>Figure 6. The failure ladder: retry, then fall back, then ask a human. Conceptual diagram.</figcaption>
+</figure>
+
+
+<h3>A spoke fails or times out</h3>
+
+<p>Maybe the flight site is down, or the hotels agent is too slow. The hub has three moves:</p>
+
+<ol>
+  <li><strong>Retry.</strong> Try the same spoke again. Many errors are temporary.</li>
+  <li><strong>Fall back.</strong> Use a backup spoke, like a second flight search.</li>
+  <li><strong>Escalate to a human.</strong> Ask a person for help. Anthropic's guide says agents can <a href="https://www.anthropic.com/research/building-effective-agents" target="_blank">pause for human feedback</a> when they get stuck.</li>
+</ol>
+
+<p>Anthropic's own system uses <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">retry logic and regular checkpoints</a> as safety nets.</p>
+
+<h3>A spoke returns a low-quality answer</h3>
+
+<p>Sometimes a spoke sends back something weak, like a hotel with no price. Validation from section 4 catches it before it spreads. Then the hub retries or rejects it.</p>
+
+<h3>Loop protection: cap the delegations</h3>
+
+<p>Sometimes the hub keeps calling spokes and never finishes. Early on, Anthropic saw its system make errors like <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">"spawning 50 subagents for simple queries"</a>.</p>
+
+<p>Anthropic fixed this by writing effort rules into its prompts, like one helper for a simple question. A hard cap on delegations per task is a good backstop, and you set it yourself. <a href="https://code.claude.com/docs/en/agent-sdk/subagents" target="_blank">Claude's Agent SDK</a> has related limits you can change: by default, up to 20 sub-agents running at once and 3 levels of helpers calling helpers, plus an optional spend cap.</p>
+
+<h3>What the research says</h3>
+
+<p>A 2025 study by Cemri and colleagues checked 1,642 runs from seven multi-agent frameworks. Two of the top three were loop problems: repeating steps (15.7% of the failures they recorded) and not knowing when to stop (12.4%). Many failures come from <a href="https://arxiv.org/abs/2503.13657" target="_blank">how the agents are organized</a>, not each agent's limits.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/mast-failures.png" onerror="this.onerror=null;this.src='images/mast-failures.png'" width="1400" height="889" loading="lazy" alt="Bar chart of the six most common multi-agent failure modes in 1,642 annotated runs: step repetition 15.7%, reasoning-action mismatch 13.2%, unaware of termination conditions 12.4%, disobey task specification 11.8%, incorrect verification 9.1%, no or incomplete verification 8.2%. By category: system design issues 44.2%, inter-agent misalignment 32.4%, task verification 23.5%.">
+  <figcaption>Figure 7. The six most common ways multi-agent systems failed in the study. Measured data.</figcaption>
+</figure>
+
+<p class="guardrail"><strong>💡 Good to know:</strong> test these failures before launch. See <a href="https://padmashri23.github.io/under-the-hood/evaluate-ai-agents-before-production/" target="_blank">how to evaluate AI agents</a>.</p>
+
+<h2>🧳 One request, start to finish</h2>
+
+<p class="plain"><strong>In plain words:</strong> here's the whole Tokyo trip in one go, with each of the seven parts doing its job.</p>
 
 <figure class="tbl">
   <div class="table-wrapper">
   <table>
     <thead>
-      <tr><th>Approach</th><th>Good for</th><th>Watch out for</th></tr>
+      <tr><th>Step</th><th>What happens</th><th>Part</th></tr>
     </thead>
     <tbody>
-      <tr><td>Model routing</td><td>Messy, open-ended requests</td><td>Vague descriptions cause wrong picks</td></tr>
-      <tr><td>Rules or classifier</td><td>Known, repeated requests</td><td>Misses anything new</td></tr>
-      <tr><td>Hybrid</td><td>A mix of both</td><td>Two systems to maintain</td></tr>
+      <tr><td>1</td><td>The user asks: "Plan a 3-day Tokyo trip in March." The hub plans: flights, hotels, weather, then a write-up.</td><td>1. Loop</td></tr>
+      <tr><td>2</td><td>Rules spot "flights", "hotels" and "weather" and pick those spokes. No LLM call needed.</td><td>2. Routing</td></tr>
+      <tr><td>3</td><td>The hub writes three short briefs. Each spoke starts with a fresh context.</td><td>3. Context</td></tr>
+      <tr><td>4</td><td>All three briefs go out at once.</td><td>6. Parallel</td></tr>
+      <tr><td>5</td><td>The hotels agent times out. The hub's retry code tries again, and the second try works.</td><td>7. Failures</td></tr>
+      <tr><td>6</td><td>The flights agent returns a $0 fare. The sense check fails. The hub's retry code tries again with the error, and the new answer passes.</td><td>4. Contracts</td></tr>
+      <tr><td>7</td><td>The hub updates its notebook: flights, hotels and weather done. It saves this to the database.</td><td>5. State</td></tr>
+      <tr><td>8</td><td>The hub merges the three short summaries into one brief for the writer.</td><td>6. Sequential</td></tr>
+      <tr><td>9</td><td>The writer drafts the plan. The hub checks it, settles a hotel price clash and builds the final response.</td><td>6. Aggregation</td></tr>
+      <tr><td>10</td><td>No more tools needed: "task complete". Only 2 of the 10 allowed passes through the loop were used.</td><td>1. Stop rule</td></tr>
     </tbody>
   </table>
   </div>
+  <figcaption>An illustrative run of the travel assistant, not a real log.</figcaption>
 </figure>
 
-<h2>📦 3. Context isolation and passing</h2>
+<h2>💸 The catch: more agents, more cost</h2>
 
-<p>Here's the surprising rule: a sub-agent shouldn't see the whole conversation. In Anthropic's SDK, each one <a href="https://code.claude.com/docs/en/agent-sdk/subagents" target="_blank">"runs in its own conversation, which starts fresh."</a> It only gets the prompt the hub writes.</p>
-
-<p>Why? Anthropic describes context rot: <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank">"as the number of tokens in the context window increases, the model's ability to accurately recall information from that context decreases."</a> Small contexts are more accurate. They're cheaper too, since every token read is billed.</p>
-
-<h3>Write a brief, not a forward</h3>
-
-<p>Anthropic found <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">"Each subagent needs an objective, an output format, guidance on the tools and sources to use, and clear task boundaries."</a> For a pricing spoke:</p>
-
-<ul>
-  <li>Goal: current prices for three named models.</li>
-  <li>Inputs: the model names.</li>
-  <li>Constraints: official pricing pages, 10 searches max.</li>
-  <li>Expected output: model, prices, source link.</li>
-</ul>
-
-<h3>Send back the short version</h3>
-
-<p>A spoke may read tens of thousands of tokens. Anthropic's sub-agents return <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank">"a condensed, distilled summary of its work (often 1,000-2,000 tokens)."</a> That keeps the hub's context from overflowing.</p>
-
-<figure class="article-image">
-  <img src="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/context-isolation.png" onerror="this.onerror=null;this.src='images/context-isolation.png'" width="1400" height="768" loading="lazy" alt="Bar chart. Three research spokes each work through 40,000 tokens in their own context. If the hub got everything it would hold 120,000 tokens. Instead it gets three 1,500-token summaries, 4,500 tokens, under 4% of the raw total.">
-  <figcaption>Figure 3. The spokes read 120,000 tokens. The hub sees 4,500. Illustrative example.</figcaption>
-</figure>
-
-<h2>📝 4. Structured input/output contracts</h2>
-
-<p>With free-text replies, the hub has to guess where the answer is. That breaks at random, the worst way to break.</p>
-
-<p>So give each spoke a JSON schema for its input and output. The <code>Findings</code> class above is one. OpenAI's Structured Outputs <a href="https://developers.openai.com/api/docs/guides/structured-outputs" target="_blank">"ensures the model will always generate responses that adhere to your supplied JSON Schema."</a> Anthropic's strict tool use <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/strict-tool-use" target="_blank">"guarantees Claude's tool inputs match your JSON Schema."</a></p>
-
-<p>But a schema checks shape, not truth. A price of $0 fits fine. So the hub validates every result: schema first, then your own rules. On a failure, retry once with the error in the brief. Fail again? Reject it.</p>
-
-<h2>🗂️ 5. State management</h2>
-
-<p>The hub owns the task state: what's done, what's pending, what each spoke found. Spokes ideally stay stateless. They take a brief, do one job and return. That makes them easy to retry or swap.</p>
-
-<p>In-memory state is fine for a 30-second task. For an hour-long one, a crash means starting over. So keep state in an external store, like a database.</p>
-
-<p>LangGraph's checkpointers save <a href="https://docs.langchain.com/oss/python/langgraph/checkpointers" target="_blank">"a snapshot of graph state at each super-step"</a>, so a failed run restarts from the last good step. Its docs suggest <code>PostgresSaver</code> for production. When errors hit, Anthropic's team <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">"can't just restart from the beginning."</a> Their system resumes where the agent was, and the lead agent saves its plan to memory.</p>
-
-<h2>⚡ 6. Execution: parallel vs. sequential</h2>
-
-<p>Checking flights doesn't need the weather. Independent jobs like these can run at once. As Anthropic's SDK docs put it, they <a href="https://code.claude.com/docs/en/agent-sdk/subagents" target="_blank">"finish in the time of the slowest one rather than the sum of all of them."</a> Running 3 to 5 sub-agents in parallel, plus parallel tool calls, <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">"cut research time by up to 90% for complex queries"</a> in Anthropic's system.</p>
-
-<p>Dependent jobs run in order. The writer waits for the research, each output feeding the next spoke.</p>
-
-<figure class="article-image">
-  <img src="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/parallel-vs-sequential.png" onerror="this.onerror=null;this.src='images/parallel-vs-sequential.png'" width="1400" height="740" loading="lazy" alt="Timeline. Run one after another, flights (20s), hotels (35s), weather (25s) and the writer (15s) take 95 seconds. Run the three research jobs in parallel and then the writer, the job takes 50 seconds, about 47% less, because the writer waits only for the slowest job.">
-  <figcaption>Figure 4. Parallel where you can, in order where you must. Illustrative example.</figcaption>
-</figure>
-
-<p>Then the hub aggregates. It merges results, settles conflicts (two different prices? trust the official source, or flag it) and writes the final answer.</p>
-
-<h2>🛟 7. Failure handling</h2>
-
-<ul>
-  <li><strong>A spoke fails or times out.</strong> Retry. Then fall back to another spoke. Then escalate to a person. Anthropic notes agents can <a href="https://www.anthropic.com/research/building-effective-agents" target="_blank">"pause for human feedback at checkpoints or when encountering blockers."</a></li>
-  <li><strong>A spoke returns junk.</strong> Validation at the hub catches it before it spreads.</li>
-  <li><strong>The hub won't stop delegating.</strong> Early on, Anthropic saw agents <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">"spawning 50 subagents for simple queries."</a> Cap delegations per task.</li>
-</ul>
-
-<p>A 2025 study by Cemri and colleagues annotated 1,642 runs across seven multi-agent frameworks. Two of the top three were loop problems: repeating steps (15.7%) and not knowing when to stop (12.4%). Many failures, the authors write, <a href="https://arxiv.org/abs/2503.13657" target="_blank">"arise from the challenges in organizational design and agent coordination rather than the limitations of individual agents."</a></p>
-
-<figure class="article-image">
-  <img src="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/mast-failures.png" onerror="this.onerror=null;this.src='images/mast-failures.png'" width="1400" height="889" loading="lazy" alt="Bar chart of the six most common multi-agent failure modes in 1,642 annotated runs: step repetition 15.7%, reasoning-action mismatch 13.2%, unaware of termination conditions 12.4%, disobey task specification 11.8%, incorrect verification 9.1%, no or incomplete verification 8.2%. By category: system design issues 44.2%, inter-agent misalignment 32.4%, task verification 23.5%.">
-  <figcaption>Figure 5. The six most common failure modes in the MAST study. Measured data.</figcaption>
-</figure>
-
-<p>For testing before launch, see <a href="https://padmashri23.github.io/under-the-hood/evaluate-ai-agents-before-production/" target="_blank">how to evaluate AI agents</a>.</p>
-
-<h2>💸 The catch: more agents, more tokens</h2>
-
-<p>In Anthropic's data, agents used about 4× the tokens of a chat. Multi-agent systems used about 15×.</p>
+<p>In Anthropic's 2025 data, one agent used about 4 times the tokens of a chat. A multi-agent system used about 15 times.</p>
 
 <figure class="article-image">
   <img src="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/images/token-cost.png" onerror="this.onerror=null;this.src='images/token-cost.png'" width="1400" height="885" loading="lazy" alt="Bar chart of token use relative to a chat, from Anthropic: chat 1x, single agent about 4x, multi-agent system about 15x.">
-  <figcaption>Figure 6. Token use compared with a chat. Measured by Anthropic.</figcaption>
+  <figcaption>Figure 8. Token use compared with a normal chat. Measured by Anthropic, 2025.</figcaption>
 </figure>
 
-<p>So don't start here. Anthropic recommends <a href="https://www.anthropic.com/research/building-effective-agents" target="_blank">"finding the simplest solution possible, and only increasing complexity when needed."</a> Multi-agent setups shine when work splits into parallel pieces or won't fit in one context window. Most coding tasks, Anthropic notes, have less truly parallel work than research.</p>
+<p>So start simple. Anthropic advises <a href="https://www.anthropic.com/research/building-effective-agents" target="_blank">the simplest solution possible</a>. <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">Anthropic found</a> they pay off for valuable tasks: lots of parallel work, more information than one context window holds, or many complex tools.</p>
+
+<h3>When not to split the work</h3>
+
+<p>Not everyone is a fan. In June 2025, Cognition, the company behind the Devin coding agent, published <a href="https://cognition.com/blog/dont-build-multi-agents" target="_blank">"Don't Build Multi-Agents"</a>. Its warning: helpers that can't see each other's work make clashing choices.</p>
+
+<p>Its example is a Flappy Bird game clone. One helper builds a background that looks like Super Mario Bros. Another builds a bird that doesn't fit the game. The final agent is stuck combining the two.</p>
+
+<p>In April 2026, Cognition updated its view. Its new post says multi-agent systems <a href="https://cognition.com/blog/multi-agents-working" target="_blank">"work best today when writes stay single-threaded"</a>. In plain words: many helpers can look things up, but only one should create or change things.</p>
+
+<p>Our travel assistant follows that rule. Three helpers only search. One writer writes the plan.</p>
 
 <h3>Where to start</h3>
 
 <ol>
-  <li>Build one agent with tools. Watch where it struggles.</li>
-  <li>Move the job that floods its context into a spoke.</li>
-  <li>Give that spoke a brief template and an output schema.</li>
-  <li>Add a turn limit, a budget and result checks.</li>
-  <li>Save state externally, then add parallel spokes.</li>
+  <li>Build one agent with tools. See where it struggles.</li>
+  <li>Move the heaviest job into a helper with a brief and a schema.</li>
+  <li>Add limits, answer checks and saved progress. Then go parallel.</li>
 </ol>
 
 <h2>✅ Conclusion</h2>
 
-<p>Most of what makes a multi-agent system production-ready is plumbing. A loop that knows when to stop. Clean briefs going out, short checked results coming back. State that survives a crash.</p>
+<p>Multi-agent systems sound complicated, but the core idea is simple: one boss, a few helpers and clear rules.</p>
 
-<p>Get that right, and a new spoke is as easy as a new tool. Skip it, and you'll meet those failure modes on your own bill.</p>
+<p>The loop knows when to stop. Briefs are short, answers are checked and progress survives a crash. Get those right, and adding a helper is as easy as adding a tool.</p>
 
 <!-- ============================================================ -->
 <!-- SOURCES / FOOTER -->
@@ -552,9 +730,11 @@ raise TooManyTurns()</code></pre>
     <li>LangChain. "Checkpointers." LangGraph docs, checked Nov 5, 2026. <a href="https://docs.langchain.com/oss/python/langgraph/checkpointers" target="_blank">docs.langchain.com</a></li>
     <li>LangChain. "Persistence." LangGraph docs, checked Nov 5, 2026. <a href="https://docs.langchain.com/oss/python/langgraph/persistence" target="_blank">docs.langchain.com</a></li>
     <li>Cemri, M. et al. "Why Do Multi-Agent LLM Systems Fail?" arXiv:2503.13657, v3, Oct 26, 2025. <a href="https://arxiv.org/abs/2503.13657" target="_blank">arxiv.org</a></li>
+    <li>Yan, W. (Cognition). "Don't Build Multi-Agents." Jun 12, 2025. <a href="https://cognition.com/blog/dont-build-multi-agents" target="_blank">cognition.com</a></li>
+    <li>Yan, W. (Cognition). "Multi-Agents: What's Actually Working." Apr 22, 2026. <a href="https://cognition.com/blog/multi-agents-working" target="_blank">cognition.com</a></li>
   </ol>
 
-  <p style="margin-top: 20px;"><strong>Note:</strong> Facts, quotes and SDK details were checked against the sources above on November 5, 2026. SDKs change often, so check the current docs before you build. The 90.2%, 4×, 15× and "up to 90%" figures are Anthropic's own measurements of its Research system on its internal evals, not independent benchmarks. Figure 5 uses measured data from the MAST study; the category totals are our sums of the paper's per-mode percentages. Figures 1 and 2 are conceptual. Figures 3 and 4 and the example brief are illustrative, not measurements. The code samples are minimal sketches: the first uses the OpenAI Agents SDK, and the second is pseudocode.</p>
+  <p style="margin-top: 20px;"><strong>Note:</strong> Facts, quotes and SDK details were checked against the sources above on November 5 and 6, 2026, including an independent editorial audit. SDKs change often, so check the current docs before you build. The 90.2%, "up to 90%", 4× and 15× figures are Anthropic's own 2025 numbers from its post on its multi-agent research system (the 90.2% is from its internal research eval). They are not independent benchmarks. Figures 7 and 8 use measured data: the MAST study (category totals are our sums of the paper's per-mode percentages) and Anthropic's token figures. Figures 1, 3 and 6 are conceptual diagrams. Figure 2, Figures 4 and 5, the Tokyo trip, the start-to-finish table, the example brief, the schema and the flight answer are illustrative, not measurements. The code samples are minimal sketches: the first uses the OpenAI Agents SDK and was checked against openai-agents 0.24.0 without a live AI call, and the second is pseudocode.</p>
 
   <div class="tags">
     <span>AI agents</span>

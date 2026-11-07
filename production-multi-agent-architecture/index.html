@@ -441,6 +441,73 @@ result = Runner.run_sync(hub, "Plan a 3-day Tokyo trip.", max_turns=10)</code></
         raise OverBudget()
 raise TooManyTurns()                   <span class="c"># hit the iteration limit</span></code></pre>
 
+<h3>Handoffs: when a helper takes over</h3>
+
+<p>So far, the hub stays in charge. It calls a helper like a tool, gets the answer back and decides what to tell the user. The OpenAI Agents SDK has a second option, called a <strong>handoff</strong>.</p>
+
+<p>With a handoff, one agent passes the whole conversation to a specialist. The specialist <a href="https://openai.github.io/openai-agents-python/multi_agent/" target="_blank">"becomes the active agent for the rest of the turn"</a> and answers the user directly. Think of a receptionist putting your call through to the billing team.</p>
+
+<p>Here's a travel support agent that checks flights itself, but hands refund questions to a booking agent:</p>
+
+<pre><code>from agents import Agent, Runner, function_tool
+from pydantic import BaseModel
+
+@function_tool
+def get_flight_status(flight_number: str) -&gt; str:
+    """Look up the live status of a flight."""
+    return f"{flight_number} is on time."  <span class="c"># stand-in for a real flight API</span>
+
+class TripReply(BaseModel):     <span class="c"># the answer format</span>
+    answer: str
+
+booking_agent = Agent(
+    name="Booking Agent",
+    handoff_description="Handles payments, refunds and booking changes.",
+    instructions="You help with payments, refunds and booking changes.",
+)
+
+travel_agent = Agent(
+    name="Travel Support Agent",
+    instructions=(
+        "You help travellers. Use tools to check flights. "
+        "Hand off payment and refund questions to the Booking Agent."
+    ),
+    tools=[get_flight_status],
+    handoffs=[booking_agent],
+    output_type=TripReply,
+)
+
+result = Runner.run_sync(travel_agent, "I want a refund for my hotel booking.")
+print(result.last_agent.name)  <span class="c"># "Booking Agent" if it took over</span></code></pre>
+
+<p>What each part does:</p>
+
+<ul>
+  <li><code>@function_tool</code> turns a normal Python function into a tool. The agent calls it and gets the answer back.</li>
+  <li><code>handoffs=[booking_agent]</code> lets the travel agent pass the conversation on. The SDK shows it to the AI as a tool named <code>transfer_to_booking_agent</code>.</li>
+  <li><code>handoff_description</code> tells the AI when to pick that handoff.</li>
+  <li><code>output_type=TripReply</code> is the answer format when the travel agent replies itself. After a handoff, the final answer comes from the booking agent.</li>
+  <li><code>result.last_agent</code> shows which agent finished the job.</li>
+</ul>
+
+<figure class="tbl">
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr><th></th><th>Agents as tools</th><th>Handoffs</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Who answers the user?</td><td>The hub</td><td>The specialist</td></tr>
+      <tr><td>Who stays in control?</td><td>The hub, the whole time</td><td>The specialist, for the rest of the turn</td></tr>
+      <tr><td>What does the helper see?</td><td>Only the hub's brief</td><td>The whole conversation, by default</td></tr>
+      <tr><td>Best for</td><td>A small job the hub checks and combines</td><td>Passing the user to a specialist, like refunds</td></tr>
+    </tbody>
+  </table>
+  </div>
+</figure>
+
+<p class="guardrail"><strong>💡 Good to know:</strong> in the loop, a handoff just swaps the active agent. The <a href="https://openai.github.io/openai-agents-python/running_agents/" target="_blank">SDK docs</a> put it this way: "If the LLM requests a handoff, we update the current agent and input, and re-run the loop." The new agent <a href="https://openai.github.io/openai-agents-python/handoffs/" target="_blank">sees the whole earlier conversation</a> by default. That's the opposite of the clean desk in section 3, so you can trim it with an <code>input_filter</code>.</p>
+
 <h2>🧭 2. Routing: how the hub picks a spoke</h2>
 
 <p class="plain"><strong>In plain words:</strong> routing means choosing which helper gets the job. It's like a hospital front desk sending you to the right doctor.</p>
@@ -454,6 +521,14 @@ raise TooManyTurns()                   <span class="c"># hit the iteration limit
 <p>Plain code decides, with explicit rules: "If the message mentions a hotel, send it to the hotels agent." Or an intent classifier, a small model that sorts each message into a group like "flights" or "hotels". Anthropic notes routing can use <a href="https://www.anthropic.com/research/building-effective-agents" target="_blank">an LLM or a more traditional classification model</a>.</p>
 
 <p>This is cheaper, since there's no big AI call. It's also more predictable. <a href="https://openai.github.io/openai-agents-python/multi_agent/" target="_blank">OpenAI's docs</a> say deciding in code is more predictable in speed, cost and performance.</p>
+
+<p><strong>When to pick rules:</strong> when the answer must be the same every time, or a wrong call costs money. For example:</p>
+
+<ul>
+  <li><strong>A refund gate.</strong> "Is the trip more than 2 days away? Send the refund to the booking agent. If not, send it to a person." The same request always gets the same answer. (The 2-day rule is made up for this example.)</li>
+  <li><strong>Clear, repeated requests,</strong> like "flight status" or "find a hotel".</li>
+  <li><strong>Lots of traffic.</strong> Skipping an AI call on every message saves time and money.</li>
+</ul>
 
 <h3>Hybrid routing</h3>
 
@@ -492,6 +567,8 @@ raise TooManyTurns()                   <span class="c"># hit the iteration limit
 <ul>
   <li><strong>Better accuracy.</strong> The more text an AI holds, the worse it recalls details. Researchers call this "context rot", and <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank">Anthropic's guide</a> warns about it.</li>
   <li><strong>Lower cost.</strong> You pay for every token the AI reads.</li>
+  <li><strong>Security (least privilege).</strong> Each helper sees only what its job needs. A billing agent never sees medical notes. In our trip, the weather agent never sees the traveller's passport details.</li>
+  <li><strong>Fault containment.</strong> A helper can get confused, or tricked by <a href="https://padmashri23.github.io/under-the-hood/prompt-injection-enterprise-threat/" target="_blank">prompt injection</a>: hidden instructions in a web page it reads. With its own small context, the damage mostly stays inside that helper. The hub only gets its short result, and checks it before using it (section 4).</li>
 </ul>
 
 <h3>Condensed results, so the hub doesn't overflow</h3>
@@ -532,6 +609,36 @@ raise TooManyTurns()                   <span class="c"># hit the iteration limit
 <pre><code>{ "airline": "Example Air", "price_usd": 640, "link": "https://..." }</code></pre>
 
 <p>The input schema works the same way, requiring cities, dates and a maximum price. Providers can enforce schemas for you. OpenAI's <a href="https://developers.openai.com/api/docs/guides/structured-outputs" target="_blank">Structured Outputs</a> makes the model's answer follow your schema (except in rare cases, like a refusal or a cut-off reply). Anthropic's <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/strict-tool-use" target="_blank">strict tool use</a> guarantees Claude's tool inputs match your schema.</p>
+
+<h3>A shape for failures, too</h3>
+
+<p>Sometimes a spoke can't finish. It should still answer in a fixed shape, so the hub knows exactly what went wrong. Here's the flights agent reporting a timeout:</p>
+
+<pre><code>{
+  "status": "failed",
+  "errors": [
+    {
+      "code": "TOOL_TIMEOUT",
+      "message": "Flight search did not respond; only cached fares were checked.",
+      "source": "tool:flight_search"
+    }
+  ],
+  "retry": {
+    "retryable": true,
+    "strategy": "retry_failed_part_only",
+    "after_ms": 5000
+  }
+}</code></pre>
+
+<p>Three rules make this work:</p>
+
+<ul>
+  <li><strong>Error codes come from a fixed list.</strong> This list is called an enum. For example: <code>TOOL_TIMEOUT</code>, <code>TOOL_ERROR</code>, <code>SCHEMA_VALIDATION_ERROR</code>, <code>MISSING_REQUIRED_INPUT</code>, <code>LOW_CONFIDENCE</code>, <code>POLICY_BLOCKED</code>, <code>RATE_LIMITED</code>. The hub's retry logic reads the code. The message is for humans and logs.</li>
+  <li><strong>The spoke suggests, the hub decides.</strong> <code>retryable</code> and <code>strategy</code> are only hints. Here, <code>retry_failed_part_only</code> means "redo just the part that failed". The hub owns the retry budget, like 2 or 3 attempts at most. It also sets the backoff: how long to wait between tries.</li>
+  <li><strong>Some failures are worth retrying, some aren't.</strong> Timeouts and rate limits ("too many requests, slow down") often clear up, so retry them. Bad input and policy blocks will fail the same way again, so don't.</li>
+</ul>
+
+<p>Section 7 shows what the hub does next: retry, fall back or ask a human.</p>
 
 <h3>Validate before the hub uses it</h3>
 
@@ -726,6 +833,7 @@ raise TooManyTurns()                   <span class="c"># hit the iteration limit
     <li>OpenAI. "Agent orchestration." OpenAI Agents SDK docs, checked Nov 5, 2026. <a href="https://openai.github.io/openai-agents-python/multi_agent/" target="_blank">openai.github.io</a></li>
     <li>OpenAI. "Tools." OpenAI Agents SDK docs (Agents as tools), checked Nov 5, 2026. <a href="https://openai.github.io/openai-agents-python/tools/" target="_blank">openai.github.io</a></li>
     <li>OpenAI. "Running agents." OpenAI Agents SDK docs (the agent loop, <code>max_turns</code>), checked Nov 5, 2026. <a href="https://openai.github.io/openai-agents-python/running_agents/" target="_blank">openai.github.io</a></li>
+    <li>OpenAI. "Handoffs." OpenAI Agents SDK docs, checked Nov 7, 2026. <a href="https://openai.github.io/openai-agents-python/handoffs/" target="_blank">openai.github.io</a></li>
     <li>OpenAI. "Structured model outputs." API docs, checked Nov 5, 2026. <a href="https://developers.openai.com/api/docs/guides/structured-outputs" target="_blank">developers.openai.com</a></li>
     <li>LangChain. "Checkpointers." LangGraph docs, checked Nov 5, 2026. <a href="https://docs.langchain.com/oss/python/langgraph/checkpointers" target="_blank">docs.langchain.com</a></li>
     <li>LangChain. "Persistence." LangGraph docs, checked Nov 5, 2026. <a href="https://docs.langchain.com/oss/python/langgraph/persistence" target="_blank">docs.langchain.com</a></li>
@@ -734,7 +842,7 @@ raise TooManyTurns()                   <span class="c"># hit the iteration limit
     <li>Yan, W. (Cognition). "Multi-Agents: What's Actually Working." Apr 22, 2026. <a href="https://cognition.com/blog/multi-agents-working" target="_blank">cognition.com</a></li>
   </ol>
 
-  <p style="margin-top: 20px;"><strong>Note:</strong> Facts, quotes and SDK details were checked against the sources above on November 5 and 6, 2026, including an independent editorial audit. SDKs change often, so check the current docs before you build. The 90.2%, "up to 90%", 4× and 15× figures are Anthropic's own 2025 numbers from its post on its multi-agent research system (the 90.2% is from its internal research eval). They are not independent benchmarks. Figures 7 and 8 use measured data: the MAST study (category totals are our sums of the paper's per-mode percentages) and Anthropic's token figures. Figures 1, 3 and 6 are conceptual diagrams. Figure 2, Figures 4 and 5, the Tokyo trip, the start-to-finish table, the example brief, the schema and the flight answer are illustrative, not measurements. The code samples are minimal sketches: the first uses the OpenAI Agents SDK and was checked against openai-agents 0.24.0 without a live AI call, and the second is pseudocode.</p>
+  <p style="margin-top: 20px;"><strong>Note:</strong> Facts, quotes and SDK details were checked against the sources above on November 5, 6 and 7, 2026, including an independent editorial audit. SDKs change often, so check the current docs before you build. The 90.2%, "up to 90%", 4× and 15× figures are Anthropic's own 2025 numbers from its post on its multi-agent research system (the 90.2% is from its internal research eval). They are not independent benchmarks. Figures 7 and 8 use measured data: the MAST study (category totals are our sums of the paper's per-mode percentages) and Anthropic's token figures. Figures 1, 3 and 6 are conceptual diagrams. Figure 2, Figures 4 and 5, the Tokyo trip, the start-to-finish table, the example brief, the schema, the flight answer and the error format are illustrative, not measurements. The code samples are minimal sketches: the first and third use the OpenAI Agents SDK and were checked against openai-agents 0.24.0 without a live AI call, and the second is pseudocode. The flight-status tool in the third returns a made-up answer instead of calling a real flight API.</p>
 
   <div class="tags">
     <span>AI agents</span>

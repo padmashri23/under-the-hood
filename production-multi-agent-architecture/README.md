@@ -6,16 +6,16 @@ A beginner-friendly guide to how multi-agent systems are built when they have to
 
 ## What it covers
 
-1. **The orchestration loop:** receive, plan, call a sub-agent, read the result, decide, finish. Sub-agents exposed as tools (OpenAI Agents SDK `as_tool`). Stop conditions: turn limits (`max_turns`), a task-complete signal and a token budget. Includes a working code sample and the loop as pseudocode
-2. **Routing:** LLM-based routing from tool names and descriptions, rule-based or intent-classifier routing, and hybrid routing
-3. **Context isolation and passing:** fresh context per sub-agent, context rot, the four-part brief, and condensed 1,000 to 2,000 token results
-4. **Structured input/output contracts:** why free text breaks, a JSON schema example, OpenAI Structured Outputs and Anthropic strict tool use, validation, and retry or reject
+1. **The orchestration loop:** receive, plan, call a sub-agent, read the result, decide, finish. Sub-agents exposed as tools (OpenAI Agents SDK `as_tool`). Stop conditions: turn limits (`max_turns`), a task-complete signal and a token budget. Includes a working code sample, the loop as pseudocode, and a handoffs example with a table comparing agents as tools vs handoffs
+2. **Routing:** LLM-based routing from tool names and descriptions, rule-based or intent-classifier routing (with when to pick rules, including a refund-gate example), and hybrid routing
+3. **Context isolation and passing:** fresh context per sub-agent, context rot, the four-part brief, why clean contexts help (accuracy, cost, least privilege and fault containment), and condensed 1,000 to 2,000 token results
+4. **Structured input/output contracts:** why free text breaks, a JSON schema example, a failure format with error codes and retry hints, OpenAI Structured Outputs and Anthropic strict tool use, validation, and retry or reject
 5. **State management:** the hub owns state, stateless spokes, LangGraph checkpointers and resuming after errors
 6. **Parallel vs sequential execution:** independent jobs in parallel, dependent jobs in order, and aggregation at the hub
 7. **Failure handling:** retry, fallback and human escalation, validation, delegation caps, and the MAST failure study
 8. A start-to-finish walkthrough of one request, the token cost of multi-agent systems (2025 figures), a "when not to split the work" counterpoint from Cognition's 2025 and 2026 posts, a "Where to start" list, a glossary, and a short conclusion
 
-Written for beginners and tech starters. Every key pointer from the brief has its own subheading, so it shows up in Notion's table of contents. Each section opens with an "In plain words" line and an everyday comparison, then the steps, then a "Good to know" note. Short sentences (about 9 words on average, Flesch reading ease about 80), every technical term defined, and the code explained line by line. Includes a start-to-finish table that follows one Tokyo request through all seven parts, and a "when not to split the work" counterpoint from Cognition. About 2,983 words above Sources & References (3,020 including the title block), counting headings, captions, tables and code.
+Written for beginners and tech starters. Every key pointer from the brief has its own subheading, so it shows up in Notion's table of contents. Each section opens with an "In plain words" line and an everyday comparison, then the steps, then a "Good to know" note. Short sentences (about 9 words on average, Flesch reading ease about 80), every technical term defined, and the code explained line by line. Includes a start-to-finish table that follows one Tokyo request through all seven parts, and a "when not to split the work" counterpoint from Cognition. About 3,782 words above Sources & References (3,819 including the title block), counting headings, captions, tables and code.
 
 ## Visuals
 

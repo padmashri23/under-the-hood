@@ -10,15 +10,15 @@ A beginner-friendly guide to the tools an AI agent uses to act in the world. The
 2. **What a tool is:** a function that fetches information or takes an action, and why the model never runs it itself
 3. **Types of tools:** read, write, compute, agent-as-tool, and built-in vs custom tools
 4. **Anatomy of a tool definition:** name, description (including when not to use it), JSON Schema inputs and parameter descriptions
-5. **The tool-calling flow:** five steps, a flow diagram, and one full round trip walked through in plain words
+5. **The tool-calling flow:** five steps plus the agent loop (parallel tool calls and stop conditions), a flow diagram, and one full round trip walked through in plain words
 6. **Designing tool outputs:** lean results, pagination and truncation, consistent formats and useful IDs
-7. **Best practices:** the SWE-agent evidence, small and non-overlapping toolsets, task-sized tools, read/write split, idempotency, naming, and tool-count data
+7. **Best practices:** the SWE-agent evidence, small and non-overlapping toolsets, task-sized tools, read/write split, idempotency, naming, tool-level guardrails, and tool-count data
 8. **Common mistakes:** nine mistakes with fixes, plus a poor vs good definition side by side
 9. **Error handling** and **security and permissions:** readable errors, validation, timeouts, logging, least privilege, credentials, approval and prompt injection
 10. **Worked example:** a CRM lookup spoke with one read tool and one write tool behind human approval
 11. **Testing and checklist:** how to test tools on real tasks, and a 12-point tool design checklist
 
-Written for beginners: a short-version box, a glossary, every technical term explained, and about 10 words per sentence on average. Every section follows the same shape: an "In plain words" opener, bullets, then a "Good to know" or "Try this" note. One running example (Ana's CRM lead) ties the figures, code and worked example together. No code snippets: every example is written in plain words, and links appear only on key facts and related Under the Hood articles. About 2,767 words above Sources & References (2,824 including the title block), counting headings, captions and tables. No video.
+Written for beginners: a short-version box, a glossary, every technical term explained, and about 10 words per sentence on average. Every section follows the same shape: an "In plain words" opener, bullets, then a "Good to know" or "Try this" note. One running example (Ana's CRM lead) ties the figures, code and worked example together. Examples are written in plain words, except three short JSON examples, a tool definition, a bad vs good tool output and an error result (requested by a reviewer). Links appear only on key facts and related Under the Hood articles. About 3,158 words above Sources & References (3,215 including the title block), counting headings, captions and tables. No video.
 
 ## Visuals
 

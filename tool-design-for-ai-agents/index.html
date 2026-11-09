@@ -396,6 +396,11 @@
   <li><strong>Parameter descriptions:</strong> one line per input, with an example value. For instance: "Exact email, e.g. ana@example.com."</li>
 </ul>
 
+<figure class="tbl">
+<pre><code>{"name": "get_customer", "description": "Find one customer by exact email. Don't use it to search by name. Returns name, lead ID and lead status.", "input_schema": {"type": "object", "properties": {"email": {"type": "string", "description": "Exact email, e.g. ana@example.com"}}, "required": ["email"]}}</code></pre>
+<figcaption>Example: the <code>get_customer</code> tool definition as one line of JSON, in Anthropic's format (OpenAI calls the schema field "parameters"). It shows all four parts: name, description, input schema and a parameter description. Made-up tool.</figcaption>
+</figure>
+
 <p class="guardrail"><strong>Good to know:</strong> The description is really a prompt. The model picks tools by reading it. Anthropic says descriptions "can collectively steer agents toward effective tool-calling behaviors." A vague one leads to wrong calls.</p>
 
 <h2>🔄 The tool-calling flow, step by step</h2>
@@ -408,9 +413,10 @@
   <li>Your app checks the arguments. Then it runs the function.</li>
   <li>Your app sends the output back as a tool result. It carries the call's ID, so the model knows which request it answers.</li>
   <li>The model reads the result. Then it calls another tool or gives its final answer.</li>
+  <li><strong>The loop repeats until it stops.</strong> Steps 2 to 5 are the agent loop, and they run again and again. The model can also ask for several tools in one turn, like two lookups that don't depend on each other. These are parallel tool calls: your app runs them all and sends back every result, and OpenAI lets you switch them off. The loop stops when the model answers without asking for a tool. Add your own stop condition too, like a maximum number of turns, so a stuck agent can't loop forever. OpenAI's Agents SDK, for example, ends a run with an error once it passes that limit.</li>
 </ol>
 
-<p>OpenAI's guide describes these same five steps.</p>
+<p>OpenAI's guide describes the first five steps the same way.</p>
 
 <figure class="article-image">
   <img src="https://padmashri23.github.io/under-the-hood/tool-design-for-ai-agents/images/brain-and-hand.png" onerror="this.onerror=null;this.src='images/brain-and-hand.png'" width="1400" height="859" loading="lazy" alt="Diagram of one tool call. The brain, the AI model, reads tool definitions, decides a tool would help, and writes a short request, such as get_customer with an email. The hand, your code, checks the inputs, runs the real function and sends back the result or a clear error. The model reads the result and answers or calls again. All the model knows about the tool is its name, description and input schema.">
@@ -443,6 +449,12 @@
   <li><strong>Include IDs and links the agent needs next.</strong> Readable names help the model think. But a follow-up call may need an exact ID. Anthropic's example: find a user by name, then message them using their ID.</li>
 </ul>
 
+<figure class="tbl">
+<pre><code>Bad:  {"uuid": "0f8e2c1a-7b3d-4e9a-9c2f-5d1b6a8e4f20", "fn": "Ana", "stage_cd": 2}
+Good: {"name": "Ana Lima", "lead_id": "L-207", "status": "contacted"}</code></pre>
+<figcaption>Bad: a random ID, a cryptic field name and a status code the model has to guess. Good: readable fields plus the one ID the next call needs. Made-up data.</figcaption>
+</figure>
+
 <p><a href="https://www.anthropic.com/engineering/writing-tools-for-agents" target="_blank">Anthropic's Slack example</a> shows the payoff. A detailed reply used 206 tokens. A concise one used 72.</p>
 
 <figure class="article-image">
@@ -470,6 +482,7 @@
   <li><strong>Separate read from write.</strong> Then reads can run freely while writes get checks. MCP lets a tool label itself read-only or destructive.</li>
   <li><strong>Idempotent where possible.</strong> That means running it twice has the same effect as once. A retry won't create a duplicate ticket. MCP has a label for this too.</li>
   <li><strong>One naming pattern.</strong> Use verb_noun: <code>get_customer</code>, <code>update_lead_status</code>, <code>send_email</code>. Anthropic also suggests shared prefixes, like <code>asana_search</code> and <code>jira_search</code>.</li>
+  <li><strong>Build in guardrails at the tool level.</strong> Don't rely on the prompt to keep a tool safe. Put the rules inside the tool's own code, where the model can't talk its way around them. For example, <code>update_lead_status</code> accepts only the four allowed statuses, checks that the user may edit that lead, and changes one lead at a time. OWASP advises enforcing permissions in your own systems "rather than relying on an LLM to decide if an action is allowed or not." The MCP spec also says tool servers must validate inputs, control access and limit how often tools can be called.</li>
 </ul>
 
 <h3>How many tools is too many?</h3>
@@ -549,7 +562,17 @@
   <li><strong>Log every failure,</strong> so you can debug it later.</li>
 </ul>
 
-<p class="guardrail"><strong>Good to know:</strong> Mark failures clearly. Anthropic's API and MCP both let a tool flag its result as an error, so the model knows the call failed.</p>
+<p class="guardrail"><strong>Good to know:</strong> Mark failures clearly. Anthropic's API (<code>is_error: true</code>) and MCP (<code>isError: true</code>) both let a tool flag its result as an error, so the model knows the call failed.</p>
+
+<figure class="tbl">
+<pre><code>{
+  "type": "tool_result",
+  "tool_use_id": "toolu_01A09q90qw90lq917835lq9",
+  "content": "Customer not found for ana@exmple.com. Check the spelling of the email, or ask the user to confirm it.",
+  "is_error": true
+}</code></pre>
+<figcaption>Example: a failed <code>get_customer</code> call sent back in Anthropic's format, with <code>is_error</code> set to <code>true</code>. The user mistyped the email, and the message tells the model how to recover. Made-up data.</figcaption>
+</figure>
 
 <h2>🔐 Tool security and permissions</h2>
 
@@ -642,7 +665,7 @@
     <li>Anthropic. "Define tools." Claude Platform Docs. Checked November 7, 2026. <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/define-tools" target="_blank">platform.claude.com</a></li>
   </ol>
 
-  <p style="margin-top: 20px;"><strong>Note:</strong> All sources were checked on November 7, 2026. Anthropic's token and accuracy figures come from its own published examples and internal testing; they have not been independently reproduced. The SWE-agent results are from 2024 with GPT-4 Turbo. Newer models score much higher on SWE-bench, so read Figure 3 as a comparison within one model, not as a current leaderboard. Figures 1, 6 and 7, the round-trip walkthrough, the CRM worked example and the error-message examples use made-up tools and data to illustrate the ideas. The MCP quotes come from the 2025-11-25 version of the specification. Tool APIs change often, so check the provider's current docs before building.</p>
+  <p style="margin-top: 20px;"><strong>Note:</strong> All sources were checked on November 7, 2026. Anthropic's token and accuracy figures come from its own published examples and internal testing; they have not been independently reproduced. The SWE-agent results are from 2024 with GPT-4 Turbo. Newer models score much higher on SWE-bench, so read Figure 3 as a comparison within one model, not as a current leaderboard. Figures 1, 6 and 7, the round-trip walkthrough, the CRM worked example, the tool definition, tool output and error JSON examples, and the error-message examples use made-up tools and data to illustrate the ideas. The MCP quotes come from the 2025-11-25 version of the specification. Tool APIs change often, so check the provider's current docs before building.</p>
 
   <div class="tags">
     <span>AI agents</span>

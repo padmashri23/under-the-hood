@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Why AI agents forget, the four types of memory, knowledge vs memory, context window management, Mem0 vs LangMem, and how to keep agent memory private and safe.">
+<meta property="og:title" content="The Memory Layer: Why Your AI Agent Forgets and How to Fix It">
+<meta property="og:description" content="AI models forget everything between chats. Here's how to give your agent a memory, and keep it safe.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://padmashri23.github.io/under-the-hood/ai-agent-memory-layer/">
+<meta property="og:image" content="https://padmashri23.github.io/under-the-hood/ai-agent-memory-layer/images/social-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Memory Layer: Why Your AI Agent Forgets and How to Fix It">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://padmashri23.github.io/under-the-hood/ai-agent-memory-layer/images/social-card.png">
+<title>The Memory Layer: Why Your AI Agent Forgets and How to Fix It</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --bg-card: #111113;
+    --bg-elevated: #18181b;
+    --text-primary: #e4e4e7;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    --accent: #4A9EFF;
+    --accent-warm: #f59e0b;
+    --accent-green: #22c55e;
+    --accent-purple: #a855f7;
+    --accent-red: #ef4444;
+    --accent-teal: #14b8a6;
+    --border: #27272a;
+    --serif: 'Instrument Serif', 'Georgia', serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--sans);
+    font-size: 18px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .article-container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Header */
+  .article-header {
+    padding: 80px 0 40px;
+    text-align: center;
+  }
+  .article-header .tag {
+    display: inline-block;
+    background: var(--accent);
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 4px;
+    margin-bottom: 32px;
+  }
+  .article-header h1 {
+    font-family: var(--serif);
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1.15;
+    font-weight: 400;
+    margin-bottom: 24px;
+    color: #fff;
+  }
+  .article-header .subtitle {
+    font-size: 19px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 680px;
+    margin: 0 auto 32px;
+    font-weight: 300;
+  }
+  .article-header .meta {
+    font-size: 14px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  /* Typography */
+  p { margin-bottom: 20px; color: var(--text-primary); }
+  strong { color: #fff; font-weight: 600; }
+  em { color: var(--text-secondary); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .drop-cap::first-letter {
+    font-family: var(--serif);
+    font-size: 72px;
+    float: left;
+    line-height: 0.8;
+    margin: 4px 12px 0 0;
+    color: #fff;
+    font-weight: 400;
+  }
+
+  ul, ol { margin: 16px 0 24px 28px; color: var(--text-primary); }
+  li { margin-bottom: 8px; }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 400;
+    line-height: 1.2;
+    color: #fff;
+    margin: 64px 0 20px;
+  }
+  h3 {
+    font-family: var(--sans);
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    margin: 40px 0 16px;
+  }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+  /* Guardrail line */
+  .guardrail {
+    background: var(--bg-card);
+    border-left: 3px solid var(--accent-teal);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 20px;
+    margin: 24px 0 32px;
+    font-size: 16px;
+    color: var(--text-secondary);
+  }
+  .guardrail strong { color: var(--accent-teal); }
+
+  /* Key points box */
+  .keypoints {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 22px 26px 8px;
+    margin: 8px 0 24px;
+  }
+  .keypoints .kp-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .keypoints ul { margin: 0 0 14px 20px; font-size: 16px; }
+  .keypoints li { margin-bottom: 8px; color: var(--text-secondary); }
+
+  /* Image figures */
+  .article-image {
+    margin: 48px -40px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+  .article-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .article-image figcaption {
+    padding: 14px 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    line-height: 1.5;
+  }
+
+  /* Table figures */
+  .tbl {
+    margin: 48px 0;
+  }
+  .table-wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    line-height: 1.5;
+    background: var(--bg-card);
+  }
+  thead { background: var(--bg-elevated); }
+  th {
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border);
+    vertical-align: bottom;
+  }
+  td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { color: #fff; font-weight: 500; }
+  td small { display: block; color: var(--text-muted); font-size: 12px; font-weight: 400; }
+  .tbl figcaption {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  /* Footer */
+  .article-footer {
+    padding: 48px 0 80px;
+    border-top: 1px solid var(--border);
+    margin-top: 64px;
+  }
+  .article-footer h2 {
+    font-size: 30px;
+    margin: 0 0 24px;
+  }
+  .article-footer h3 {
+    font-family: var(--sans);
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 20px;
+  }
+  .article-footer p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+  .article-footer ol {
+    margin: 0 0 24px 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .article-footer li { margin-bottom: 10px; }
+  .tags { margin-top: 24px; }
+  .tags span {
+    display: inline-block;
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin: 4px 4px 4px 0;
+    border: 1px solid var(--border);
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .article-image { margin: 40px -24px; border-radius: 0; border-left: none; border-right: none; }
+  }
+  @media (max-width: 760px) {
+    .table-wrapper { margin: 0 -24px; border-radius: 0; border-left: none; border-right: none; }
+    .drop-cap::first-letter { font-size: 56px; }
+    h2 { font-size: 26px; margin-top: 48px; }
+  }
+  code { font-family: var(--mono); font-size: 0.85em; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; color: var(--text-primary); }
+  .article-image video { width: 100%; height: auto; display: block; background: #F7F0E4; }
+  .article-footer .refs-label { font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="article-container">
+
+<header class="article-header">
+  <span class="tag">Deep Dive</span>
+  <h1>The Memory Layer: Why Your AI Agent Forgets and How to Fix It</h1>
+  <p class="subtitle">AI models forget everything between chats. Here's how to give your agent a memory, and keep it safe.</p>
+  <p class="meta">Researched &amp; written November 2026 · ~9 min read · Sources cited throughout</p>
+</header>
+
+<h2>🧠 Why agents need memory</h2>
+
+<p class="drop-cap">Tell a support chatbot about a double charge on Monday. Come back on Tuesday and ask about the refund. It asks for your order number again. The bot isn't careless. It never knew you.</p>
+
+<h3>Every call starts from zero</h3>
+
+<p>An AI agent is a large language model (LLM) that uses tools to finish a task. ChatGPT and Claude are built on LLMs. The LLM itself is stateless. That means it keeps nothing from one request to the next. OpenAI's docs say it plainly: <a href="https://platform.openai.com/docs/guides/conversation-state" target="_blank">"each text generation request is independent and stateless."</a></p>
+
+<p>So how does a chatbot remember your last message? The earlier messages are sent back to the model with every new request. Close the chat, and that history is gone.</p>
+
+<h3>What breaks without memory</h3>
+
+<ul>
+  <li>The agent asks the same questions every time.</li>
+  <li>Work on a long task is lost when the chat ends.</li>
+  <li>Every user gets the same answers.</li>
+</ul>
+
+<h3>Short-term vs long-term memory</h3>
+
+<ul>
+  <li><strong>Short-term memory</strong> is the context window: all the text the model can read in one request. Think of it as the model's desk. It's small, and it's cleared after each chat.</li>
+  <li><strong>Long-term memory</strong> is a separate store, like a database, that keeps facts between chats. Think of it as a filing cabinet next to the desk.</li>
+</ul>
+
+<h3>Memory is not the same as state</h3>
+
+<ul>
+  <li><strong>State</strong> is the agent's to-do note for the current task: which step it's on, and what its last tool returned.</li>
+  <li><strong>Memory</strong> is what's worth keeping after the task ends.</li>
+</ul>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/ai-agent-memory-layer/images/stateless.png" onerror="this.onerror=null;this.src='images/stateless.png'" width="1400" height="858" loading="lazy" alt="Two support chats side by side. Without long-term memory, the agent asks for the plan and order number again on Tuesday. With a memory store that saved 'Plan: Pro' and 'Double charge refunded' on Monday, the agent confirms the refund straight away.">
+  <figcaption>Figure 1. Two chats, with and without long-term memory. Conceptual example.</figcaption>
+</figure>
+
+<h3>📖 Words you'll see in this article</h3>
+
+<figure class="tbl">
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr><th>Term</th><th>What it means</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Token</td><td>A small piece of text, often part of a word. Models measure text in tokens.</td></tr>
+      <tr><td>Prompt</td><td>The text sent to the model. The system prompt holds its standing instructions.</td></tr>
+      <tr><td>Tool</td><td>Something the agent can use, like a web search. What comes back is a tool result.</td></tr>
+      <tr><td>Framework</td><td>Ready-made code for building agents, so you don't start from scratch.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</figure>
+
+<h2>🗂️ The four types of memory</h2>
+
+<p><strong>In plain words:</strong> Researchers sort agent memory into four kinds, borrowed from human memory. The 2023 <a href="https://arxiv.org/abs/2309.02427" target="_blank">CoALA paper</a> uses all four, and LangChain's docs use three.</p>
+
+<ul>
+  <li><strong>Working memory:</strong> what the agent is using right now. In practice, that's the context window.</li>
+  <li><strong>Episodic memory:</strong> past events. Example: "Last month, this customer was charged twice and got a refund."</li>
+  <li><strong>Semantic memory:</strong> facts. Example: the customer is on the Pro plan and prefers email.</li>
+  <li><strong>Procedural memory:</strong> how to do things. Example: "Always check the order number before a refund." It lives in the system prompt, the agent's code and the model itself.</li>
+</ul>
+
+<p class="guardrail"><strong>💡 Good to know:</strong> Some agents can update their own procedural memory. They rewrite their own instructions based on feedback.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/ai-agent-memory-layer/images/four-types.png" onerror="this.onerror=null;this.src='images/four-types.png'" width="1400" height="851" loading="lazy" alt="Four cards. Working memory: today's chat, lives in the context window. Episodic memory: last month's double-charge ticket, lives in a store of past conversations. Semantic memory: customer is on the Pro plan, lives in a store of facts or profiles. Procedural memory: confirm the order ID before a refund, lives in the system prompt, code and model weights.">
+  <figcaption>Figure 2. The four memory types for one support agent. Examples are illustrative.</figcaption>
+</figure>
+
+<h2>📚 Knowledge vs memory</h2>
+
+<p><strong>In plain words:</strong> Both end up in the context window, but they're different things.</p>
+
+<ul>
+  <li><strong>Knowledge is shared.</strong> Your team writes and checks it: help articles, policies, product guides.</li>
+  <li><strong>Memory is personal.</strong> The agent writes it as it works: this customer's plan, what they asked last week.</li>
+</ul>
+
+<h3>RAG: how knowledge gets in</h3>
+
+<p>RAG stands for retrieval-augmented generation. It's like an open-book exam: the agent looks up the right pages before it answers. The name comes from a <a href="https://arxiv.org/abs/2005.11401" target="_blank">2020 research paper</a>. It works in three steps:</p>
+
+<ol>
+  <li><strong>Chunking:</strong> cut each document into short passages.</li>
+  <li><strong>Embedding:</strong> turn each passage into a list of numbers that captures its meaning. Passages with similar meanings get similar numbers.</li>
+  <li><strong>Retrieval:</strong> when a question comes in, find the closest passages and add them to the prompt.</li>
+</ol>
+
+<h3>Why they need different rules</h3>
+
+<ul>
+  <li>Knowledge changes only when your team edits a document.</li>
+  <li>Memory changes in every chat. It belongs to one person, and it needs an expiry date and a delete button.</li>
+</ul>
+
+<p class="guardrail"><strong>💡 Good to know:</strong> Keep them apart. Otherwise, one customer's details can show up in another customer's answer.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/ai-agent-memory-layer/images/knowledge-vs-memory.png" onerror="this.onerror=null;this.src='images/knowledge-vs-memory.png'" width="1400" height="808" loading="lazy" alt="Two pipelines. Knowledge: help docs are chunked, embedded, indexed in a vector store and retrieved at question time; same for every user. Memory: a conversation is extracted into facts, stored per user with source and date, and recalled next session; belongs to one user and expires or is deleted.">
+  <figcaption>Figure 3. Shared knowledge vs personal memory. Conceptual.</figcaption>
+</figure>
+
+<h2>🪟 Managing the context window</h2>
+
+<p><strong>In plain words:</strong> The context window fills up as a chat goes on. A bigger window doesn't fully solve this. Anthropic's engineers describe <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank">"context rot"</a>: the more text in the window, the worse the model gets at recalling it. Three habits help:</p>
+
+<ul>
+  <li><strong>Summarise old messages.</strong> When the window is nearly full, swap the old chat for a short summary. Anthropic calls this compaction.</li>
+  <li><strong>Clear old <a href="https://padmashri23.github.io/under-the-hood/tool-design-for-ai-agents/" target="_blank">tool results</a>.</strong> If the agent read a file 40 steps ago, it can read it again when needed. Anthropic calls this "one of the safest lightest touch forms of compaction."</li>
+  <li><strong>Save key facts to long-term memory.</strong> Then load back only the facts the current task needs.</li>
+</ul>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/ai-agent-memory-layer/images/context-growth.png" onerror="this.onerror=null;this.src='images/context-growth.png'" width="1400" height="904" loading="lazy" alt="Line chart of tokens in the context window over 100 turns. Keeping the full history at 3,000 tokens per turn fills a 200,000-token window at turn 67. Summarising to 15,000 tokens whenever the context passes 150,000 keeps it under the limit for all 100 turns.">
+  <figcaption>Figure 4. Full chat vs summarising. Illustrative model, not measured data.</figcaption>
+</figure>
+
+<h3>What Anthropic measured</h3>
+
+<p>In <a href="https://www.anthropic.com/news/context-management" target="_blank">September 2025</a>, Anthropic released two features for Claude:</p>
+
+<ul>
+  <li><strong>Context editing</strong> clears old tool results automatically.</li>
+  <li><strong>The memory tool</strong> lets Claude save files outside the context window.</li>
+</ul>
+
+<p>Anthropic tested them on its own internal search tasks. Anthropic doesn't describe its baseline in detail.</p>
+
+<ul>
+  <li>Context editing alone improved performance by 29%.</li>
+  <li>Context editing plus the memory tool improved it by 39%.</li>
+  <li>In a 100-turn web search test, context editing cut token use by 84%. It also let agents finish tasks that would otherwise fail.</li>
+</ul>
+
+<p class="guardrail"><strong>💡 Good to know:</strong> These are a company's tests of its own product. Treat them as a guide, not a promise.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/ai-agent-memory-layer/images/anthropic-results.png" onerror="this.onerror=null;this.src='images/anthropic-results.png'" width="1400" height="718" loading="lazy" alt="Two bar charts. Performance gain over baseline: context editing alone plus 29 percent, memory tool plus context editing plus 39 percent. Tokens in a 100-turn web search task: 100 percent without context editing, 16 percent with it, an 84 percent reduction.">
+  <figcaption>Figure 5. Anthropic's own reported results, September 2025.</figcaption>
+</figure>
+
+<h2>🧰 Memory frameworks: Mem0 and LangMem</h2>
+
+<p><strong>In plain words:</strong> You don't have to build memory from scratch. Two popular options are Mem0 and LangChain's tools.</p>
+
+<h3>Mem0: a memory layer you plug in</h3>
+
+<ul>
+  <li>You send <a href="https://docs.mem0.ai/core-concepts/memory-operations/add" target="_blank">Mem0</a> a conversation. It uses an AI model that "pulls out key facts, decisions, or preferences to remember."</li>
+  <li>Later, it finds the most relevant ones.</li>
+  <li>Each memory gets labels, such as a <code>user_id</code>, so every user's memories stay separate.</li>
+  <li>You can use Mem0's hosted service, or run its free, public code yourself.</li>
+</ul>
+
+<h3>LangChain: memory built into the framework</h3>
+
+<ul>
+  <li>LangGraph is LangChain's framework for building agents. Memory is part of it.</li>
+  <li>Checkpointers save each chat, for example to your own <a href="https://docs.langchain.com/oss/python/langgraph/persistence" target="_blank">Postgres or SQLite</a> database.</li>
+  <li>Stores hold long-term memories that any chat can read.</li>
+  <li><a href="https://langchain-ai.github.io/langmem/" target="_blank">LangMem</a> adds tools to pull facts out of chats, keep user profiles, and let the agent improve its own instructions. That last one is procedural memory.</li>
+</ul>
+
+<p>Other memory tools exist too, such as <a href="https://docs.letta.com/" target="_blank">Letta</a> and <a href="https://help.getzep.com/" target="_blank">Zep</a>. The same questions apply.</p>
+
+<h3>How to choose</h3>
+
+<ul>
+  <li><strong>What do you already use?</strong> If you build with LangGraph, its memory is already there.</li>
+  <li><strong>Where must your data live?</strong> Both can run on your own servers.</li>
+  <li><strong>What is the memory about?</strong> See Figure 6.</li>
+</ul>
+
+<p class="guardrail"><strong>💡 Good to know:</strong> Don't choose by benchmarks, the standard tests used to compare tools. Mem0's own <a href="https://arxiv.org/abs/2504.19413" target="_blank">2025 paper</a> reports a 26% relative improvement over OpenAI on one. But that's a company testing itself.</p>
+
+<h2>🎯 Choosing the right memory for your agent</h2>
+
+<p><strong>In plain words:</strong> What your agent does decides what it needs to remember. Take a customer support agent.</p>
+
+<ul>
+  <li><strong>Episodic memory:</strong> past tickets and chats.</li>
+  <li><strong>Semantic memory:</strong> the customer's details, plan and preferences.</li>
+  <li><strong>Knowledge:</strong> RAG over your help articles and refund policy.</li>
+  <li><strong>Best fit:</strong> Mem0. The memory is mostly about the customer, and it must carry over between chats.</li>
+</ul>
+
+<p class="guardrail"><strong>💡 Rule of thumb:</strong> Pick Mem0 when the memory is about the <em>user</em>. Pick LangChain when it's about the <em>work</em>. Many systems use both.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/ai-agent-memory-layer/images/choose-memory.png" onerror="this.onerror=null;this.src='images/choose-memory.png'" width="1400" height="853" loading="lazy" alt="Decision chart. What will your agent remember? Mostly the user, such as plan, preferences and past tickets: Mem0, for example a support agent. Both the user and the task: Mem0 plus LangGraph. Mostly the work, such as steps, notes and rules: LangGraph plus LangMem, for example a research agent. Already on LangGraph? Its store can hold user facts too.">
+  <figcaption>Figure 6. Which memory setup fits which agent. Editorial rule of thumb.</figcaption>
+</figure>
+
+<h2>🔄 The memory lifecycle</h2>
+
+<p><strong>In plain words:</strong> Good memory is picky about what it saves. It also forgets on purpose.</p>
+
+<ul>
+  <li><strong>What to save:</strong> stable facts, decisions, corrections and outcomes.</li>
+  <li><strong>What to skip:</strong> small talk, one-off details and guesses. "The customer seemed annoyed" is a guess, not a fact.</li>
+  <li><strong>Note the source and date.</strong> Who said it, and when? Figure 7 shows an example.</li>
+  <li><strong>When facts clash, the newer confirmed fact wins.</strong> Say the customer said "Basic plan" in March, but billing shows Pro since June. Pro wins. Mem0's <a href="https://docs.mem0.ai/migration/platform-v2-to-v3" target="_blank">newer version</a> keeps old facts as history but ranks current ones higher.</li>
+  <li><strong>Forget on purpose.</strong> Mem0 lets you set an expiry date on each memory. Anthropic's <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool" target="_blank">docs</a> suggest you "periodically delete memory files that haven't been accessed in a long time." If a user asks you to delete their data, do it.</li>
+</ul>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/ai-agent-memory-layer/images/memory-record.png" onerror="this.onerror=null;this.src='images/memory-record.png'" width="1400" height="801" loading="lazy" alt="An example memory record. Fact: customer is on the Pro plan. Type: semantic memory. Source: billing system, confirmed. Saved on 2 June 2026. User and company IDs. Expires 2 June 2027. Replaces Basic plan, which the customer said in March 2026, kept as history.">
+  <figcaption>Figure 7. One saved memory and its labels. Illustrative example.</figcaption>
+</figure>
+
+<p class="guardrail"><strong>💡 Good to know:</strong> Some systems use <a href="https://padmashri23.github.io/under-the-hood/production-multi-agent-architecture/" target="_blank">several agents that work together</a>. Give each one private memory plus shared memory, and decide who can write what. A billing agent might write payment facts that a chat agent can only read.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/ai-agent-memory-layer/images/lifecycle.png" onerror="this.onerror=null;this.src='images/lifecycle.png'" width="1400" height="668" loading="lazy" alt="Six steps in a row: capture the conversation, filter (keep facts, decisions, corrections, outcomes; skip small talk and guesses), store with source, date, user and organisation, recall only what's relevant, update so the newer confirmed fact wins, and forget through expiry and deletion requests.">
+  <figcaption>Figure 8. The six steps of the memory lifecycle. Conceptual.</figcaption>
+</figure>
+
+<h2>🔒 Privacy, security and common mistakes</h2>
+
+<p><strong>In plain words:</strong> Memory holds personal data. Treat it with care.</p>
+
+<ul>
+  <li><strong>Don't save sensitive data you don't need.</strong> Anthropic advises you to "add validation that strips sensitive data before your handler writes the file." In other words, check and clean the data before saving it.</li>
+  <li><strong>Keep users and companies strictly apart.</strong> Filter every save and every lookup by user and company. Anthropic's <a href="https://claude.com/resources/articles/memory" target="_blank">Claude app</a> keeps a separate memory for each project.</li>
+  <li><strong>Let users see, fix and delete what's saved.</strong> Claude's app lets users view and edit a memory summary.</li>
+  <li><strong>Watch for memory poisoning.</strong> Say an agent reads a web page with <a href="https://padmashri23.github.io/under-the-hood/prompt-injection-enterprise-threat/" target="_blank">hidden instructions</a> and saves them as a "fact". Now the attack lasts beyond that one chat.</li>
+</ul>
+
+<p class="guardrail"><strong>💡 Good to know:</strong> OWASP, a well-known security group, lists memory poisoning as ASI06 in its <a href="https://genai.owasp.org/2025/12/09/owasp-top-10-for-agentic-applications-the-benchmark-for-agentic-security-in-the-age-of-autonomous-ai/" target="_blank">Top 10 for Agentic Applications</a>. Only save facts from trusted sources, and record where each one came from.</p>
+
+<figure class="tbl">
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr><th>Common mistake</th><th>What happens</th><th>Fix</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Saving everything</td><td>Searches return clutter</td><td>Save facts, decisions and corrections only</td></tr>
+      <tr><td>Never forgetting</td><td>The store fills with old facts</td><td>Expiry dates and regular cleanup</td></tr>
+      <tr><td>Trusting old memories</td><td>The agent uses an old plan or address</td><td>Check the date, and confirm before acting</td></tr>
+      <tr><td>Mixing users' data</td><td>One customer sees another's details</td><td>Filter every lookup by user and company</td></tr>
+    </tbody>
+  </table>
+  </div>
+</figure>
+
+<h2>📋 Memory at a glance</h2>
+
+<ul>
+  <li>Are your documents (knowledge) kept apart from user facts (memory)?</li>
+  <li>Do memories expire, and can users delete them?</li>
+  <li>Is every save and lookup limited to one user and one company?</li>
+  <li>Is text from web pages and emails checked before it becomes a memory?</li>
+</ul>
+
+<h3>Where to start</h3>
+
+<ol>
+  <li>Pick the one fact users repeat most, like their plan.</li>
+  <li>Save it with a source, a date and a user ID.</li>
+  <li>Load it at the start of each new chat.</li>
+  <li>Add summarising once chats get long.</li>
+  <li>Add expiry dates and a delete option.</li>
+</ol>
+
+<h2>✅ Conclusion</h2>
+
+<p>An AI agent that forgets isn't broken. That's how language models work. Memory is the code you add around it. Get one fact right, then see if the complaints stop.</p>
+
+<!-- ============================================================ -->
+<!-- SOURCES / FOOTER -->
+<!-- ============================================================ -->
+
+<footer class="article-footer">
+  <h2>Sources &amp; References</h2>
+  <ol>
+    <li>OpenAI. "Conversation state." Checked November 14, 2026. <a href="https://platform.openai.com/docs/guides/conversation-state" target="_blank">platform.openai.com</a></li>
+    <li>LangChain. "Memory overview." Checked November 14, 2026. <a href="https://docs.langchain.com/oss/python/langgraph/memory" target="_blank">docs.langchain.com</a></li>
+    <li>LangChain. "Persistence." Checked November 14, 2026. <a href="https://docs.langchain.com/oss/python/langgraph/persistence" target="_blank">docs.langchain.com</a></li>
+    <li>Sumers, Yao, Narasimhan and Griffiths. "Cognitive Architectures for Language Agents." arXiv, 2023 (TMLR version). <a href="https://arxiv.org/abs/2309.02427" target="_blank">arxiv.org</a></li>
+    <li>Lewis et al. "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks." arXiv, May 22, 2020. <a href="https://arxiv.org/abs/2005.11401" target="_blank">arxiv.org</a></li>
+    <li>Anthropic. "Effective context engineering for AI agents." September 29, 2025. <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank">anthropic.com</a></li>
+    <li>Anthropic. "Managing context on the Claude Developer Platform." September 29, 2025. <a href="https://www.anthropic.com/news/context-management" target="_blank">anthropic.com</a></li>
+    <li>Anthropic. "Memory tool." Claude Platform Docs. Checked November 14, 2026. <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool" target="_blank">platform.claude.com</a></li>
+    <li>Anthropic. "Bringing memory to teams." September 11, 2025, updated October 23, 2025. <a href="https://claude.com/resources/articles/memory" target="_blank">claude.com</a></li>
+    <li>Mem0. "Add Memory." Checked November 14, 2026. <a href="https://docs.mem0.ai/core-concepts/memory-operations/add" target="_blank">docs.mem0.ai</a></li>
+    <li>Mem0. "Platform: Migrating to the New Memory Algorithm." Checked November 14, 2026. <a href="https://docs.mem0.ai/migration/platform-v2-to-v3" target="_blank">docs.mem0.ai</a></li>
+    <li>Chhikara et al. "Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory." arXiv, April 28, 2025. <a href="https://arxiv.org/abs/2504.19413" target="_blank">arxiv.org</a></li>
+    <li>LangChain. "LangMem" (Introduction). Checked November 14, 2026. <a href="https://langchain-ai.github.io/langmem/" target="_blank">langchain-ai.github.io</a></li>
+    <li>Letta. "Letta Documentation." Checked November 14, 2026. <a href="https://docs.letta.com/" target="_blank">docs.letta.com</a></li>
+    <li>Zep. "Zep Documentation." Checked November 14, 2026. <a href="https://help.getzep.com/" target="_blank">help.getzep.com</a></li>
+    <li>OWASP Gen AI Security Project. "OWASP Top 10 for Agentic Applications – The Benchmark for Agentic Security in the Age of Autonomous AI." December 9, 2025. <a href="https://genai.owasp.org/2025/12/09/owasp-top-10-for-agentic-applications-the-benchmark-for-agentic-security-in-the-age-of-autonomous-ai/" target="_blank">genai.owasp.org</a></li>
+  </ol>
+
+  <p style="margin-top: 20px;"><strong>Note:</strong> Facts were checked on November 14, 2026. Memory products change often, so check the current docs before you build. Figures 1, 2, 3, 7 and 8 are conceptual diagrams or illustrative examples with made-up data. Figure 4 is an illustrative model, not measured data; its assumptions are printed on the image. Figure 5 shows Anthropic's own reported results from its internal evaluations, not independent tests. Figure 6 and the "which framework" rule of thumb are editorial guidance based on each project's documentation. Context editing was still in beta when checked; the memory tool no longer needed a beta header.</p>
+
+  <div class="tags">
+    <span>AI Agents</span>
+    <span>Agent Memory</span>
+    <span>Context Engineering</span>
+    <span>AI for Everyone</span>
+    <span>Deep Dive</span>
+  </div>
+
+  <p style="margin-top: 32px;"><a href="../">← More from Under the Hood</a></p>
+</footer>
+
+</div>
+
+</body>
+</html>

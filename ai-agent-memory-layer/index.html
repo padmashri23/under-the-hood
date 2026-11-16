@@ -348,20 +348,20 @@
 
 <h2>🗂️ The four types of memory</h2>
 
-<p><strong>In plain words:</strong> Researchers sort agent memory into four kinds, borrowed from human memory. The 2023 <a href="https://arxiv.org/abs/2309.02427" target="_blank">CoALA paper</a> uses all four, and LangChain's docs use three.</p>
+<p><strong>In plain words:</strong> Researchers sort agent memory into four kinds, borrowed from human memory. The 2023 <a href="https://arxiv.org/abs/2309.02427" target="_blank">CoALA paper</a> (Cognitive Architectures for Language Agents) uses all four. LangChain's docs use three: semantic, episodic and procedural. They call the chat short-term memory.</p>
 
 <ul>
-  <li><strong>Working memory:</strong> what the agent is using right now. In practice, that's the context window.</li>
+  <li><strong>Working memory:</strong> what the agent holds right now, usually the context window.</li>
   <li><strong>Episodic memory:</strong> past events. Example: "Last month, this customer was charged twice and got a refund."</li>
   <li><strong>Semantic memory:</strong> facts. Example: the customer is on the Pro plan and prefers email.</li>
-  <li><strong>Procedural memory:</strong> how to do things. Example: "Always check the order number before a refund." It lives in the system prompt, the agent's code and the model itself.</li>
+  <li><strong>Procedural memory:</strong> how to do things. Example: "Always check the order number before a refund." It lives in prompts, code and the model.</li>
 </ul>
 
-<p class="guardrail"><strong>💡 Good to know:</strong> Some agents can update their own procedural memory. They rewrite their own instructions based on feedback.</p>
+<p class="guardrail"><strong>💡 Good to know:</strong> Some agents rewrite their own instructions from feedback, updating their procedural memory.</p>
 
 <figure class="article-image">
   <img src="https://padmashri23.github.io/under-the-hood/ai-agent-memory-layer/images/four-types.png" onerror="this.onerror=null;this.src='images/four-types.png'" width="1400" height="851" loading="lazy" alt="Four cards. Working memory: today's chat, lives in the context window. Episodic memory: last month's double-charge ticket, lives in a store of past conversations. Semantic memory: customer is on the Pro plan, lives in a store of facts or profiles. Procedural memory: confirm the order ID before a refund, lives in the system prompt, code and model weights.">
-  <figcaption>Figure 2. The four memory types for one support agent. Examples are illustrative.</figcaption>
+  <figcaption>Figure 2. The four memory types for one support agent. Illustrative examples.</figcaption>
 </figure>
 
 <h2>📚 Knowledge vs memory</h2>
@@ -414,14 +414,14 @@
 
 <h3>What Anthropic measured</h3>
 
-<p>In <a href="https://www.anthropic.com/news/context-management" target="_blank">September 2025</a>, Anthropic released two features for Claude:</p>
+<p>On <a href="https://www.anthropic.com/news/context-management" target="_blank">September 29, 2025</a>, Anthropic added two features to the Claude Developer Platform, in public beta.</p>
 
 <ul>
   <li><strong>Context editing</strong> clears old tool results automatically.</li>
   <li><strong>The memory tool</strong> lets Claude save files outside the context window.</li>
 </ul>
 
-<p>Anthropic tested them on its own internal search tasks. Anthropic doesn't describe its baseline in detail.</p>
+<p>Anthropic tested them on internal search tasks, but doesn't detail its baseline.</p>
 
 <ul>
   <li>Context editing alone improved performance by 29%.</li>
@@ -429,7 +429,7 @@
   <li>In a 100-turn web search test, context editing cut token use by 84%. It also let agents finish tasks that would otherwise fail.</li>
 </ul>
 
-<p class="guardrail"><strong>💡 Good to know:</strong> These are a company's tests of its own product. Treat them as a guide, not a promise.</p>
+<p class="guardrail"><strong>💡 Good to know:</strong> These are Anthropic's own tests. Treat them as a guide, not a promise.</p>
 
 <figure class="article-image">
   <img src="https://padmashri23.github.io/under-the-hood/ai-agent-memory-layer/images/anthropic-results.png" onerror="this.onerror=null;this.src='images/anthropic-results.png'" width="1400" height="718" loading="lazy" alt="Two bar charts. Performance gain over baseline: context editing alone plus 29 percent, memory tool plus context editing plus 39 percent. Tokens in a 100-turn web search task: 100 percent without context editing, 16 percent with it, an 84 percent reduction.">
@@ -468,7 +468,7 @@
   <li><strong>What is the memory about?</strong> See Figure 6.</li>
 </ul>
 
-<p class="guardrail"><strong>💡 Good to know:</strong> Don't choose by benchmarks, the standard tests used to compare tools. Mem0's own <a href="https://arxiv.org/abs/2504.19413" target="_blank">2025 paper</a> reports a 26% relative improvement over OpenAI on one. But that's a company testing itself.</p>
+<p class="guardrail"><strong>💡 Good to know:</strong> Don't choose by benchmarks, the tests used to compare tools. On one, LOCOMO, Mem0's <a href="https://arxiv.org/abs/2504.19413" target="_blank">2025 paper</a> reports a 26% relative improvement over ChatGPT's memory, judged by an AI. That's Mem0 testing itself.</p>
 
 <h2>🎯 Choosing the right memory for your agent</h2>
 
@@ -495,9 +495,9 @@
 <ul>
   <li><strong>What to save:</strong> stable facts, decisions, corrections and outcomes.</li>
   <li><strong>What to skip:</strong> small talk, one-off details and guesses. "The customer seemed annoyed" is a guess, not a fact.</li>
-  <li><strong>Note the source and date.</strong> Who said it, and when? Figure 7 shows an example.</li>
-  <li><strong>When facts clash, the newer confirmed fact wins.</strong> Say the customer said "Basic plan" in March, but billing shows Pro since June. Pro wins. Mem0's <a href="https://docs.mem0.ai/migration/platform-v2-to-v3" target="_blank">newer version</a> keeps old facts as history but ranks current ones higher.</li>
-  <li><strong>Forget on purpose.</strong> Mem0 lets you set an expiry date on each memory. Anthropic's <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool" target="_blank">docs</a> suggest you "periodically delete memory files that haven't been accessed in a long time." If a user asks you to delete their data, do it.</li>
+  <li><strong>Note the source and date.</strong> See Figure 7.</li>
+  <li><strong>When facts clash, the newer confirmed fact wins.</strong> The customer said "Basic plan" in March, but billing shows Pro since June. Pro wins. Mem0's <a href="https://docs.mem0.ai/migration/platform-v2-to-v3" target="_blank">newer version</a> keeps old facts as history but ranks current ones higher.</li>
+  <li><strong>Forget on purpose.</strong> Mem0 lets you give each memory an <a href="https://docs.mem0.ai/platform/features/memory-expiration" target="_blank">expiry date</a>, but that only hides it. Anthropic's <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool" target="_blank">docs</a> suggest you "periodically delete memory files that haven't been accessed in a long time." If a user asks you to delete their data, use Mem0's <a href="https://docs.mem0.ai/core-concepts/memory-operations/delete" target="_blank">delete call</a>.</li>
 </ul>
 
 <figure class="article-image">
@@ -582,6 +582,8 @@
     <li>Anthropic. "Bringing memory to teams." September 11, 2025, updated October 23, 2025. <a href="https://claude.com/resources/articles/memory" target="_blank">claude.com</a></li>
     <li>Mem0. "Add Memory." Checked November 14, 2026. <a href="https://docs.mem0.ai/core-concepts/memory-operations/add" target="_blank">docs.mem0.ai</a></li>
     <li>Mem0. "Platform: Migrating to the New Memory Algorithm." Checked November 14, 2026. <a href="https://docs.mem0.ai/migration/platform-v2-to-v3" target="_blank">docs.mem0.ai</a></li>
+    <li>Mem0. "Memory Expiration in Mem0." Checked November 14, 2026. <a href="https://docs.mem0.ai/platform/features/memory-expiration" target="_blank">docs.mem0.ai</a></li>
+    <li>Mem0. "Delete Memory Operation." Checked November 14, 2026. <a href="https://docs.mem0.ai/core-concepts/memory-operations/delete" target="_blank">docs.mem0.ai</a></li>
     <li>Chhikara et al. "Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory." arXiv, April 28, 2025. <a href="https://arxiv.org/abs/2504.19413" target="_blank">arxiv.org</a></li>
     <li>LangChain. "LangMem" (Introduction). Checked November 14, 2026. <a href="https://langchain-ai.github.io/langmem/" target="_blank">langchain-ai.github.io</a></li>
     <li>Letta. "Letta Documentation." Checked November 14, 2026. <a href="https://docs.letta.com/" target="_blank">docs.letta.com</a></li>

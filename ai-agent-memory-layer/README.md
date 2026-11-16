@@ -16,7 +16,7 @@ A beginner-friendly guide to giving an AI agent a memory. Language models are st
 8. **Privacy, security and common mistakes:** sensitive data, tenant separation, user controls, memory poisoning (OWASP ASI06)
 9. **Memory at a glance:** a four-question design checklist and five "Where to start" steps, then a short conclusion
 
-Written for beginners: a glossary, every technical term explained in plain words, everyday comparisons (the context window as a desk, long-term memory as a filing cabinet, RAG as an open-book exam), and the same shape in every section: "In plain words", bullets, then a "Good to know" note. About 9 words per sentence on average (Flesch reading ease about 71). Links to the tool design, multi-agent and prompt injection articles where they go deeper. About 1,798 words above Sources & References, counting headings, captions and tables. No video.
+Written for beginners: a glossary, every technical term explained in plain words, everyday comparisons (the context window as a desk, long-term memory as a filing cabinet, RAG as an open-book exam), and the same shape in every section: "In plain words", bullets, then a "Good to know" note. About 9 words per sentence on average (Flesch reading ease about 71). Links to the tool design, multi-agent and prompt injection articles where they go deeper. About 1,800 words above Sources & References, counting headings, captions and tables. No video.
 
 ## Visuals
 

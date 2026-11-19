@@ -432,7 +432,7 @@
 
 <p>Pinning locks a tool to one exact version, so it only changes when you choose.</p>
 
-<p>In September 2025, a fake add-on called <a href="https://thehackernews.com/2025/09/first-malicious-mcp-server-found.html" target="_blank">postmark-mcp</a> copied the name of a real Postmark library. Koi Security found that version 1.0.16 added one line that secretly copied every email to the attacker. Teams pinned to an earlier version wouldn't have pulled that update automatically.</p>
+<p>In September 2025, a fake add-on called <a href="https://thehackernews.com/2025/09/first-malicious-mcp-server-found.html" target="_blank">postmark-mcp</a> <a href="https://postmarkapp.com/blog/information-regarding-malicious-postmark-mcp-package" target="_blank">posed as an official Postmark tool</a> on npm, a public code store. Koi Security found that version 1.0.16 added one line that secretly copied every email to the attacker. Teams pinned to an earlier version wouldn't have pulled it automatically.</p>
 
 <h2>⏱️ Action control: limits on what agents can do</h2>
 
@@ -470,7 +470,7 @@
 
 <p>Show the exact action and the reason in one line: "Refund ₹4,200 to order 1187. The customer was charged twice."</p>
 
-<p>Too many requests cause approval fatigue: people stop paying close attention to what they approve. Anthropic <a href="https://www.anthropic.com/engineering/claude-code-sandboxing" target="_blank">warned about this</a> with Claude Code, its coding tool. Its sandbox cut permission prompts by 84% in internal use. Fewer prompts means more attention on each.</p>
+<p>Too many requests cause approval fatigue: people stop paying close attention to what they approve. Anthropic <a href="https://www.anthropic.com/engineering/claude-code-sandboxing" target="_blank">warned about this</a> with Claude Code, its coding tool. Its sandbox cut permission prompts by 84% in internal use. Fewer prompts, more attention on each.</p>
 
 <figure class="article-image">
   <img src="https://padmashri23.github.io/under-the-hood/multi-agent-guardrails-production/images/approval-matrix.png" onerror="this.onerror=null;this.src='images/approval-matrix.png'" width="1400" height="759" loading="lazy" alt="Two by two grid of impact against how easy an action is to undo. Low impact and easy to undo: automatic. Low impact, hard to undo: automatic with limits. High impact, easy to undo: review after. High impact, hard to undo, such as payments, refunds, deleting data and customer emails: approve before. Side note: escalate to a person on low confidence, and keep the approve-before corner small.">
@@ -519,7 +519,7 @@
 
 <figure class="article-image">
   <img src="https://padmashri23.github.io/under-the-hood/multi-agent-guardrails-production/images/checklist.png" onerror="this.onerror=null;this.src='images/checklist.png'" width="1400" height="917" loading="lazy" alt="One-page checklist with tick boxes in eight groups: input, scope and trust, permissions, action control, people, output, data and privacy, and audit. Items include injection checks on all inputs, written roles, tools enforced by the tool list, schema checks between agents, the Rule of Two, tool tiers, one key per agent, sandboxing, vetted and pinned MCP servers, caps, step limits and a kill switch, argument checks, approval for money and deletion, grounding, masking, memory checks, data location and one trace ID per request.">
-  <figcaption>Figure 7. The one-page guardrails checklist to share.</figcaption>
+  <figcaption>Figure 7. The one-page guardrails checklist.</figcaption>
 </figure>
 
 <h2>✅ Conclusion</h2>
@@ -547,6 +547,7 @@
     <li>Meta. "Agents Rule of Two: A Practical Approach to AI Agent Security." October 31, 2025. <a href="https://ai.meta.com/blog/practical-ai-agent-security/" target="_blank">ai.meta.com</a></li>
     <li>Anthropic. "Beyond permission prompts: making Claude Code more secure and autonomous." October 20, 2025. <a href="https://www.anthropic.com/engineering/claude-code-sandboxing" target="_blank">anthropic.com</a></li>
     <li>Model Context Protocol. "Tools." Specification, version 2026-07-28. Checked November 18, 2026. <a href="https://modelcontextprotocol.io/specification/2026-07-28/server/tools" target="_blank">modelcontextprotocol.io</a></li>
+    <li>Postmark. "Security Alert: Malicious 'postmark-mcp' npm Package Impersonating Postmark." September 25, 2025. <a href="https://postmarkapp.com/blog/information-regarding-malicious-postmark-mcp-package" target="_blank">postmarkapp.com</a></li>
     <li>The Hacker News. "First Malicious MCP Server Found Stealing Emails in Rogue Postmark-MCP Package." September 29, 2025. <a href="https://thehackernews.com/2025/09/first-malicious-mcp-server-found.html" target="_blank">thehackernews.com</a></li>
     <li>"Art. 5 GDPR – Principles relating to processing of personal data." Checked November 18, 2026. <a href="https://gdpr-info.eu/art-5-gdpr/" target="_blank">gdpr-info.eu</a></li>
     <li>"Art. 44 GDPR – General principle for transfers." Checked November 18, 2026. <a href="https://gdpr-info.eu/art-44-gdpr/" target="_blank">gdpr-info.eu</a></li>

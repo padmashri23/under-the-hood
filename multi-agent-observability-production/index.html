@@ -299,8 +299,8 @@
     <li>Record every step of every request.</li>
     <li>Give each request one ID, and pass it everywhere.</li>
     <li>Test before launch, then check real answers.</li>
-    <li>Turn every real failure into a new test.</li>
-    <li>Hide personal data before you store traces.</li>
+    <li>Turn every failure into a new test.</li>
+    <li>Hide personal data before storing traces.</li>
   </ul>
 </div>
 
@@ -329,8 +329,8 @@
 
 <ul>
   <li>Agents don't follow the same steps every time. Anthropic's engineers wrote that this "makes debugging harder."</li>
-  <li>Running the request again may not show you the bug.</li>
-  <li>Plain logs show single events, not which request each belongs to.</li>
+  <li>Rerunning the request may not show the bug.</li>
+  <li>Logs show single events, not which request each belongs to.</li>
 </ul>
 
 <h3>📖 Words you'll see in this article</h3>
@@ -341,9 +341,8 @@
     <thead><tr><th>Term</th><th>What it means</th></tr></thead>
     <tbody>
       <tr><td>LLM</td><td>Large language model, the AI behind each agent.</td></tr>
-      <tr><td>Token</td><td>A small chunk of text, about one word.</td></tr>
+      <tr><td>Token</td><td>A small chunk of text, often part of a word.</td></tr>
       <tr><td>MCP server</td><td>An add-on that gives agents extra tools.</td></tr>
-      <tr><td>PII</td><td>Personal data, like a name or phone number.</td></tr>
     </tbody>
   </table>
   </div>
@@ -403,8 +402,8 @@
 <ul>
   <li><strong>Routing:</strong> record which helper got the work, and the reason given.</li>
   <li><strong>Tool choice:</strong> record the tools on offer, the one picked, and what it sent.</li>
-  <li><strong>Loops:</strong> a loop is an agent repeating the same step again and again. Anthropic saw its agents "continuing when they already had sufficient results".</li>
-  <li><strong>Context:</strong> everything the agent could see, like its instructions and documents. If it ignores a fact, check the fact was there.</li>
+  <li><strong>Loops and overruns:</strong> watch for an agent repeating the same step, or not stopping. Anthropic saw its agents "continuing when they already had sufficient results".</li>
+  <li><strong>Context:</strong> everything the agent could see, like its instructions and documents. If it ignores a fact, check it was there.</li>
 </ul>
 
 
@@ -415,13 +414,13 @@
 <ul>
   <li><strong>Handoffs:</strong> when one agent passes work on, it passes the trace ID too. This is called <a href="https://opentelemetry.io/docs/concepts/context-propagation/" target="_blank">context propagation</a>.</li>
   <li><strong>The format:</strong> a short text called <code>traceparent</code>, from the <a href="https://www.w3.org/TR/trace-context/" target="_blank">W3C</a> web standards group. It holds the trace ID and the caller's step ID.</li>
-  <li><strong>Parallel agents:</strong> helpers working at the same time each get their own span, under the same parent.</li>
+  <li><strong>Parallel agents:</strong> helpers working at once each get their own span, under the same parent.</li>
   <li><strong>Queues:</strong> a queue holds jobs to run later. Put the trace ID in each job, or the story splits in two.</li>
 </ul>
 
 <ul>
   <li><strong>MCP servers:</strong> each MCP request has a <a href="https://modelcontextprotocol.io/seps/414-request-meta" target="_blank">set place</a> for the trace ID, a field called <code>params._meta</code>.</li>
-  <li><strong>Other APIs:</strong> an API is how programs talk to each other. Send the <code>traceparent</code> with each call, as in the code below.</li>
+  <li><strong>Other APIs:</strong> an API is how programs talk to each other. Send the <code>traceparent</code> with each call (see the code).</li>
 </ul>
 
 <h3>What it looks like in code</h3>
@@ -454,7 +453,7 @@ with tracer.start_as_current_span("invoke_agent refund"):
   <table>
     <thead><tr><th>Area</th><th>What to watch</th></tr></thead>
     <tbody>
-      <tr><td>Latency (speed)</td><td>How long requests, agents and tools take. Watch the slowest 5% (p95), not the average.</td></tr>
+      <tr><td>Latency (speed)</td><td>How long requests, agents and tools take. Watch the slowest 5% (p95), not just the average.</td></tr>
       <tr><td>Cost</td><td>Tokens and money per request and per agent.</td></tr>
       <tr><td>Reliability</td><td>Errors, retries, timeouts and stuck loops.</td></tr>
       <tr><td>Quality</td><td>Tasks finished, cases passed to a person (escalation rate), grader scores, user ratings.</td></tr>
@@ -512,7 +511,7 @@ with tracer.start_as_current_span("invoke_agent refund"):
 <ul>
   <li><strong>Score a sample:</strong> grade a small share of answers. Tools like <a href="https://langfuse.com/docs/evaluation/evaluation-methods/llm-as-a-judge" target="_blank">Langfuse</a> let you pick which.</li>
   <li><strong>Use feedback:</strong> attach thumbs-downs and reopened tickets to the trace.</li>
-  <li><strong>Watch for drift:</strong> drift is quality slowly getting worse, with no errors. A model update or new kinds of questions can cause it. Chart the score weekly and alert on drops.</li>
+  <li><strong>Watch for drift:</strong> drift is quality slowly getting worse, with no errors. Model updates or new kinds of questions can cause it. In one <a href="https://arxiv.org/abs/2307.09009" target="_blank">2023 study</a>, GPT-4's accuracy on a maths task fell from 84% to 51% between two versions. Chart the score weekly and alert on drops.</li>
 </ul>
 
 <figure class="article-image">
@@ -531,7 +530,7 @@ with tracer.start_as_current_span("invoke_agent refund"):
   <li><strong>Scan the timeline.</strong> Look for errors, slow steps or repeats.</li>
   <li><strong>Spot the break.</strong> The refund tool timed out. Yet the next step told the customer the refund was approved.</li>
   <li><strong>Find the root cause,</strong> the real reason. The agent's instructions never said what to do if the tool fails.</li>
-  <li><strong>Fix it, then add a test,</strong> so the bug can't quietly come back.</li>
+  <li><strong>Fix it, then add a test,</strong> so the bug can't come back.</li>
 </ol>
 
 <figure class="article-image">
@@ -546,12 +545,12 @@ with tracer.start_as_current_span("invoke_agent refund"):
 <ul>
   <li><strong>Only record text if you need it:</strong> OpenTelemetry's <a href="https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md" target="_blank">guidelines</a> say not to record prompts and answers by default. This text is "likely to contain sensitive information".</li>
   <li><strong>Mask before you store:</strong> masking means swapping personal data for a placeholder, like [EMAIL]. Langfuse can <a href="https://langfuse.com/docs/observability/features/masking" target="_blank">mask data</a> before it leaves your app.</li>
-  <li><strong>Set a retention period:</strong> how long you keep traces. Europe's privacy law, GDPR, says to keep personal data "<a href="https://gdpr-info.eu/art-5-gdpr/" target="_blank">for no longer than is necessary</a>". LangSmith's cloud, for example, keeps traces <a href="https://docs.langchain.com/langsmith/usage-and-billing" target="_blank">14 or 180 days</a>.</li>
+  <li><strong>Set a retention period:</strong> how long you keep traces. Europe's privacy law, GDPR, says to keep personal data "<a href="https://gdpr-info.eu/art-5-gdpr/" target="_blank">for no longer than is necessary</a>". LangSmith's cloud keeps traces <a href="https://docs.langchain.com/langsmith/usage-and-billing" target="_blank">14 or 180 days</a>.</li>
   <li><strong>Limit access:</strong> only people who need raw traces should see them.</li>
 </ul>
 
 <figure class="article-image">
-  <img src="https://padmashri23.github.io/under-the-hood/multi-agent-observability-production/images/masking.png" onerror="this.onerror=null;this.src='images/masking.png'" width="1400" height="586" loading="lazy" alt="Before and after masking one span input. Before: Hi, I'm Priya Nair, with an email address, a card number and a phone number, all highlighted as personal data. After: Hi, I'm [NAME], my email is [EMAIL], refund order 1187 to my card [CARD], call me on [PHONE]. The order number stays so the request can still be debugged.">
+  <img src="https://padmashri23.github.io/under-the-hood/multi-agent-observability-production/images/masking.png" onerror="this.onerror=null;this.src='images/masking.png'" width="1400" height="621" loading="lazy" alt="Before and after masking one span input. Before: Hi, I'm Priya Nair, with an email address, a card number and a phone number, all highlighted as personal data. After: Hi, I'm [NAME], my email is [EMAIL], refund order 1187 to my card [CARD], call me on [PHONE]. The order number stays so the request can still be debugged.">
   <figcaption>Figure 7. Masking one span. Made-up example.</figcaption>
 </figure>
 
@@ -575,12 +574,12 @@ with tracer.start_as_current_span("invoke_agent refund"):
     <thead><tr><th>Platform</th><th>What it covers</th><th>Free option</th><th>Paid plans from</th></tr></thead>
     <tbody>
       <tr><td>Langfuse</td><td><a href="https://langfuse.com/docs" target="_blank">Tracing, prompt management and evaluation</a></td><td><a href="https://langfuse.com/self-hosting" target="_blank">Self-host</a> free, or a <a href="https://langfuse.com/pricing" target="_blank">free cloud plan</a>: 50k units (traces, steps or scores) a month</td><td>$29 a month</td></tr>
-      <tr><td>Arize Phoenix</td><td><a href="https://github.com/Arize-ai/phoenix" target="_blank">Tracing, evaluation and experiments</a></td><td>Self-host free</td><td>Arize AX (managed) is priced separately</td></tr>
-      <tr><td>LangSmith</td><td>Tracing, <a href="https://docs.langchain.com/langsmith/evaluation" target="_blank">evaluation</a> and monitoring, from the LangChain team</td><td><a href="https://www.langchain.com/pricing" target="_blank">Free plan</a>: 1 seat, 5k traces a month</td><td>$39 per seat a month</td></tr>
+      <tr><td>Arize Phoenix</td><td><a href="https://github.com/Arize-ai/phoenix" target="_blank">Tracing, evaluation and experiments</a></td><td>Self-host free</td><td>Arize AX (managed): see <a href="https://arize.com/pricing" target="_blank">Arize's pricing page</a></td></tr>
+      <tr><td>LangSmith</td><td>Tracing, <a href="https://docs.langchain.com/langsmith/evaluation" target="_blank">evaluation</a> and monitoring, from the LangChain team</td><td><a href="https://www.langchain.com/pricing" target="_blank">Free plan</a>: 1 seat, 5k traces a month included</td><td>$39 per seat a month</td></tr>
     </tbody>
   </table>
   </div>
-  <figcaption>Table 1. All three accept OpenTelemetry data. Prices checked November 20, 2026.</figcaption>
+  <figcaption>Table 1. All three work with OpenTelemetry. Prices checked November 20, 2026.</figcaption>
 </figure>
 
 <ul>
@@ -592,7 +591,7 @@ with tracer.start_as_current_span("invoke_agent refund"):
 <h3>How to choose</h3>
 
 <ul>
-  <li><strong>Need to keep data on your own servers?</strong> Pick Langfuse or Phoenix.</li>
+  <li><strong>Need data on your own servers?</strong> Pick Langfuse or Phoenix.</li>
   <li><strong>Built with LangChain or LangGraph</strong> (popular agent toolkits)? Pick LangSmith.</li>
   <li><strong>Whatever you pick,</strong> check it supports OpenTelemetry, so you can switch later.</li>
 </ul>
@@ -635,17 +634,15 @@ with tracer.start_as_current_span("invoke_agent refund"):
     <li>OpenTelemetry. GenAI semantic conventions: GenAI spans (gen-ai-spans.md), status Development. Checked November 20, 2026. <a href="https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md" target="_blank">github.com</a></li>
     <li>OpenTelemetry. GenAI semantic conventions: Model Context Protocol (mcp.md), status Development. Checked November 20, 2026. <a href="https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/mcp.md" target="_blank">github.com</a></li>
     <li>Model Context Protocol. "SEP-414: Document OpenTelemetry Trace Context Propagation Conventions." Final, created April 25, 2025. <a href="https://modelcontextprotocol.io/seps/414-request-meta" target="_blank">modelcontextprotocol.io</a></li>
-    <li>OpenAI. "Tracing." OpenAI Agents SDK documentation. Checked November 20, 2026. <a href="https://openai.github.io/openai-agents-python/tracing/" target="_blank">openai.github.io</a></li>
     <li>Zheng et al. "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena." NeurIPS 2023 Datasets and Benchmarks Track. arXiv, June 9, 2023. <a href="https://arxiv.org/abs/2306.05685" target="_blank">arxiv.org</a></li>
+    <li>Chen, Zaharia and Zou. "How is ChatGPT's behavior changing over time?" arXiv, July 18, 2023 (v3, October 31, 2023). <a href="https://arxiv.org/abs/2307.09009" target="_blank">arxiv.org</a></li>
     <li>Langfuse. "Langfuse Overview." Checked November 20, 2026. <a href="https://langfuse.com/docs" target="_blank">langfuse.com</a></li>
     <li>Langfuse. "Self-host Langfuse (Open Source LLM Observability)." Checked November 20, 2026. <a href="https://langfuse.com/self-hosting" target="_blank">langfuse.com</a></li>
     <li>Langfuse. "Pricing." Checked November 20, 2026. <a href="https://langfuse.com/pricing" target="_blank">langfuse.com</a></li>
     <li>Langfuse. LICENSE file, langfuse/langfuse repository. Checked November 20, 2026. <a href="https://github.com/langfuse/langfuse/blob/main/LICENSE" target="_blank">github.com</a></li>
-    <li>Langfuse. "Langfuse joins ClickHouse." January 16, 2026. <a href="https://langfuse.com/blog/joining-clickhouse" target="_blank">langfuse.com</a></li>
     <li>Langfuse. "OpenTelemetry (OTEL) for LLM Observability." Checked November 20, 2026. <a href="https://langfuse.com/integrations/native/opentelemetry" target="_blank">langfuse.com</a></li>
     <li>Langfuse. "LLM-as-a-Judge." Checked November 20, 2026. <a href="https://langfuse.com/docs/evaluation/evaluation-methods/llm-as-a-judge" target="_blank">langfuse.com</a></li>
     <li>Langfuse. "Masking sensitive LLM data." Checked November 20, 2026. <a href="https://langfuse.com/docs/observability/features/masking" target="_blank">langfuse.com</a></li>
-    <li>Langfuse. "Data Retention." Checked November 20, 2026. <a href="https://langfuse.com/docs/administration/data-retention" target="_blank">langfuse.com</a></li>
     <li>Arize AI. Arize-ai/phoenix repository README. Checked November 20, 2026. <a href="https://github.com/Arize-ai/phoenix" target="_blank">github.com</a></li>
     <li>Arize AI. Phoenix LICENSE file, "Elastic License 2.0 (ELv2)." Checked November 20, 2026. <a href="https://github.com/Arize-ai/phoenix/blob/main/LICENSE" target="_blank">github.com</a></li>
     <li>LangChain. "LangSmith Observability." Checked November 20, 2026. <a href="https://docs.langchain.com/langsmith/observability" target="_blank">docs.langchain.com</a></li>
@@ -657,7 +654,7 @@ with tracer.start_as_current_span("invoke_agent refund"):
     <li>"Art. 5 GDPR – Principles relating to processing of personal data." Checked November 20, 2026. <a href="https://gdpr-info.eu/art-5-gdpr/" target="_blank">gdpr-info.eu</a></li>
   </ol>
 
-  <p style="margin-top: 20px;"><strong>Note:</strong> Facts were checked on November 20, 2026. The OpenTelemetry GenAI and MCP conventions are still in Development, and observability platforms change their plans and features often, so check the current versions before you build. Figure 1 shows Anthropic's approximate token multipliers from its own research system; your numbers will differ. Figures 3 and 5 are illustrative models, not measured data: the trace, its timings, its prices ($3 per million input tokens and $15 per million output tokens) and the weekly pass rates are made up. Figures 2, 4 and 6 are conceptual diagrams, and the checklist (Figure 8) is editorial guidance. The support team, the missing-refund ticket and the masking example in Figure 7 are made up; 4111 1111 1111 1111 is a standard test card number. The Python snippet is a sketch based on OpenTelemetry's Python documentation and assumes the SDK is already configured. Prices come from the Langfuse and LangChain pricing pages on November 20, 2026, and may change. Arize's pricing page could not be read, so no Arize AX price is given. Arize describes Phoenix as open source; its Elastic License 2.0 terms are summarized here from the license file, and this is not legal advice. LangSmith retention figures are for its cloud service; its BYOC and self-hosted options list 400 days for extended retention.</p>
+  <p style="margin-top: 20px;"><strong>Note:</strong> Facts were checked on November 20, 2026. The OpenTelemetry GenAI and MCP conventions are still in Development, and observability platforms change their plans and features often, so check the current versions before you build. Figure 1 shows Anthropic's approximate token multipliers from its own research system; your numbers will differ. Figures 3 and 5 are illustrative models, not measured data: the trace, its timings, its prices ($3 per million input tokens and $15 per million output tokens) and the weekly pass rates are made up. Figures 2, 4 and 6 are conceptual diagrams, and the checklist (Figure 8) is editorial guidance. The support team, the missing-refund ticket and the masking example in Figure 7 are made up; 4111 1111 1111 1111 is a standard test card number. The Python snippet is a sketch based on OpenTelemetry's Python documentation and assumes the SDK is already configured. Prices come from the Langfuse and LangChain pricing pages on November 20, 2026, and may change. Arize's pricing page could not be read when this was checked, so no Arize AX price is given; the link is provided for readers. The phone number in Figure 7 (+91 00000 00000) is deliberately not a working number. Arize describes Phoenix as open source; its Elastic License 2.0 terms are summarized here from the license file, and this is not legal advice. LangSmith retention figures are for its cloud service; its BYOC and self-hosted options list 400 days for extended retention.</p>
 
   <div class="tags">
     <span>AI Agents</span>

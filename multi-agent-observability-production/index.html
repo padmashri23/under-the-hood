@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="How to trace, debug and evaluate multi-agent AI systems in production: traces and spans, trace context across agents and MCP servers, key metrics, offline and online evaluation, privacy, and Langfuse, Arize Phoenix and LangSmith compared.">
+<meta property="og:title" content="Observability for Multi-Agent Systems: How to Trace, Debug and Evaluate Every Agent in Production">
+<meta property="og:description" content="When a team of agents gets an answer wrong, here's how to find the one that slipped.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://padmashri23.github.io/under-the-hood/multi-agent-observability-production/">
+<meta property="og:image" content="https://padmashri23.github.io/under-the-hood/multi-agent-observability-production/images/social-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Observability for Multi-Agent Systems: How to Trace, Debug and Evaluate Every Agent in Production">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://padmashri23.github.io/under-the-hood/multi-agent-observability-production/images/social-card.png">
+<title>Observability for Multi-Agent Systems: How to Trace, Debug and Evaluate Every Agent in Production</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --bg-card: #111113;
+    --bg-elevated: #18181b;
+    --text-primary: #e4e4e7;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    --accent: #4A9EFF;
+    --accent-warm: #f59e0b;
+    --accent-green: #22c55e;
+    --accent-purple: #a855f7;
+    --accent-red: #ef4444;
+    --accent-teal: #14b8a6;
+    --border: #27272a;
+    --serif: 'Instrument Serif', 'Georgia', serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--sans);
+    font-size: 18px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .article-container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Header */
+  .article-header {
+    padding: 80px 0 40px;
+    text-align: center;
+  }
+  .article-header .tag {
+    display: inline-block;
+    background: var(--accent);
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 4px;
+    margin-bottom: 32px;
+  }
+  .article-header h1 {
+    font-family: var(--serif);
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1.15;
+    font-weight: 400;
+    margin-bottom: 24px;
+    color: #fff;
+  }
+  .article-header .subtitle {
+    font-size: 19px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 680px;
+    margin: 0 auto 32px;
+    font-weight: 300;
+  }
+  .article-header .meta {
+    font-size: 14px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  /* Typography */
+  p { margin-bottom: 20px; color: var(--text-primary); }
+  strong { color: #fff; font-weight: 600; }
+  em { color: var(--text-secondary); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .drop-cap::first-letter {
+    font-family: var(--serif);
+    font-size: 72px;
+    float: left;
+    line-height: 0.8;
+    margin: 4px 12px 0 0;
+    color: #fff;
+    font-weight: 400;
+  }
+
+  ul, ol { margin: 16px 0 24px 28px; color: var(--text-primary); }
+  li { margin-bottom: 8px; }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 400;
+    line-height: 1.2;
+    color: #fff;
+    margin: 64px 0 20px;
+  }
+  h3 {
+    font-family: var(--sans);
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    margin: 40px 0 16px;
+  }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+  /* Guardrail line */
+  .guardrail {
+    background: var(--bg-card);
+    border-left: 3px solid var(--accent-teal);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 20px;
+    margin: 24px 0 32px;
+    font-size: 16px;
+    color: var(--text-secondary);
+  }
+  .guardrail strong { color: var(--accent-teal); }
+
+  /* Key points box */
+  .keypoints {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 22px 26px 8px;
+    margin: 8px 0 24px;
+  }
+  .keypoints .kp-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .keypoints ul { margin: 0 0 14px 20px; font-size: 16px; }
+  .keypoints li { margin-bottom: 8px; color: var(--text-secondary); }
+
+  /* Image figures */
+  .article-image {
+    margin: 48px -40px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+  .article-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .article-image figcaption {
+    padding: 14px 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    line-height: 1.5;
+  }
+
+  /* Table figures */
+  .tbl {
+    margin: 48px 0;
+  }
+  .table-wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    line-height: 1.5;
+    background: var(--bg-card);
+  }
+  thead { background: var(--bg-elevated); }
+  th {
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border);
+    vertical-align: bottom;
+  }
+  td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { color: #fff; font-weight: 500; }
+  td small { display: block; color: var(--text-muted); font-size: 12px; font-weight: 400; }
+  .tbl figcaption {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  /* Footer */
+  .article-footer {
+    padding: 48px 0 80px;
+    border-top: 1px solid var(--border);
+    margin-top: 64px;
+  }
+  .article-footer h2 {
+    font-size: 30px;
+    margin: 0 0 24px;
+  }
+  .article-footer h3 {
+    font-family: var(--sans);
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 20px;
+  }
+  .article-footer p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+  .article-footer ol {
+    margin: 0 0 24px 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .article-footer li { margin-bottom: 10px; }
+  .tags { margin-top: 24px; }
+  .tags span {
+    display: inline-block;
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin: 4px 4px 4px 0;
+    border: 1px solid var(--border);
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .article-image { margin: 40px -24px; border-radius: 0; border-left: none; border-right: none; }
+  }
+  @media (max-width: 760px) {
+    .table-wrapper { margin: 0 -24px; border-radius: 0; border-left: none; border-right: none; }
+    .drop-cap::first-letter { font-size: 56px; }
+    h2 { font-size: 26px; margin-top: 48px; }
+  }
+  code { font-family: var(--mono); font-size: 0.85em; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; color: var(--text-primary); }
+  .article-image video { width: 100%; height: auto; display: block; background: #F7F0E4; }
+  .article-footer .refs-label { font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
+  pre { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; margin: 20px 0 24px; overflow-x: auto; font-size: 14px; line-height: 1.6; }
+  pre code { background: none; border: none; padding: 0; font-size: 1em; }
+</style>
+</head>
+<body>
+
+<div class="article-container">
+
+<header class="article-header">
+  <span class="tag">Deep Dive</span>
+  <h1>Observability for Multi-Agent Systems: How to Trace, Debug and Evaluate Every Agent in Production</h1>
+  <p class="subtitle">When a team of AI agents gets an answer wrong, here's how to find the one that slipped.</p>
+  <p class="meta">Researched &amp; written November 2026 · ~9 min read · Sources cited throughout</p>
+</header>
+
+<div class="keypoints">
+  <div class="kp-title">Key points</div>
+  <ul>
+    <li>Record every step of every request.</li>
+    <li>Give each request one ID, and pass it everywhere.</li>
+    <li>Test before launch, then check real answers.</li>
+    <li>Turn every real failure into a new test.</li>
+    <li>Hide personal data before you store traces.</li>
+  </ul>
+</div>
+
+<h2>🔍 Why observability is harder in multi-agent systems</h2>
+
+<p class="drop-cap">Here's a made-up support ticket: "Your bot said my refund was approved. A week later, still no money." You open the logs: thousands of lines from a dozen agents. Which ones belong to this customer?</p>
+
+<p><strong>In plain words:</strong> Observability means you can see inside a running system and explain what it did. With a team of AI agents, that gets hard fast.</p>
+
+<h3>One request, many moving parts</h3>
+
+<p>We'll reuse the made-up support team from our <a href="https://padmashri23.github.io/under-the-hood/multi-agent-guardrails-production/" target="_blank">guardrails article</a>. A lead agent, the orchestrator, passes work to three helper agents, or sub-agents: triage, research and refunds.</p>
+
+<ul>
+  <li>One message can lead to many model calls and tool calls.</li>
+  <li>A mistake can start in one agent and show up two agents later.</li>
+  <li>Anthropic found agents use about 4 times the tokens of a chat. <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">Multi-agent systems use about 15 times</a>.</li>
+</ul>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/multi-agent-observability-production/images/token-multiplier.png" onerror="this.onerror=null;this.src='images/token-multiplier.png'" width="1400" height="638" loading="lazy" alt="Bar chart of token use per task compared with a chat, from Anthropic's data: chat 1 times, single agent about 4 times, multi-agent system about 15 times.">
+  <figcaption>Figure 1. Tokens per task vs. a chat. Anthropic data, June 2025.</figcaption>
+</figure>
+
+<h3>Same question, different path</h3>
+
+<ul>
+  <li>Agents don't follow the same steps every time. Anthropic's engineers wrote that this "makes debugging harder."</li>
+  <li>Running the request again may not show you the bug.</li>
+  <li>Plain logs show single events, not which request each belongs to.</li>
+</ul>
+
+<h3>📖 Words you'll see in this article</h3>
+
+<figure class="tbl">
+  <div class="table-wrapper">
+  <table>
+    <thead><tr><th>Term</th><th>What it means</th></tr></thead>
+    <tbody>
+      <tr><td>LLM</td><td>Large language model, the AI behind each agent.</td></tr>
+      <tr><td>Token</td><td>A small chunk of text, about one word.</td></tr>
+      <tr><td>MCP server</td><td>An add-on that gives agents extra tools.</td></tr>
+      <tr><td>PII</td><td>Personal data, like a name or phone number.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</figure>
+
+<h2>🧭 Logging vs. monitoring vs. tracing vs. evaluation</h2>
+
+<p><strong>In plain words:</strong> These are four ways to watch your system. Each answers a different question.</p>
+
+<figure class="tbl">
+  <div class="table-wrapper">
+  <table>
+    <thead><tr><th>Method</th><th>The question it answers</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td>Logging</td><td>What happened at this moment?</td><td>"Refund tool failed at 14:02"</td></tr>
+      <tr><td>Monitoring</td><td>Is the system healthy right now?</td><td>Errors jumped to 6% since 2 p.m.</td></tr>
+      <tr><td>Tracing</td><td>What path did this one request take?</td><td>Message, triage, research, refund, reply</td></tr>
+      <tr><td>Evaluation</td><td>Was the answer actually good?</td><td>A grader scores the reply 1 out of 5</td></tr>
+    </tbody>
+  </table>
+  </div>
+</figure>
+
+<p>Tracing is the backbone: logs, scores and numbers all link back to traces.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/multi-agent-observability-production/images/four-signals.png" onerror="this.onerror=null;this.src='images/four-signals.png'" width="1400" height="795" loading="lazy" alt="Three cards connected to a tracing bar. Logging answers what happened at this moment, for example issue_refund failed with a payment gateway timeout. Monitoring answers whether the system is healthy, for example refund tool errors up from 0.5% to 6% since 14:00. Evaluation answers whether the answer was good, for example a judge score of 1 out of 5. Underneath, tracing shows one request's path: customer message, orchestrator, triage, research, refund, reply, with one trace ID.">
+  <figcaption>Figure 2. Tracing links the other three. Conceptual diagram.</figcaption>
+</figure>
+
+<h2>🧬 Anatomy of a trace</h2>
+
+<p><strong>In plain words:</strong> A trace is the full story of one request. A span is one step in that story. Think of a shop receipt, with one line per item.</p>
+
+<h3>How spans fit together</h3>
+
+<ul>
+  <li>The first span covers the whole request. It's called the root span.</li>
+  <li>Spans sit inside other spans, and each knows its parent.</li>
+  <li>Expect five kinds of span: orchestrator decisions, sub-agent calls, LLM calls, tool calls and retrievals. A retrieval is a search through documents.</li>
+</ul>
+
+<h3>What every span should record</h3>
+
+<p>Inputs and outputs, tokens, latency (how long it took), cost and any error.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/multi-agent-observability-production/images/trace-waterfall.png" onerror="this.onerror=null;this.src='images/trace-waterfall.png'" width="1400" height="1132" loading="lazy" alt="A trace waterfall of 13 spans for a made-up refund request lasting 9.4 seconds, 11,100 tokens and $0.0417. The orchestrator span contains a routing LLM call, the triage agent, the research agent with get_order, a refund policy retrieval and a summary call, and the refund agent with a decision call, the issue_refund tool and a reply call. The issue_refund tool span is marked ERROR after 1.40 seconds, yet the next span wrote a reply saying the refund was approved.">
+  <figcaption>Figure 3. Our refund request as a trace. Made-up data.</figcaption>
+</figure>
+
+
+<h2>🧠 Tracing agent decisions</h2>
+
+<p><strong>In plain words:</strong> A good trace shows what each agent did, and the reason it gave. Think of a plane's flight recorder.</p>
+
+<ul>
+  <li><strong>Routing:</strong> record which helper got the work, and the reason given.</li>
+  <li><strong>Tool choice:</strong> record the tools on offer, the one picked, and what it sent.</li>
+  <li><strong>Loops:</strong> a loop is an agent repeating the same step again and again. Anthropic saw its agents "continuing when they already had sufficient results".</li>
+  <li><strong>Context:</strong> everything the agent could see, like its instructions and documents. If it ignores a fact, check the fact was there.</li>
+</ul>
+
+
+<h2>🔗 Tracing across agent boundaries</h2>
+
+<p><strong>In plain words:</strong> Every agent, tool and server should tag its work with the same trace ID. Think of a parcel tracking number that every depot scans.</p>
+
+<ul>
+  <li><strong>Handoffs:</strong> when one agent passes work on, it passes the trace ID too. This is called <a href="https://opentelemetry.io/docs/concepts/context-propagation/" target="_blank">context propagation</a>.</li>
+  <li><strong>The format:</strong> a short text called <code>traceparent</code>, from the <a href="https://www.w3.org/TR/trace-context/" target="_blank">W3C</a> web standards group. It holds the trace ID and the caller's step ID.</li>
+  <li><strong>Parallel agents:</strong> helpers working at the same time each get their own span, under the same parent.</li>
+  <li><strong>Queues:</strong> a queue holds jobs to run later. Put the trace ID in each job, or the story splits in two.</li>
+</ul>
+
+<ul>
+  <li><strong>MCP servers:</strong> each MCP request has a <a href="https://modelcontextprotocol.io/seps/414-request-meta" target="_blank">set place</a> for the trace ID, a field called <code>params._meta</code>.</li>
+  <li><strong>Other APIs:</strong> an API is how programs talk to each other. Send the <code>traceparent</code> with each call, as in the code below.</li>
+</ul>
+
+<h3>What it looks like in code</h3>
+
+<p>A short Python sketch, assuming OpenTelemetry is set up as in its <a href="https://opentelemetry.io/docs/languages/python/instrumentation/" target="_blank">Python guide</a>:</p>
+
+<pre><code>from opentelemetry import trace
+from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
+
+tracer = trace.get_tracer("support.team")
+
+with tracer.start_as_current_span("invoke_agent refund"):
+    with tracer.start_as_current_span("execute_tool issue_refund"):
+        headers = {}
+        TraceContextTextMapPropagator().inject(headers)</code></pre>
+
+<p>The tool span sits inside the agent span. <code>inject</code> adds the <code>traceparent</code> to the headers, so the payment API can join the trace.</p>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/multi-agent-observability-production/images/trace-propagation.png" onerror="this.onerror=null;this.src='images/trace-propagation.png'" width="1400" height="865" loading="lazy" alt="Diagram of one trace ID crossing every boundary. A customer message reaches the orchestrator, where the root span starts. The orchestrator hands off to the research, triage and refund agents. The research agent calls an MCP server with the traceparent in params._meta. The refund agent puts the traceparent in a queue message for an async worker, which calls a payment API with a traceparent HTTP header. A box explains the W3C traceparent: version, trace-id that stays the same everywhere, parent-id of the calling span, and flags.">
+  <figcaption>Figure 4. One trace ID everywhere. Conceptual diagram.</figcaption>
+</figure>
+
+<h2>📊 Key metrics to monitor</h2>
+
+<p><strong>In plain words:</strong> Metrics are numbers that show how all requests are doing, like a car dashboard.</p>
+
+<figure class="tbl">
+  <div class="table-wrapper">
+  <table>
+    <thead><tr><th>Area</th><th>What to watch</th></tr></thead>
+    <tbody>
+      <tr><td>Latency (speed)</td><td>How long requests, agents and tools take. Watch the slowest 5% (p95), not the average.</td></tr>
+      <tr><td>Cost</td><td>Tokens and money per request and per agent.</td></tr>
+      <tr><td>Reliability</td><td>Errors, retries, timeouts and stuck loops.</td></tr>
+      <tr><td>Quality</td><td>Tasks finished, cases passed to a person (escalation rate), grader scores, user ratings.</td></tr>
+      <tr><td>Guardrails</td><td>How often safety checks block, hide data or ask a person. See our <a href="https://padmashri23.github.io/under-the-hood/multi-agent-guardrails-production/" target="_blank">guardrails article</a>.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</figure>
+
+
+<h2>🧪 Offline evaluation</h2>
+
+<p><strong>In plain words:</strong> Offline evaluation means testing before launch, on cases you pick. Think of a driving test. Our <a href="https://padmashri23.github.io/under-the-hood/evaluate-ai-agents-before-production/" target="_blank">evaluation article</a> goes deeper.</p>
+
+<h3>Build a test set from real cases</h3>
+
+<ul>
+  <li>A test set is a list of example requests and expected results.</li>
+  <li>Start small. Anthropic began with "about 20 queries representing real usage patterns."</li>
+  <li>Test each agent alone, then the whole team together.</li>
+</ul>
+
+<h3>Pick the right grader</h3>
+
+<p>A grader decides whether an answer passed.</p>
+
+<figure class="tbl">
+  <div class="table-wrapper">
+  <table>
+    <thead><tr><th>Grader</th><th>Best for</th><th>Watch out for</th></tr></thead>
+    <tbody>
+      <tr><td>Code checks</td><td>One right answer, like a refund amount</td><td>Can't judge open-ended writing</td></tr>
+      <tr><td>LLM-as-judge</td><td>Open-ended answers, like customer replies</td><td>Can favour longer answers, answer order or its own writing</td></tr>
+      <tr><td>Human review</td><td>High stakes, like money, health or legal</td><td>Slow and costly</td></tr>
+    </tbody>
+  </table>
+  </div>
+</figure>
+
+<p>LLM-as-judge means one AI model grades another's answer against a checklist. In a <a href="https://arxiv.org/abs/2306.05685" target="_blank">2023 study</a>, strong judges like GPT-4 agreed with people over 80% of the time. That's about as often as people agree with each other.</p>
+
+<p>People still catch what graders miss. Anthropic's human testers saw early agents pick "SEO-optimized content farms" over academic PDFs. These are low-quality sites built for search.</p>
+
+<h3>Test again after every change</h3>
+
+<ul>
+  <li>Rerun every test after any prompt, model or tool change. This catches regressions: things that used to work but now don't.</li>
+  <li>Small changes spread between agents. Anthropic found "small changes to the lead agent can unpredictably change how subagents behave."</li>
+</ul>
+
+<h2>📡 Online evaluation (in production)</h2>
+
+<p><strong>In plain words:</strong> Online evaluation means checking real answers after launch. Real users find cases your tests missed.</p>
+
+<ul>
+  <li><strong>Score a sample:</strong> grade a small share of answers. Tools like <a href="https://langfuse.com/docs/evaluation/evaluation-methods/llm-as-a-judge" target="_blank">Langfuse</a> let you pick which.</li>
+  <li><strong>Use feedback:</strong> attach thumbs-downs and reopened tickets to the trace.</li>
+  <li><strong>Watch for drift:</strong> drift is quality slowly getting worse, with no errors. A model update or new kinds of questions can cause it. Chart the score weekly and alert on drops.</li>
+</ul>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/multi-agent-observability-production/images/quality-drift.png" onerror="this.onerror=null;this.src='images/quality-drift.png'" width="1400" height="799" loading="lazy" alt="Line chart of a weekly LLM-judge pass rate on a 5% sample of live traces over 12 weeks. Weeks 1 to 6 sit between 92% and 94%. After a provider model update, the rate falls to 86% in week 7, below the 88% alert threshold, then holds between 82% and 84% through week 12. Error rates stayed flat.">
+  <figcaption>Figure 5. Drift that error counts miss. Made-up data.</figcaption>
+</figure>
+
+<h2>🐛 Debugging with traces</h2>
+
+<p><strong>In plain words:</strong> Start from the complaint, find its trace, and walk down to the step that broke.</p>
+
+<p>Back to our missing refund (Figure 3):</p>
+
+<ol>
+  <li><strong>Find the trace.</strong> Search by ticket number or time.</li>
+  <li><strong>Scan the timeline.</strong> Look for errors, slow steps or repeats.</li>
+  <li><strong>Spot the break.</strong> The refund tool timed out. Yet the next step told the customer the refund was approved.</li>
+  <li><strong>Find the root cause,</strong> the real reason. The agent's instructions never said what to do if the tool fails.</li>
+  <li><strong>Fix it, then add a test,</strong> so the bug can't quietly come back.</li>
+</ol>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/multi-agent-observability-production/images/failure-to-test.png" onerror="this.onerror=null;this.src='images/failure-to-test.png'" width="1400" height="599" loading="lazy" alt="Six steps in a loop: 1 test set of real scenarios, 2 offline eval with code checks, LLM judge and human review, 3 ship only if no regressions, 4 trace and score live traffic, 5 failure found by opening the trace, 6 fix and add a test. Step 6 feeds back into step 1.">
+  <figcaption>Figure 6. Every failure becomes a new test. Conceptual diagram.</figcaption>
+</figure>
+
+<h2>🔒 Privacy and retention</h2>
+
+<p><strong>In plain words:</strong> Traces contain whatever your users typed, like names and emails. Treat them like customer data.</p>
+
+<ul>
+  <li><strong>Only record text if you need it:</strong> OpenTelemetry's <a href="https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md" target="_blank">guidelines</a> say not to record prompts and answers by default. This text is "likely to contain sensitive information".</li>
+  <li><strong>Mask before you store:</strong> masking means swapping personal data for a placeholder, like [EMAIL]. Langfuse can <a href="https://langfuse.com/docs/observability/features/masking" target="_blank">mask data</a> before it leaves your app.</li>
+  <li><strong>Set a retention period:</strong> how long you keep traces. Europe's privacy law, GDPR, says to keep personal data "<a href="https://gdpr-info.eu/art-5-gdpr/" target="_blank">for no longer than is necessary</a>". LangSmith's cloud, for example, keeps traces <a href="https://docs.langchain.com/langsmith/usage-and-billing" target="_blank">14 or 180 days</a>.</li>
+  <li><strong>Limit access:</strong> only people who need raw traces should see them.</li>
+</ul>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/multi-agent-observability-production/images/masking.png" onerror="this.onerror=null;this.src='images/masking.png'" width="1400" height="586" loading="lazy" alt="Before and after masking one span input. Before: Hi, I'm Priya Nair, with an email address, a card number and a phone number, all highlighted as personal data. After: Hi, I'm [NAME], my email is [EMAIL], refund order 1187 to my card [CARD], call me on [PHONE]. The order number stays so the request can still be debugged.">
+  <figcaption>Figure 7. Masking one span. Made-up example.</figcaption>
+</figure>
+
+<h2>🛠️ Platforms for agent observability</h2>
+
+<p><strong>In plain words:</strong> You need a standard way to record traces, and a place to view them. Some platforms let you self-host, meaning run them on your own servers.</p>
+
+<h3>The standard: OpenTelemetry</h3>
+
+<ul>
+  <li>OpenTelemetry (OTel) is a free, <a href="https://opentelemetry.io/docs/what-is-opentelemetry/" target="_blank">open standard</a> for recording traces, metrics and logs.</li>
+  <li>It works with many tools, so you're not tied to one company.</li>
+  <li>To view the data, you send it to a platform.</li>
+</ul>
+
+<h3>Three popular platforms</h3>
+
+<figure class="tbl">
+  <div class="table-wrapper">
+  <table>
+    <thead><tr><th>Platform</th><th>What it covers</th><th>Free option</th><th>Paid plans from</th></tr></thead>
+    <tbody>
+      <tr><td>Langfuse</td><td><a href="https://langfuse.com/docs" target="_blank">Tracing, prompt management and evaluation</a></td><td><a href="https://langfuse.com/self-hosting" target="_blank">Self-host</a> free, or a <a href="https://langfuse.com/pricing" target="_blank">free cloud plan</a>: 50k units (traces, steps or scores) a month</td><td>$29 a month</td></tr>
+      <tr><td>Arize Phoenix</td><td><a href="https://github.com/Arize-ai/phoenix" target="_blank">Tracing, evaluation and experiments</a></td><td>Self-host free</td><td>Arize AX (managed) is priced separately</td></tr>
+      <tr><td>LangSmith</td><td>Tracing, <a href="https://docs.langchain.com/langsmith/evaluation" target="_blank">evaluation</a> and monitoring, from the LangChain team</td><td><a href="https://www.langchain.com/pricing" target="_blank">Free plan</a>: 1 seat, 5k traces a month</td><td>$39 per seat a month</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption>Table 1. All three accept OpenTelemetry data. Prices checked November 20, 2026.</figcaption>
+</figure>
+
+<ul>
+  <li><strong>Langfuse</strong> uses an <a href="https://github.com/langfuse/langfuse/blob/main/LICENSE" target="_blank">MIT license</a> for its core. Some extras need a license key.</li>
+  <li><strong>Phoenix</strong> is called open source by Arize. Its <a href="https://github.com/Arize-ai/phoenix/blob/main/LICENSE" target="_blank">Elastic License 2.0</a> allows self-hosting, but not offering it to others as a service.</li>
+  <li><strong>LangSmith</strong> is mainly a cloud service. <a href="https://docs.langchain.com/langsmith/self-hosted" target="_blank">Self-hosting</a> is an Enterprise add-on.</li>
+</ul>
+
+<h3>How to choose</h3>
+
+<ul>
+  <li><strong>Need to keep data on your own servers?</strong> Pick Langfuse or Phoenix.</li>
+  <li><strong>Built with LangChain or LangGraph</strong> (popular agent toolkits)? Pick LangSmith.</li>
+  <li><strong>Whatever you pick,</strong> check it supports OpenTelemetry, so you can switch later.</li>
+</ul>
+
+<h2>✅ Closing checklist</h2>
+
+<p><strong>In plain words:</strong> Start small, then tick off the full list.</p>
+
+<h3>Where to start</h3>
+
+<ol>
+  <li>Add OpenTelemetry to your agents.</li>
+  <li>Pass one trace ID through every handoff.</li>
+  <li>Send traces to a platform to view them.</li>
+  <li>Write 20 test cases from real requests.</li>
+  <li>Grade a sample of live answers weekly.</li>
+</ol>
+
+<h3>Before launch</h3>
+
+<figure class="article-image">
+  <img src="https://padmashri23.github.io/under-the-hood/multi-agent-observability-production/images/checklist.png" onerror="this.onerror=null;this.src='images/checklist.png'" width="1400" height="737" loading="lazy" alt="Checklist with tick boxes in four groups. Trace: one trace per request, spans for every agent, LLM call, tool call and retrieval, trace ID carried through handoffs, queues, MCP servers and APIs, routing reasons, tool choices and prompt versions recorded. Measure: latency per agent and tool including p95, tokens and cost, errors, retries, timeouts and loop cut-offs, task completion and escalation rates, guardrail events. Evaluate: a test set of real scenarios, the right grader per case, a regression run on every change, sampled live scoring plus user feedback, drift alerts. Protect: content capture off unless needed, PII masked, a retention period, limited access, OpenTelemetry support.">
+  <figcaption>Figure 8. Pre-launch checklist.</figcaption>
+</figure>
+
+<p>If you do one thing this week, give every request one trace ID. Without it, the missing refund is a mystery. With it, you can point to the step that broke.</p>
+
+<footer class="article-footer">
+  <h2>Sources &amp; References</h2>
+  <ol>
+    <li>Anthropic. "How we built our multi-agent research system." June 13, 2025. <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">anthropic.com</a></li>
+    <li>OpenTelemetry. "Traces." Checked November 20, 2026. <a href="https://opentelemetry.io/docs/concepts/signals/traces/" target="_blank">opentelemetry.io</a></li>
+    <li>OpenTelemetry. "What is OpenTelemetry?" Checked November 20, 2026. <a href="https://opentelemetry.io/docs/what-is-opentelemetry/" target="_blank">opentelemetry.io</a></li>
+    <li>OpenTelemetry. "Instrumentation." Python documentation. Checked November 20, 2026. <a href="https://opentelemetry.io/docs/languages/python/instrumentation/" target="_blank">opentelemetry.io</a></li>
+    <li>OpenTelemetry. "Propagation." Python documentation. Checked November 20, 2026. <a href="https://opentelemetry.io/docs/languages/python/propagation/" target="_blank">opentelemetry.io</a></li>
+    <li>OpenTelemetry. "Context propagation." Checked November 20, 2026. <a href="https://opentelemetry.io/docs/concepts/context-propagation/" target="_blank">opentelemetry.io</a></li>
+    <li>W3C. "Trace Context." W3C Recommendation, November 23, 2021. <a href="https://www.w3.org/TR/trace-context/" target="_blank">w3.org</a></li>
+    <li>OpenTelemetry. GenAI semantic conventions: agent spans (gen-ai-agent-spans.md), status Development. Checked November 20, 2026. <a href="https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-agent-spans.md" target="_blank">github.com</a></li>
+    <li>OpenTelemetry. GenAI semantic conventions: execute tool (execute-tool.md), status Development. Checked November 20, 2026. <a href="https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/execute-tool.md" target="_blank">github.com</a></li>
+    <li>OpenTelemetry. GenAI semantic conventions: GenAI spans (gen-ai-spans.md), status Development. Checked November 20, 2026. <a href="https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md" target="_blank">github.com</a></li>
+    <li>OpenTelemetry. GenAI semantic conventions: Model Context Protocol (mcp.md), status Development. Checked November 20, 2026. <a href="https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/mcp.md" target="_blank">github.com</a></li>
+    <li>Model Context Protocol. "SEP-414: Document OpenTelemetry Trace Context Propagation Conventions." Final, created April 25, 2025. <a href="https://modelcontextprotocol.io/seps/414-request-meta" target="_blank">modelcontextprotocol.io</a></li>
+    <li>OpenAI. "Tracing." OpenAI Agents SDK documentation. Checked November 20, 2026. <a href="https://openai.github.io/openai-agents-python/tracing/" target="_blank">openai.github.io</a></li>
+    <li>Zheng et al. "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena." NeurIPS 2023 Datasets and Benchmarks Track. arXiv, June 9, 2023. <a href="https://arxiv.org/abs/2306.05685" target="_blank">arxiv.org</a></li>
+    <li>Langfuse. "Langfuse Overview." Checked November 20, 2026. <a href="https://langfuse.com/docs" target="_blank">langfuse.com</a></li>
+    <li>Langfuse. "Self-host Langfuse (Open Source LLM Observability)." Checked November 20, 2026. <a href="https://langfuse.com/self-hosting" target="_blank">langfuse.com</a></li>
+    <li>Langfuse. "Pricing." Checked November 20, 2026. <a href="https://langfuse.com/pricing" target="_blank">langfuse.com</a></li>
+    <li>Langfuse. LICENSE file, langfuse/langfuse repository. Checked November 20, 2026. <a href="https://github.com/langfuse/langfuse/blob/main/LICENSE" target="_blank">github.com</a></li>
+    <li>Langfuse. "Langfuse joins ClickHouse." January 16, 2026. <a href="https://langfuse.com/blog/joining-clickhouse" target="_blank">langfuse.com</a></li>
+    <li>Langfuse. "OpenTelemetry (OTEL) for LLM Observability." Checked November 20, 2026. <a href="https://langfuse.com/integrations/native/opentelemetry" target="_blank">langfuse.com</a></li>
+    <li>Langfuse. "LLM-as-a-Judge." Checked November 20, 2026. <a href="https://langfuse.com/docs/evaluation/evaluation-methods/llm-as-a-judge" target="_blank">langfuse.com</a></li>
+    <li>Langfuse. "Masking sensitive LLM data." Checked November 20, 2026. <a href="https://langfuse.com/docs/observability/features/masking" target="_blank">langfuse.com</a></li>
+    <li>Langfuse. "Data Retention." Checked November 20, 2026. <a href="https://langfuse.com/docs/administration/data-retention" target="_blank">langfuse.com</a></li>
+    <li>Arize AI. Arize-ai/phoenix repository README. Checked November 20, 2026. <a href="https://github.com/Arize-ai/phoenix" target="_blank">github.com</a></li>
+    <li>Arize AI. Phoenix LICENSE file, "Elastic License 2.0 (ELv2)." Checked November 20, 2026. <a href="https://github.com/Arize-ai/phoenix/blob/main/LICENSE" target="_blank">github.com</a></li>
+    <li>LangChain. "LangSmith Observability." Checked November 20, 2026. <a href="https://docs.langchain.com/langsmith/observability" target="_blank">docs.langchain.com</a></li>
+    <li>LangChain. "Trace with OpenTelemetry." Checked November 20, 2026. <a href="https://docs.langchain.com/langsmith/trace-with-opentelemetry" target="_blank">docs.langchain.com</a></li>
+    <li>LangChain. "LangSmith Evaluation." Checked November 20, 2026. <a href="https://docs.langchain.com/langsmith/evaluation" target="_blank">docs.langchain.com</a></li>
+    <li>LangChain. "Self-hosted LangSmith." Checked November 20, 2026. <a href="https://docs.langchain.com/langsmith/self-hosted" target="_blank">docs.langchain.com</a></li>
+    <li>LangChain. "Pricing." Checked November 20, 2026. <a href="https://www.langchain.com/pricing" target="_blank">langchain.com</a></li>
+    <li>LangChain. "Usage and billing." LangSmith documentation. Checked November 20, 2026. <a href="https://docs.langchain.com/langsmith/usage-and-billing" target="_blank">docs.langchain.com</a></li>
+    <li>"Art. 5 GDPR – Principles relating to processing of personal data." Checked November 20, 2026. <a href="https://gdpr-info.eu/art-5-gdpr/" target="_blank">gdpr-info.eu</a></li>
+  </ol>
+
+  <p style="margin-top: 20px;"><strong>Note:</strong> Facts were checked on November 20, 2026. The OpenTelemetry GenAI and MCP conventions are still in Development, and observability platforms change their plans and features often, so check the current versions before you build. Figure 1 shows Anthropic's approximate token multipliers from its own research system; your numbers will differ. Figures 3 and 5 are illustrative models, not measured data: the trace, its timings, its prices ($3 per million input tokens and $15 per million output tokens) and the weekly pass rates are made up. Figures 2, 4 and 6 are conceptual diagrams, and the checklist (Figure 8) is editorial guidance. The support team, the missing-refund ticket and the masking example in Figure 7 are made up; 4111 1111 1111 1111 is a standard test card number. The Python snippet is a sketch based on OpenTelemetry's Python documentation and assumes the SDK is already configured. Prices come from the Langfuse and LangChain pricing pages on November 20, 2026, and may change. Arize's pricing page could not be read, so no Arize AX price is given. Arize describes Phoenix as open source; its Elastic License 2.0 terms are summarized here from the license file, and this is not legal advice. LangSmith retention figures are for its cloud service; its BYOC and self-hosted options list 400 days for extended retention.</p>
+
+  <div class="tags">
+    <span>AI Agents</span>
+    <span>Multi-Agent Systems</span>
+    <span>Observability</span>
+    <span>OpenTelemetry</span>
+    <span>Evaluation</span>
+    <span>Deep Dive</span>
+  </div>
+
+  <p style="margin-top: 32px;"><a href="../">← More from Under the Hood</a></p>
+</footer>
+
+</div>
+
+</body>
+</html>

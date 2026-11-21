@@ -6,7 +6,7 @@ A beginner-friendly guide to watching a team of AI agents in production: what to
 
 ## What it covers
 
-1. **Why observability is harder in multi-agent systems:** one request fans out across agents and tools, Anthropic's 4× and 15× token multipliers, and non-determinism
+1. **Why observability is harder in multi-agent systems:** one request fans out across agents and tools, Anthropic's 4× and 15× token multipliers, why the extra tokens can pay off (Anthropic's 90.2% result and which tasks suit multi-agent systems), and non-determinism
 2. **Logging vs. monitoring vs. tracing vs. evaluation:** a definition of each, with tracing as the backbone
 3. **Anatomy of a trace:** root span, nested spans, the five span kinds and what each span records
 4. **Tracing agent decisions:** routing reasons, tool choices, loops and the context an agent actually had
@@ -14,12 +14,12 @@ A beginner-friendly guide to watching a team of AI agents in production: what to
 6. **Key metrics to monitor:** latency (p95), cost, reliability, quality (task completion, escalation) and guardrail events
 7. **Offline evaluation:** test sets from real cases, code checks vs. LLM-as-judge vs. human review, Anthropic's content-farm example, and regression runs
 8. **Online evaluation:** sampled live scoring, user feedback and quality drift
-9. **Debugging with traces:** the missing-refund example, step by step, and turning failures into test cases
+9. **Debugging with traces:** the missing-refund example, step by step, a code check that guards the refund reply, and turning failures into test cases
 10. **Privacy and retention:** recording text only when needed, masking (with a before-and-after figure), retention periods and access
 11. **Platforms:** OpenTelemetry, then Langfuse, Arize Phoenix and LangSmith compared on features, free options, starting prices and licenses, and how to choose
 12. **Closing checklist:** five "where to start" steps and the one-page checklist image
 
-Written for beginners and tech starters: a key points box, one made-up support team (the same one as the guardrails article) followed through every section, a short glossary, every technical term explained in plain words where it first appears (orchestrator, span, root span, latency, retrieval, context, context propagation, traceparent, queue, API, p95, escalation rate, test set, grader, LLM-as-judge, regression, drift, root cause, masking, retention, self-hosting), an everyday comparison in most sections (a shop receipt, a flight recorder, a parcel tracking number, a car dashboard, a driving test), and the same shape in each section ("In plain words", short bullets, then a "Good to know" note where useful). Figure text uses the same plain words as the article. About 9.4 words per sentence on average (Flesch reading ease about 71, counting the technical names). Links to the guardrails and evaluation articles where they go deeper. 1,800 words above Sources & References, counting headings, captions, tables and code. No video.
+Written for beginners and tech starters: a key points box, one made-up support team (the same one as the guardrails article) followed through every section, a short glossary, every technical term explained in plain words where it first appears (orchestrator, span, root span, latency, retrieval, context, context propagation, traceparent, queue, API, p95, escalation rate, test set, grader, LLM-as-judge, regression, drift, root cause, masking, retention, self-hosting), an everyday comparison in most sections (a shop receipt, a flight recorder, a parcel tracking number, a car dashboard, a driving test), and the same shape in each section ("In plain words", short bullets, then a "Good to know" note where useful). Figure text uses the same plain words as the article. About 9.4 words per sentence on average (Flesch reading ease about 71, counting the technical names). Links to the guardrails and evaluation articles where they go deeper. 2,250 words above Sources & References, counting headings, captions, tables and code (expanded after reviewer comments). No video.
 
 ## Visuals
 

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="How to trace, debug and evaluate multi-agent AI systems in production: traces and spans, trace context across agents and MCP servers, key metrics, offline and online evaluation, privacy, and Langfuse, Arize Phoenix and LangSmith compared.">
 <meta property="og:title" content="Observability for Multi-Agent Systems: How to Trace, Debug and Evaluate Every Agent in Production">
-<meta property="og:description" content="When a team of agents gets an answer wrong, here's how to find the one that slipped.">
+<meta property="og:description" content="When a team of AI agents gets an answer wrong, you need to find the step that slipped. This guide shows how: trace every request, measure what matters, and test your agents before and after launch, so they can&#39;t slip the same way twice.">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://padmashri23.github.io/under-the-hood/multi-agent-observability-production/">
 <meta property="og:image" content="https://padmashri23.github.io/under-the-hood/multi-agent-observability-production/images/social-card.png">
@@ -289,18 +289,18 @@
 <header class="article-header">
   <span class="tag">Deep Dive</span>
   <h1>Observability for Multi-Agent Systems: How to Trace, Debug and Evaluate Every Agent in Production</h1>
-  <p class="subtitle">When a team of AI agents gets an answer wrong, here's how to find the one that slipped.</p>
+  <p class="subtitle">When a team of AI agents gets an answer wrong, you need to find the step that slipped. This guide shows how: trace every request, measure what matters, and test your agents before and after launch, so they can't slip the same way twice.</p>
   <p class="meta">Researched &amp; written November 2026 · ~9 min read · Sources cited throughout</p>
 </header>
 
 <div class="keypoints">
   <div class="kp-title">Key points</div>
   <ul>
-    <li>Record every step of every request.</li>
-    <li>Give each request one ID, and pass it everywhere.</li>
-    <li>Test before launch, then check real answers.</li>
-    <li>Turn every failure into a new test.</li>
-    <li>Hide personal data before storing traces.</li>
+    <li>Give each request one trace ID, and pass it through every agent, tool and queue.</li>
+    <li>Record every step: what each agent saw, decided and did.</li>
+    <li>Watch for silent failures. A wrong answer often comes with no error, so check the path, not just the answer: right agent, right tools, no wasted steps.</li>
+    <li>Test before launch, then grade a sample of live answers. Turn every failure into a new test.</li>
+    <li>Guard risky actions in code, not just in prompts, and mask personal data before you store traces.</li>
   </ul>
 </div>
 
@@ -325,6 +325,19 @@
   <figcaption>Figure 1. Tokens per task vs. a chat. Anthropic data, June 2025.</figcaption>
 </figure>
 
+<h3>Why pay for 15 times the tokens?</h3>
+
+<p>Because for the right job, the extra work pays off.</p>
+
+<ul>
+  <li><strong>Better answers:</strong> in Anthropic's tests, a lead Claude Opus 4 agent with Claude Sonnet 4 helpers beat a single Claude Opus 4 agent by 90.2% on its internal research test.</li>
+  <li><strong>Tokens do the work:</strong> Anthropic wrote that multi-agent systems "work mainly because they help spend enough tokens to solve the problem."</li>
+  <li><strong>Right jobs only:</strong> they do best on big tasks that can be split up and run at the same time, need more information than one model can hold, or use many complex tools. They fit poorly when every agent needs the same context or the agents depend heavily on each other. Anthropic gives most coding tasks as an example.</li>
+  <li><strong>Worth the cost:</strong> Anthropic says the task's value must be "high enough to pay for the increased performance."</li>
+</ul>
+
+<p class="guardrail"><strong>💡 Why observability matters here:</strong> You're paying for 15 times the tokens, so you need to see where they go. Tracing shows which agent spent them, on which step, and whether the answer got better. Without it, you can't tell if the extra cost is paying off.</p>
+
 <h3>Same question, different path</h3>
 
 <ul>
@@ -343,6 +356,11 @@
       <tr><td>LLM</td><td>Large language model, the AI behind each agent.</td></tr>
       <tr><td>Token</td><td>A small chunk of text, often part of a word.</td></tr>
       <tr><td>MCP server</td><td>An add-on that gives agents extra tools.</td></tr>
+      <tr><td>Orchestrator</td><td>The lead agent. It splits a job and hands the pieces to helper agents.</td></tr>
+      <tr><td>Sub-agent</td><td>A helper agent that does one part of the job.</td></tr>
+      <tr><td>Tool call</td><td>When an agent uses an outside function, like "look up order".</td></tr>
+      <tr><td>Trace</td><td>The full record of one request, from start to finish.</td></tr>
+      <tr><td>Span</td><td>One step inside a trace, like a single model call or tool call.</td></tr>
     </tbody>
   </table>
   </div>
@@ -529,9 +547,21 @@ with tracer.start_as_current_span("invoke_agent refund"):
   <li><strong>Find the trace.</strong> Search by ticket number or time.</li>
   <li><strong>Scan the timeline.</strong> Look for errors, slow steps or repeats.</li>
   <li><strong>Spot the break.</strong> The refund tool timed out. Yet the next step told the customer the refund was approved.</li>
-  <li><strong>Find the root cause,</strong> the real reason. The agent's instructions never said what to do if the tool fails.</li>
-  <li><strong>Fix it, then add a test,</strong> so the bug can't come back.</li>
+  <li><strong>Find the root cause,</strong> the real reason. Two things went wrong. The agent's instructions never said what to do if the tool fails. And nothing in the code stopped the reply from saying "approved" when the refund didn't go through.</li>
+  <li><strong>Fix both, then add a test.</strong> Tell the agent what to do when a tool fails. Then add a code check: the reply can only say "approved" if the refund tool returned success. Prompts guide the agent, but code should guard the money. Finally, add this case to your test set so the bug can't come back.</li>
 </ol>
+
+<pre><code>result = issue_refund(order_id, amount)
+
+if result.status != "success":
+    reply = "We couldn't process your refund yet. A team member will follow up."
+    escalate_to_human(ticket_id)
+else:
+    reply = refund_agent.write_reply(result)</code></pre>
+
+<p>The agent only writes the "approved" message after the code confirms the refund worked. If it failed, the customer gets an honest reply and a person takes over.</p>
+
+<p>This is a guardrail: a rule in code that the agent can't talk its way around. See our <a href="https://padmashri23.github.io/under-the-hood/multi-agent-guardrails-production/" target="_blank">guardrails article</a> for more.</p>
 
 <figure class="article-image">
   <img src="https://padmashri23.github.io/under-the-hood/multi-agent-observability-production/images/failure-to-test.png" onerror="this.onerror=null;this.src='images/failure-to-test.png'" width="1400" height="599" loading="lazy" alt="Six steps in a loop: 1 test set of real scenarios, 2 offline eval with code checks, LLM judge and human review, 3 ship only if no regressions, 4 trace and score live traffic, 5 failure found by opening the trace, 6 fix and add a test. Step 6 feeds back into step 1.">

@@ -12,7 +12,7 @@ A beginner-friendly, fact-checked comparison of the three flagship AI models rel
 4. **What it really costs:** same list price, different bill (Fable 5.2 cost 6.6 times as much per task as GPT-6.2 Astra), thinking tokens, Gemini 4 Carbon's launch and standard prices, how long each model takes per task, and a worked seat-price example for a team of 10
 5. **Does your plan include the flagship:** ChatGPT Business, Claude Team and Google Workspace compared, with each vendor's data-training default
 6. **Which one to pick:** a job-by-job starting point and five "where to start" steps
-7. **Quick answers:** GPT-6.2 on ChatGPT Business, training on business data, and which flagship is cheapest
+7. **When the flagship is worth it:** long, hard projects, work across many apps, and clearly better answers in your own test
 
 Written for beginners and tech starters: a key points box, a six-term glossary, and the same pattern in every section ("In plain words", short bullets, then a "Good to know" note). Every term is explained where it first appears (flagship, frontier model, token, input and output, API, seat, benchmark, leaderboard, Intelligence Index, Elo, workflow, thinking tokens, training). About 10 words per sentence on average. 1,800 words above Sources & References, counting headings, captions and tables.
 
